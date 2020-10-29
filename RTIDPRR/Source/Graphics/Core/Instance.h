@@ -12,6 +12,8 @@ namespace RTIDPRR {
 
 			const vk::SurfaceKHR initSurface(const SDL_Window* window);
 
+			const vk::Instance& getHandle() const { return mInstanceHandle; };
+
 			virtual ~Instance();
 
 		private:

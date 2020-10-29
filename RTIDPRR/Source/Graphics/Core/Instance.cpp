@@ -112,7 +112,9 @@ const vk::SurfaceKHR Instance::initSurface(const SDL_Window* window) {
 
 Instance::~Instance() {
 #if defined(_DEBUG)
-	//mInstanceHandle.destroyDebugUtilsMessengerEXT(mDebugMessenger, nullptr);
+	vk::DispatchLoaderDynamic dynamicDispatcher = vk::DispatchLoaderDynamic(mInstanceHandle, vkGetInstanceProcAddr);
+	dynamicDispatcher.init(mInstanceHandle, vkGetInstanceProcAddr);
+	mInstanceHandle.destroyDebugUtilsMessengerEXT(mDebugMessenger, nullptr, dynamicDispatcher);
 #endif
 	mInstanceHandle.destroy();
 }

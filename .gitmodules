@@ -2,3 +2,4 @@
 	path = Tools/vcpkg
 	url = https://github.com/microsoft/vcpkg
 	branch = master
+	ignore = dirty

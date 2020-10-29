@@ -145,6 +145,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)Source;$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -157,12 +158,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Graphics\Core\Queue.cpp" />
     <ClCompile Include="Source\Graphics\Core\Device.cpp" />
     <ClCompile Include="Source\Graphics\Core\Instance.cpp" />
     <ClCompile Include="Source\Graphics\Core\Context.cpp" />
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Graphics\Core\Queue.h" />
     <ClInclude Include="Source\Graphics\Core\Device.h" />
     <ClInclude Include="Source\Graphics\Core\Instance.h" />
     <ClInclude Include="Source\Graphics\Core\Context.h" />
