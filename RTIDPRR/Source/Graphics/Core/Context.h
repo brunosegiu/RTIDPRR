@@ -4,6 +4,8 @@
 #include <SDL2/SDL_vulkan.h>
 
 #include "Instance.h"
+#include "Device.h"
+#include "Swapchain.h"
 
 #if defined(__ANDROID__)
 #define VK_USE_PLATFORM_ANDROID_KHR
@@ -26,7 +28,8 @@ namespace RTIDPRR {
 			Context& operator=(Context const&) = delete;
 
 			Instance mInstance;
-			vk::SurfaceKHR mWindowSurface;
+			Device mDevice;
+			Swapchain mSwapchain;
 		};
 	} // namespace Graphics
 } // namespace RTIDPRR

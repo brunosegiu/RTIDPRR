@@ -13,6 +13,9 @@ namespace RTIDPRR {
 
 			const Queue& getGraphicsQueue();
 
+			const vk::PhysicalDevice& getPhysicalDevice() const { return mPhysicalHandle; }
+			const vk::Device& getLogicalDevice() const { return mLogicalHandle; }
+
 			virtual ~Device();
 
 		private:
@@ -23,7 +26,7 @@ namespace RTIDPRR {
 			static const uint32_t findQueueFamilyIndex(const std::vector<vk::QueueFamilyProperties>& queueFamilyProperties);
 
 			vk::PhysicalDevice mPhysicalHandle;
-			vk::Device mDeviceHandle;
+			vk::Device mLogicalHandle;
 
 			Queue mGraphicsQueue;
 			Queue mComputeQueue;

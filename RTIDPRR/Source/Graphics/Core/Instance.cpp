@@ -104,7 +104,7 @@ const std::vector<const char*> Instance::getRequiredExtensions(const SDL_Window*
 	return extensions;
 }
 
-const vk::SurfaceKHR Instance::initSurface(const SDL_Window* window) {
+const vk::SurfaceKHR Instance::initSurface(const SDL_Window* window) const {
 	VkSurfaceKHR surface;
 	assert(SDL_Vulkan_CreateSurface(const_cast<SDL_Window*>(window), static_cast<VkInstance>(mInstanceHandle), &surface));
 	return vk::SurfaceKHR(surface);

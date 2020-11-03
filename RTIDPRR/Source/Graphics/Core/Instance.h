@@ -10,7 +10,7 @@ namespace RTIDPRR {
 		public:
 			Instance(const SDL_Window* window);
 
-			const vk::SurfaceKHR initSurface(const SDL_Window* window);
+			const vk::SurfaceKHR initSurface(const SDL_Window* window) const;
 
 			const vk::Instance& getHandle() const { return mInstanceHandle; };
 

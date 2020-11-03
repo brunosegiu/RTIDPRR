@@ -6,17 +6,11 @@ using namespace RTIDPRR::Graphics;
 
 Device::Device(const Instance& instance) {
 	// Pick and initialize a physical device
-	uint32_t deviceCount = 0;
-	instance.getHandle().enumeratePhysicalDevices(&deviceCount, nullptr);
-	std::vector<vk::PhysicalDevice> physicalDevices(deviceCount);
-	instance.getHandle().enumeratePhysicalDevices(&deviceCount, physicalDevices.data());
+	const std::vector<vk::PhysicalDevice> physicalDevices = instance.getHandle().enumeratePhysicalDevices();
 	mPhysicalHandle = Device::findPhysicalDevice(physicalDevices);
 
 	// Initialize the graphics and compute queues
-	uint32_t queueFamilyCount = 0;
-	mPhysicalHandle.getQueueFamilyProperties(&queueFamilyCount, nullptr);
-	std::vector<vk::QueueFamilyProperties> queueFamilies(queueFamilyCount);
-	mPhysicalHandle.getQueueFamilyProperties(&queueFamilyCount, queueFamilies.data());
+	const std::vector<vk::QueueFamilyProperties> queueFamilies = mPhysicalHandle.getQueueFamilyProperties();
 
 	const uint32_t queueFamilyIndex = findQueueFamilyIndex(queueFamilies);
 
@@ -32,16 +26,19 @@ Device::Device(const Instance& instance) {
 		.setPQueuePriorities(queuePriorities.data());
 
 	// Initialize the logical device
-	vk::PhysicalDeviceFeatures deviceFeatures{};
+	std::vector<const char*> enabledExtensionNames{
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
+
 	vk::DeviceCreateInfo deviceCreateInfo =
 		vk::DeviceCreateInfo()
-		.setPQueueCreateInfos(&graphicsQueueCreateInfo)
-		.setQueueCreateInfoCount(1)
-		.setPEnabledFeatures(&deviceFeatures);
-	mDeviceHandle = mPhysicalHandle.createDevice(deviceCreateInfo);
+		.setQueueCreateInfos(graphicsQueueCreateInfo)
+		.setPEnabledExtensionNames(enabledExtensionNames);
 
-	mGraphicsQueue = std::move(Queue(queueFamilyIndex, 0, mDeviceHandle));
-	mComputeQueue = std::move(Queue(queueFamilyIndex, 1, mDeviceHandle));
+	mLogicalHandle = mPhysicalHandle.createDevice(deviceCreateInfo);
+
+	mGraphicsQueue = std::move(Queue(queueFamilyIndex, 0, mLogicalHandle));
+	mComputeQueue = std::move(Queue(queueFamilyIndex, 1, mLogicalHandle));
 }
 
 const vk::PhysicalDevice Device::findPhysicalDevice(const std::vector<vk::PhysicalDevice>& devices) {
@@ -54,6 +51,8 @@ const vk::PhysicalDevice Device::findPhysicalDevice(const std::vector<vk::Physic
 			return device;
 		}
 	}
+	assert(false);
+	return nullptr;
 }
 
 const uint32_t Device::findQueueFamilyIndex(const std::vector<vk::QueueFamilyProperties>& queueFamilyProperties) {
