@@ -21,6 +21,8 @@ namespace RTIDPRR {
 		public:
 			Context(const SDL_Window* window);
 
+			const Device& getDevice() const { return mDevice; }
+
 			virtual ~Context();
 
 		private:

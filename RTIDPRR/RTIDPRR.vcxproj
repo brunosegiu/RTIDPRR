@@ -96,6 +96,22 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib32;$(VULKAN_SDK)\Third-Party\Bin32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+      <Outputs>
+      </Outputs>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
+    <CustomBuild>
+      <Command>%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>$(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -114,6 +130,28 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(VULKAN_SDK)\Third-Party\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
+    <CustomBuild>
+      <Command>%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>$(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -135,6 +173,22 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib32;$(VULKAN_SDK)\Third-Party\Bin32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+      <Outputs>
+      </Outputs>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
+    <CustomBuild>
+      <Command>%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>$(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -157,8 +211,25 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(VULKAN_SDK)\Third-Party\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+      <Outputs>
+      </Outputs>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
+    <CustomBuild>
+      <Command>%VULKAN_SDK%\Bin32\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>$(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Graphics\Core\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Core\Queue.cpp" />
     <ClCompile Include="Source\Graphics\Core\Device.cpp" />
     <ClCompile Include="Source\Graphics\Core\Instance.cpp" />
@@ -167,11 +238,21 @@
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Graphics\Core\Shader.h" />
     <ClInclude Include="Source\Graphics\Core\Queue.h" />
     <ClInclude Include="Source\Graphics\Core\Device.h" />
     <ClInclude Include="Source\Graphics\Core\Instance.h" />
     <ClInclude Include="Source\Graphics\Core\Context.h" />
     <ClInclude Include="Source\Graphics\Core\Swapchain.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Source\Shaders\Source\TestShader.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
