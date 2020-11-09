@@ -229,6 +229,7 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Graphics\Core\Pipeline.cpp" />
     <ClCompile Include="Source\Graphics\Core\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Core\Queue.cpp" />
     <ClCompile Include="Source\Graphics\Core\Device.cpp" />
@@ -238,6 +239,7 @@
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Graphics\Core\Pipeline.h" />
     <ClInclude Include="Source\Graphics\Core\Shader.h" />
     <ClInclude Include="Source\Graphics\Core\Queue.h" />
     <ClInclude Include="Source\Graphics\Core\Device.h" />
@@ -246,12 +248,8 @@
     <ClInclude Include="Source\Graphics\Core\Swapchain.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Source\Shaders\Source\TestShader.vert">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    <CustomBuild Include="Source\Shaders\Source\test.frag">
       <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

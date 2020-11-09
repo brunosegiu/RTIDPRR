@@ -37,6 +37,9 @@
     <ClCompile Include="Source\Graphics\Core\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Core\Pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Graphics\Core\Context.h">
@@ -57,8 +60,11 @@
     <ClInclude Include="Source\Graphics\Core\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Pipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Source\Shaders\TestShader.vert" />
+    <CustomBuild Include="Source\Shaders\Source\test.frag" />
   </ItemGroup>
 </Project>
