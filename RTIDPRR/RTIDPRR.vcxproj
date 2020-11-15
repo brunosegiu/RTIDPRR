@@ -229,6 +229,8 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Graphics\DeferredRendering\DeferredRenderer.cpp" />
+    <ClCompile Include="Source\Graphics\Core\Framebuffer.cpp" />
     <ClCompile Include="Source\Graphics\Core\Pipeline.cpp" />
     <ClCompile Include="Source\Graphics\Core\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Core\Queue.cpp" />
@@ -239,6 +241,8 @@
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Graphics\DeferredRendering\DeferredRenderer.h" />
+    <ClInclude Include="Source\Graphics\Core\Framebuffer.h" />
     <ClInclude Include="Source\Graphics\Core\Pipeline.h" />
     <ClInclude Include="Source\Graphics\Core\Shader.h" />
     <ClInclude Include="Source\Graphics\Core\Queue.h" />

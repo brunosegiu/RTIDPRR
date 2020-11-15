@@ -1,21 +1,44 @@
-#pragma once
+﻿#pragma once
 
 #include <vulkan/vulkan.hpp>
 
 #include "Device.h"
+#include "Framebuffer.h"
 
 namespace RTIDPRR {
-	namespace Graphics {
-		class Swapchain {
-		public:
-			Swapchain(const SDL_Window* window, const Instance& instance, const Device& device);
-			virtual ~Swapchain();
+namespace Graphics {
 
-		private:
-			vk::SurfaceKHR mWindowSurface;
-			vk::SwapchainKHR mSwapchainHandle;
-			std::vector<vk::Image> mSwapchainImages;
-			std::vector<vk::ImageView> mSwapchainImageViews;
-		};
-	} // namespace Graphics
-} // namespace RTIDPRR
+struct SwapchainResources {
+  vk::Image mImage;
+  vk::ImageView mImageView;
+  Framebuffer mFramebuffer;
+};
+
+class Swapchain {
+ public:
+  Swapchain(const SDL_Window* window, const Instance& instance,
+            const Device& device);
+
+  const Framebuffer& getCurrentFramebuffer() const {
+    return mSwapchainResources[mCurrentImageIndex].mFramebuffer;
+  }
+  const vk::RenderPass& getMainRenderPass() const { return mMainRenderPass; };
+
+  void swapBuffers();
+  void submitCommand(const vk::CommandBuffer& commandBuffer);
+
+  virtual ~Swapchain();
+
+ private:
+  vk::SurfaceKHR mWindowSurface;
+  vk::SwapchainKHR mSwapchainHandle;
+  std::vector<SwapchainResources> mSwapchainResources;
+  vk::RenderPass mMainRenderPass;
+
+  vk::Semaphore mImageAvailableSemaphore;
+  vk::Semaphore mPresentFinishedSemaphore;
+
+  uint32_t mCurrentImageIndex;
+};
+}  // namespace Graphics
+}  // namespace RTIDPRR

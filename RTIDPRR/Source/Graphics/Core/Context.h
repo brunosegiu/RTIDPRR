@@ -3,8 +3,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
 
-#include "Instance.h"
+#include <memory>
+
 #include "Device.h"
+#include "Instance.h"
 #include "Swapchain.h"
 
 #if defined(__ANDROID__)
@@ -16,22 +18,29 @@
 #endif
 
 namespace RTIDPRR {
-	namespace Graphics {
-		class Context {
-		public:
-			Context(const SDL_Window* window);
+namespace Graphics {
+class Context {
+ public:
+  static const Context& init(const SDL_Window* window);
+  static Context& get();
 
-			const Device& getDevice() const { return mDevice; }
+  Context(const SDL_Window* window);
 
-			virtual ~Context();
+  const Device& getDevice() const { return mDevice; }
+  const Swapchain& getSwapchain() const { return mSwapchain; };
+  Swapchain& getSwapchain() { return mSwapchain; };
 
-		private:
-			Context(Context const&) = delete;
-			Context& operator=(Context const&) = delete;
+  virtual ~Context();
 
-			Instance mInstance;
-			Device mDevice;
-			Swapchain mSwapchain;
-		};
-	} // namespace Graphics
-} // namespace RTIDPRR
+ private:
+  Context(Context const&) = delete;
+  Context& operator=(Context const&) = delete;
+
+  static std::unique_ptr<Context> sContext;
+
+  Instance mInstance;
+  Device mDevice;
+  Swapchain mSwapchain;
+};
+}  // namespace Graphics
+}  // namespace RTIDPRR
