@@ -8,10 +8,12 @@ namespace RTIDPRR {
 	namespace Graphics {
 		class Shader {
 		public:
+			static const Shader* loadShader(const std::string& path);
+
 			Shader(const Device& device, const std::vector<char>& code,
 				const vk::ShaderStageFlagBits stage);
 
-			static const Shader* loadShader(const Device& device, const std::string& path);
+			const vk::ShaderModule& getModule() const { return mShaderHandle; }
 
 			virtual ~Shader();
 

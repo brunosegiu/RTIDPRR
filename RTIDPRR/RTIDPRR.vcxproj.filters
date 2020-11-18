@@ -79,4 +79,7 @@
   <ItemGroup>
     <CustomBuild Include="Source\Shaders\Source\test.frag" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Shaders\Source\test.vert" />
+  </ItemGroup>
 </Project>

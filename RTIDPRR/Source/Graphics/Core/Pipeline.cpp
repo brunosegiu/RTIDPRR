@@ -1,128 +1,113 @@
 #include "Pipeline.h"
 
+#include "Context.h"
+
 using namespace RTIDPRR::Graphics;
 
-Pipeline::Pipeline(const Device& device) {
-	// Create render pass
-	vk::AttachmentDescription colorAttachmentDescription =
-		vk::AttachmentDescription()
-		.setFormat(vk::Format::eUndefined)
-		.setSamples(vk::SampleCountFlagBits::e1)
-		.setLoadOp(vk::AttachmentLoadOp::eClear)
-		.setStoreOp(vk::AttachmentStoreOp::eStore)
-		.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-		.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-		.setInitialLayout(vk::ImageLayout::eUndefined)
-		.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+Pipeline::Pipeline(const vk::RenderPass& renderPass,
+                   const Shader& vertexShader, const Shader& fragmentShader) {
+  const Device& device = Context::get().getDevice();
+  // Setup vertex layout
+  vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo =
+      vk::PipelineVertexInputStateCreateInfo()
+          .setPVertexBindingDescriptions(nullptr)
+          .setPVertexAttributeDescriptions(nullptr);
 
-	vk::AttachmentReference colorAttachmentRef =
-		vk::AttachmentReference()
-		.setAttachment(0)
-		.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+  // Setup topology
+  vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo =
+      vk::PipelineInputAssemblyStateCreateInfo()
+          .setTopology(vk::PrimitiveTopology::eTriangleList)
+          .setPrimitiveRestartEnable(false);
 
-	vk::SubpassDescription subpass =
-		vk::SubpassDescription()
-		.setColorAttachments(colorAttachmentRef);
+  // Setup viewport
+  vk::Viewport viewport = vk::Viewport()
+                              .setX(0.0f)
+                              .setY(0.0f)
+                              .setWidth(1280.0f)
+                              .setHeight(720.0f)
+                              .setMinDepth(0.0f)
+                              .setMaxDepth(1.0f);
 
-	vk::RenderPassCreateInfo renderPassCreateInfo =
-		vk::RenderPassCreateInfo()
-		.setAttachments(colorAttachmentDescription)
-		.setSubpasses(subpass);
+  vk::Rect2D scissor =
+      vk::Rect2D().setOffset(0).setExtent(vk::Extent2D(1280, 720));
 
-	mRenderPassHandle = device.getLogicalDevice().createRenderPass(renderPassCreateInfo);
+  vk::PipelineViewportStateCreateInfo viewportCreateInfo =
+      vk::PipelineViewportStateCreateInfo().setViewports(viewport).setScissors(
+          scissor);
 
-	// Setup vertex layout
-	vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo =
-		vk::PipelineVertexInputStateCreateInfo()
-		.setPVertexBindingDescriptions(nullptr)
-		.setPVertexAttributeDescriptions(nullptr);
+  // Rasterization setup
+  vk::PipelineRasterizationStateCreateInfo rasterizerCreateInfo =
+      vk::PipelineRasterizationStateCreateInfo()
+          .setDepthClampEnable(false)
+          .setRasterizerDiscardEnable(false)
+          .setPolygonMode(vk::PolygonMode::eFill)
+          .setLineWidth(1.0f)
+          .setCullMode(vk::CullModeFlagBits::eBack)
+          .setFrontFace(vk::FrontFace::eClockwise)
+          .setDepthBiasEnable(false);
 
-	// Setup topology
-	vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo =
-		vk::PipelineInputAssemblyStateCreateInfo()
-		.setTopology(vk::PrimitiveTopology::eTriangleList)
-		.setPrimitiveRestartEnable(false);
+  // Multisampling state
+  vk::PipelineMultisampleStateCreateInfo multisampleCreateInfo =
+      vk::PipelineMultisampleStateCreateInfo()
+          .setSampleShadingEnable(false)
+          .setRasterizationSamples(vk::SampleCountFlagBits::e1);
 
-	// Setup viewport
-	vk::Viewport viewport =
-		vk::Viewport()
-		.setX(0.0f)
-		.setY(0.0f)
-		.setWidth(1280.0f)
-		.setHeight(720.0f)
-		.setMinDepth(0.0f)
-		.setMaxDepth(1.0f);
+  // Color blending state
+  vk::PipelineColorBlendAttachmentState colorAttachmentCreateInfo =
+      vk::PipelineColorBlendAttachmentState()
+          .setColorWriteMask(
+              vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
+              vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
+          .setBlendEnable(false);
 
-	vk::Rect2D scissor =
-		vk::Rect2D()
-		.setOffset(0.0f)
-		.setExtent(vk::Extent2D(1280, 720));
+  vk::PipelineColorBlendStateCreateInfo colorBlendCreateInfo =
+      vk::PipelineColorBlendStateCreateInfo()
+          .setLogicOpEnable(false)
+          .setLogicOp(vk::LogicOp::eCopy)
+          .setAttachments(colorAttachmentCreateInfo);
 
-	vk::PipelineViewportStateCreateInfo viewportCreateInfo =
-		vk::PipelineViewportStateCreateInfo()
-		.setViewports(viewport)
-		.setScissors(scissor);
+  // Shader parameter layout
+  vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo =
+      vk::PipelineLayoutCreateInfo()
+          .setSetLayouts(nullptr)
+          .setPushConstantRanges(nullptr);
 
-	// Rasterization setup
-	vk::PipelineRasterizationStateCreateInfo rasterizerCreateInfo =
-		vk::PipelineRasterizationStateCreateInfo()
-		.setDepthClampEnable(false)
-		.setRasterizerDiscardEnable(false)
-		.setPolygonMode(vk::PolygonMode::eFill)
-		.setLineWidth(1.0f)
-		.setCullMode(vk::CullModeFlagBits::eBack)
-		.setFrontFace(vk::FrontFace::eClockwise)
-		.setDepthBiasEnable(false);
+  mLayoutHandle =
+      device.getLogicalDevice().createPipelineLayout(pipelineLayoutCreateInfo);
 
-	// Multisampling state
-	vk::PipelineMultisampleStateCreateInfo multisampleCreateInfo =
-		vk::PipelineMultisampleStateCreateInfo()
-		.setSampleShadingEnable(false)
-		.setRasterizationSamples(vk::SampleCountFlagBits::e1);
+  vk::PipelineShaderStageCreateInfo vertexStageCreateInfo =
+      vk::PipelineShaderStageCreateInfo()
+          .setStage(vk::ShaderStageFlagBits::eVertex)
+          .setModule(vertexShader.getModule())
+          .setPName("main");
 
-	// Color blending state
-	vk::PipelineColorBlendAttachmentState colorAttachmentCreateInfo =
-		vk::PipelineColorBlendAttachmentState()
-		.setColorWriteMask(
-			vk::ColorComponentFlagBits::eR |
-			vk::ColorComponentFlagBits::eG |
-			vk::ColorComponentFlagBits::eB |
-			vk::ColorComponentFlagBits::eA
-		)
-		.setBlendEnable(false);
-	
-	vk::PipelineColorBlendStateCreateInfo colorBlendCreateInfo =
-		vk::PipelineColorBlendStateCreateInfo()
-		.setLogicOpEnable(false)
-		.setLogicOp(vk::LogicOp::eCopy)
-		.setAttachments(colorAttachmentCreateInfo);
+  vk::PipelineShaderStageCreateInfo fragmentStageCreateInfo =
+      vk::PipelineShaderStageCreateInfo()
+          .setStage(vk::ShaderStageFlagBits::eFragment)
+          .setModule(fragmentShader.getModule())
+          .setPName("main");
 
-	// Shader parameter layout
-	vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo =
-		vk::PipelineLayoutCreateInfo()
-		.setSetLayouts(nullptr)
-		.setPushConstantRanges(nullptr);
+  const std::vector<vk::PipelineShaderStageCreateInfo> shaderStages{
+      vertexStageCreateInfo, fragmentStageCreateInfo};
 
-	mLayoutHandle = device.getLogicalDevice().createPipelineLayout(pipelineLayoutCreateInfo);
+  vk::GraphicsPipelineCreateInfo pipelineCreateInfo =
+      vk::GraphicsPipelineCreateInfo()
+          .setStages(shaderStages)
+          .setPVertexInputState(&vertexInputCreateInfo)
+          .setPInputAssemblyState(&inputAssemblyCreateInfo)
+          .setPViewportState(&viewportCreateInfo)
+          .setPRasterizationState(&rasterizerCreateInfo)
+          .setPMultisampleState(&multisampleCreateInfo)
+          .setPDepthStencilState(nullptr)
+          .setPColorBlendState(&colorBlendCreateInfo)
+          .setPDynamicState(nullptr)
+          .setLayout(mLayoutHandle)
+          .setRenderPass(renderPass)
+          .setSubpass(0);
 
-	vk::GraphicsPipelineCreateInfo pipelineCreateInfo =
-		vk::GraphicsPipelineCreateInfo()
-		.setStages(nullptr)
-		.setPVertexInputState(&vertexInputCreateInfo)
-		.setPInputAssemblyState(&inputAssemblyCreateInfo)
-		.setPViewportState(&viewportCreateInfo)
-		.setPRasterizationState(&rasterizerCreateInfo)
-		.setPMultisampleState(&multisampleCreateInfo)
-		.setPDepthStencilState(nullptr)
-		.setPColorBlendState(&colorBlendCreateInfo)
-		.setPDynamicState(nullptr)
-		.setLayout(mLayoutHandle)
-		.setRenderPass(mRenderPassHandle)
-		.setSubpass(0);
-
-	mPipelineHandle = device.getLogicalDevice().createGraphicsPipeline(nullptr, pipelineCreateInfo).value;
+  mPipelineHandle = device.getLogicalDevice()
+                        .createGraphicsPipeline(nullptr, pipelineCreateInfo)
+                        .value;
 }
 
-Pipeline::~Pipeline() {
-
-}
+Pipeline::~Pipeline() {}

@@ -1,11 +1,13 @@
 ﻿#include "DeferredRenderer.h"
 
-#include <stdlib.h>
 using namespace RTIDPRR::Graphics;
 
-DeferredRenderer::DeferredRenderer() {}
+DeferredRenderer::DeferredRenderer()
+    : mPipeline(Context::get().getSwapchain().getMainRenderPass(),
+                *Shader::loadShader("Source/Shaders/Build/test.vert"),
+                *Shader::loadShader("Source/Shaders/Build/test.frag"))
 
-float random() { return float(abs(rand()) % 100000) / 100000.0f; }
+{}
 
 void DeferredRenderer::render() {
   const Device& device = Context::get().getDevice();
@@ -28,7 +30,7 @@ void DeferredRenderer::render() {
   currentCommandBuffer.begin(beginInfo);
 
   const vk::ClearColorValue clearColor(
-      std::array<float, 4>{random(), random(), random(), 1.0f});
+      std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
 
   vk::RenderPassBeginInfo renderPassBeginInfo =
       vk::RenderPassBeginInfo()
@@ -40,6 +42,11 @@ void DeferredRenderer::render() {
 
   currentCommandBuffer.beginRenderPass(renderPassBeginInfo,
                                        vk::SubpassContents::eInline);
+
+  currentCommandBuffer.bindPipeline(
+      vk::PipelineBindPoint::eGraphics, mPipeline.getPipelineHandle());
+
+  currentCommandBuffer.draw(3, 1, 0, 0);
 
   currentCommandBuffer.endRenderPass();
   currentCommandBuffer.end();
