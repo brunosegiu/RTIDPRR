@@ -88,6 +88,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -163,6 +164,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -229,10 +231,11 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Graphics\Core\Buffer.cpp" />
     <ClCompile Include="Source\Graphics\DeferredRendering\DeferredRenderer.cpp" />
     <ClCompile Include="Source\Graphics\Core\Framebuffer.cpp" />
     <ClCompile Include="Source\Graphics\Core\Pipeline.cpp" />
-    <ClCompile Include="Source\Graphics\Core\Shader.cpp" />
+    <ClCompile Include="Source\Graphics\Core\Shaders\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Core\Queue.cpp" />
     <ClCompile Include="Source\Graphics\Core\Device.cpp" />
     <ClCompile Include="Source\Graphics\Core\Instance.cpp" />
@@ -241,10 +244,13 @@
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Graphics\Core\Buffer.h" />
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterGroup.h" />
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameter.h" />
     <ClInclude Include="Source\Graphics\DeferredRendering\DeferredRenderer.h" />
     <ClInclude Include="Source\Graphics\Core\Framebuffer.h" />
     <ClInclude Include="Source\Graphics\Core\Pipeline.h" />
-    <ClInclude Include="Source\Graphics\Core\Shader.h" />
+    <ClInclude Include="Source\Graphics\Core\Shaders\Shader.h" />
     <ClInclude Include="Source\Graphics\Core\Queue.h" />
     <ClInclude Include="Source\Graphics\Core\Device.h" />
     <ClInclude Include="Source\Graphics\Core\Instance.h" />

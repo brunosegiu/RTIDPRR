@@ -1,21 +1,22 @@
-#include "Shader.h"
+﻿#include "Shader.h"
 
 #include <assert.h>
 
 #include <filesystem>
 #include <fstream>
 
-#include "Context.h"
+#include "../Context.h"
 
 using namespace RTIDPRR::Graphics;
 
-Shader::Shader(const Device& device, const std::vector<char>& code,
+Shader::Shader(const std::vector<char>& code,
                const vk::ShaderStageFlagBits stage)
     : mStage(stage) {
   vk::ShaderModuleCreateInfo shaderCreateInfo =
       vk::ShaderModuleCreateInfo()
           .setCodeSize(code.size() * sizeof(char))
           .setPCode(reinterpret_cast<const unsigned int*>(code.data()));
+  const Device& device = Context::get().getDevice();
   mShaderHandle =
       device.getLogicalDevice().createShaderModule(shaderCreateInfo);
 }
@@ -48,7 +49,7 @@ const Shader* Shader::loadShader(const std::string& path) {
   std::vector<char> rawData(fileSize);
   if (file.read(rawData.data(), fileSize)) {
     // Create shader
-    return new Shader(device, rawData, stage);
+    return new Shader(rawData, stage);
   }
   return nullptr;
 }

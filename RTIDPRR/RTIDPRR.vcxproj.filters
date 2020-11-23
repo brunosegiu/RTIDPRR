@@ -34,9 +34,6 @@
     <ClCompile Include="Source\Graphics\Core\Swapchain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Core\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Graphics\Core\Pipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -44,6 +41,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Graphics\DeferredRendering\DeferredRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Core\Shaders\Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Core\Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -63,9 +66,6 @@
     <ClInclude Include="Source\Graphics\Core\Swapchain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\Core\Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Graphics\Core\Pipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,11 +75,21 @@
     <ClInclude Include="Source\Graphics\DeferredRendering\DeferredRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Shaders\Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterGroup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Source\Shaders\Source\test.frag" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Source\Shaders\Source\test.vert" />
+    <CustomBuild Include="Source\Shaders\Source\test.vert" />
   </ItemGroup>
 </Project>

@@ -1,11 +1,13 @@
-#include "Pipeline.h"
+﻿#include "Pipeline.h"
 
 #include "Context.h"
 
 using namespace RTIDPRR::Graphics;
 
-Pipeline::Pipeline(const vk::RenderPass& renderPass,
-                   const Shader& vertexShader, const Shader& fragmentShader) {
+Pipeline::Pipeline(
+    const vk::RenderPass& renderPass, const Shader& vertexShader,
+    const Shader& fragmentShader,
+    const std::vector<vk::DescriptorSetLayout>& descriptorLayouts) {
   const Device& device = Context::get().getDevice();
   // Setup vertex layout
   vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo =
@@ -69,7 +71,7 @@ Pipeline::Pipeline(const vk::RenderPass& renderPass,
   // Shader parameter layout
   vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo =
       vk::PipelineLayoutCreateInfo()
-          .setSetLayouts(nullptr)
+          .setSetLayouts(descriptorLayouts)
           .setPushConstantRanges(nullptr);
 
   mLayoutHandle =

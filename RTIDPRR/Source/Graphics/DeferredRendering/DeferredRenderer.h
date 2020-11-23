@@ -1,9 +1,11 @@
 ﻿#pragma once
 
+#include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
 
 #include "../Core/Context.h"
 #include "../Core/Pipeline.h"
+#include "../Core/Shaders/ShaderParameterGroup.h"
 
 namespace RTIDPRR {
 namespace Graphics {
@@ -16,8 +18,9 @@ class DeferredRenderer {
   virtual ~DeferredRenderer();
 
  private:
-  Pipeline mPipeline;
+  ShaderParameterGroup<ShaderParameter<glm::vec4>> mShaderParameters;
 
+  Pipeline mPipeline;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

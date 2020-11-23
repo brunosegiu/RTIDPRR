@@ -1,17 +1,19 @@
-#pragma once
+﻿#pragma once
 
 #include <vulkan/vulkan.hpp>
 
-#include "Shader.h"
+#include "Shaders/Shader.h"
 
 namespace RTIDPRR {
 namespace Graphics {
 class Pipeline {
  public:
   Pipeline(const vk::RenderPass& renderPass, const Shader& vertexShader,
-           const Shader& fragmentShader);
+           const Shader& fragmentShader,
+           const std::vector<vk::DescriptorSetLayout>& descriptorLayouts);
 
   const vk::Pipeline& getPipelineHandle() const { return mPipelineHandle; }
+  const vk::PipelineLayout& getPipelineLayout() const { return mLayoutHandle; }
 
   virtual ~Pipeline();
 
