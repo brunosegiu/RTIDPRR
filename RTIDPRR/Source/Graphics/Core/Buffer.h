@@ -12,6 +12,7 @@ class Buffer {
   const vk::Buffer& getBufferHandle() const { return mBuffer; };
 
   void update(const void* value);
+  void copyInto(Buffer& other);
 
   virtual ~Buffer() = default;
 

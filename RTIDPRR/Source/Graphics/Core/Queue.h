@@ -12,7 +12,8 @@ class Queue {
 
   const vk::CommandPool& getCommandPool() const { return mCommandPool; };
 
-  void submit(const vk::SubmitInfo& submitInfo) const;
+  void submit(const vk::SubmitInfo& submitInfo,
+              const vk::Fence waitFence = nullptr) const;
   void present(const vk::PresentInfoKHR& presentInfo) const;
 
   virtual ~Queue();

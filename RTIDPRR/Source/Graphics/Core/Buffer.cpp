@@ -34,6 +34,42 @@ void Buffer::update(const void* value) {
   device.getLogicalDevice().unmapMemory(mMemory);
 }
 
+void Buffer::copyInto(Buffer& other) {
+  const Device& device = Context::get().getDevice();
+
+  const Queue& graphicsQueue = device.getGraphicsQueue();
+
+  vk::CommandBufferAllocateInfo commandAllocInfo =
+      vk::CommandBufferAllocateInfo()
+          .setLevel(vk::CommandBufferLevel::ePrimary)
+          .setCommandPool(graphicsQueue.getCommandPool())
+          .setCommandBufferCount(1);
+  vk::CommandBuffer commandBuffer =
+      device.getLogicalDevice().allocateCommandBuffers(commandAllocInfo)[0];
+
+  // Copy
+  vk::CommandBufferBeginInfo commandBeginInfo =
+      vk::CommandBufferBeginInfo().setFlags(
+          vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+  commandBuffer.begin(commandBeginInfo);
+
+  vk::BufferCopy copyRegion =
+      vk::BufferCopy().setSrcOffset(0).setDstOffset(0).setSize(mSize);
+  commandBuffer.copyBuffer(mBuffer, other.mBuffer, copyRegion);
+  commandBuffer.end();
+
+  vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(commandBuffer);
+
+  vk::FenceCreateInfo fenceCreateInfo = vk::FenceCreateInfo();
+  vk::Fence waitFence = device.getLogicalDevice().createFence(fenceCreateInfo);
+  graphicsQueue.submit(submitInfo, waitFence);
+  device.getLogicalDevice().waitForFences(waitFence, true,
+                                          std::numeric_limits<uint64_t>::max());
+  device.getLogicalDevice().freeCommandBuffers(graphicsQueue.getCommandPool(),
+                                               commandBuffer);
+  device.getLogicalDevice().destroyFence(waitFence);
+}
+
 uint32_t Buffer::findMemoryIndex(const uint32_t filter,
                                  const vk::MemoryPropertyFlags properties) {
   const vk::PhysicalDevice& physicalDevice =

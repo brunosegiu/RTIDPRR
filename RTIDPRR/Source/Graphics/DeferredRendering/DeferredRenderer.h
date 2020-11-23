@@ -6,6 +6,7 @@
 #include "../Core/Context.h"
 #include "../Core/Pipeline.h"
 #include "../Core/Shaders/ShaderParameterGroup.h"
+#include "../Geometry/IndexedVertexBuffer.h"
 
 namespace RTIDPRR {
 namespace Graphics {
@@ -21,6 +22,8 @@ class DeferredRenderer {
   ShaderParameterGroup<ShaderParameter<glm::vec4>> mShaderParameters;
 
   Pipeline mPipeline;
+
+  IndexedVertexBuffer mMesh;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

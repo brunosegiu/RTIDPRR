@@ -8,7 +8,8 @@ DeferredRenderer::DeferredRenderer()
           Context::get().getSwapchain().getMainRenderPass(),
           *Shader::loadShader("Source/Shaders/Build/test.vert"),
           *Shader::loadShader("Source/Shaders/Build/test.frag"),
-          std::vector<vk::DescriptorSetLayout>{mShaderParameters.getLayout()})
+          std::vector<vk::DescriptorSetLayout>{mShaderParameters.getLayout()}),
+      mMesh({{0.5f, 0.0f, 0.01f}}, {0})
 
 {}
 

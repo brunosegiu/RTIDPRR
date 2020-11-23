@@ -41,6 +41,8 @@ class Context {
   Instance mInstance;
   Device mDevice;
   Swapchain mSwapchain;
+
+  vk::CommandPool mDefaultCommandPool;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

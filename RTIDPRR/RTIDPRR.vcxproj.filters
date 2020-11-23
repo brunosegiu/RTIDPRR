@@ -49,6 +49,9 @@
     <ClCompile Include="Source\Graphics\Core\Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Geometry\IndexedVertexBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Graphics\Core\Context.h">
@@ -87,9 +90,13 @@
     <ClInclude Include="Source\Graphics\Core\Buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\Geometry\IndexedVertexBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Source\Shaders\Source\test.frag" />
     <CustomBuild Include="Source\Shaders\Source\test.vert" />
+    <CustomBuild Include="Source\Shaders\Source\*" />
+    <CustomBuild Include="Source\Shaders\Source\test.frag" />
   </ItemGroup>
 </Project>
