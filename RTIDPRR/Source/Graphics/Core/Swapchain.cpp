@@ -102,9 +102,12 @@ Swapchain::Swapchain(const SDL_Window* window, const Instance& instance,
 void Swapchain::swapBuffers() {
   const Device& device = Context::get().getDevice();
 
-  mCurrentImageIndex = device.getLogicalDevice().acquireNextImageKHR(
-      mSwapchainHandle, std::numeric_limits<uint64_t>::max(),
-      mImageAvailableSemaphore, nullptr);
+  mCurrentImageIndex =
+      device.getLogicalDevice()
+          .acquireNextImageKHR(mSwapchainHandle,
+                               std::numeric_limits<uint64_t>::max(),
+                               mImageAvailableSemaphore, nullptr)
+          .value;
 }
 
 void Swapchain::submitCommand(const vk::CommandBuffer& commandBuffer) {

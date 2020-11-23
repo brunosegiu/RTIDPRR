@@ -16,7 +16,8 @@
 #include "Graphics/DeferredRendering/DeferredRenderer.h"
 
 int main() {
-  assert(SDL_Init(SDL_INIT_VIDEO) == 0);
+  const int32_t initRes = SDL_Init(SDL_INIT_VIDEO);
+  assert(initRes == 0);
 
   SDL_Window* window =
       SDL_CreateWindow("Vulkan Window", SDL_WINDOWPOS_CENTERED,
