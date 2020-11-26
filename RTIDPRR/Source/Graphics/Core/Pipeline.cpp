@@ -1,5 +1,6 @@
 ﻿#include "Pipeline.h"
 
+#include "../Geometry/IndexedVertexBuffer.h"
 #include "Context.h"
 
 using namespace RTIDPRR::Graphics;
@@ -12,8 +13,10 @@ Pipeline::Pipeline(
   // Setup vertex layout
   vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo =
       vk::PipelineVertexInputStateCreateInfo()
-          .setPVertexBindingDescriptions(nullptr)
-          .setPVertexAttributeDescriptions(nullptr);
+          .setVertexBindingDescriptions(
+              IndexedVertexBuffer::getBindingDescription())
+          .setVertexAttributeDescriptions(
+              IndexedVertexBuffer::getAttributeDescription());
 
   // Setup topology
   vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo =

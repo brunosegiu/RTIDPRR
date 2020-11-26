@@ -350,4 +350,4 @@ MigrationBackup/
 .ionide/
 
 # Shader build files
-RTIDPRR/Source/Shaders/Build/*
+**/RTIDPRR/Source/Shaders/Build/**

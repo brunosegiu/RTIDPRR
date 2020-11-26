@@ -1,15 +1,24 @@
 ﻿#include "DeferredRenderer.h"
 
+#include <glm/gtc/matrix_transform.hpp>
 using namespace RTIDPRR::Graphics;
 
+std::vector<glm::vec3> vertices{
+    {-1.0, -1.0, 1.0},  {1.0, -1.0, 1.0},  {1.0, 1.0, 1.0},  {-1.0, 1.0, 1.0},
+    {-1.0, -1.0, -1.0}, {1.0, -1.0, -1.0}, {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0}};
+
+std::vector<uint16_t> indices{0, 1, 2, 2, 3, 0, 1, 5, 6, 6, 2, 1,
+                              7, 6, 5, 5, 4, 7, 4, 0, 3, 3, 7, 4,
+                              4, 5, 1, 1, 0, 4, 3, 2, 6, 6, 7, 3};
+
 DeferredRenderer::DeferredRenderer()
-    : mShaderParameters(vk::ShaderStageFlagBits::eFragment),
+    : mShaderParameters(vk::ShaderStageFlagBits::eVertex),
       mPipeline(
           Context::get().getSwapchain().getMainRenderPass(),
           *Shader::loadShader("Source/Shaders/Build/test.vert"),
           *Shader::loadShader("Source/Shaders/Build/test.frag"),
           std::vector<vk::DescriptorSetLayout>{mShaderParameters.getLayout()}),
-      mMesh({{0.5f, 0.0f, 0.01f}}, {0})
+      mMesh(vertices, indices)
 
 {}
 
@@ -18,11 +27,19 @@ void DeferredRenderer::render() {
   const Queue& graphicsQueue = device.getGraphicsQueue();
   Swapchain& swapchain = Context::get().getSwapchain();
   swapchain.swapBuffers();
+  glm::mat4 proj =
+      glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 10.0f);
+  proj[1][1] *= -1.0f;
+  glm::mat4 view =
+      glm::lookAt(glm::vec3(-5.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                  glm::vec3(0.0f, 1.0f, 0.0f));
+  static float time = 0.0f;
+  time += 0.01f;
+  glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
+                                glm::vec3(0.0f, 0.0f, 1.0f));
 
-  static glm::vec4 a{};
-  a += glm::vec4(0, 0, 0.01f, 0.0f);
-  if (a.b > 1) a = glm::vec4();
-  std::get<0>(mShaderParameters.mParameters).update(a);
+  glm::mat4 viewProj = proj * view * model;
+  std::get<0>(mShaderParameters.mParameters).update(viewProj);
 
   vk::CommandBufferAllocateInfo commandAllocInfo =
       vk::CommandBufferAllocateInfo()
@@ -61,7 +78,7 @@ void DeferredRenderer::render() {
       vk::PipelineBindPoint::eGraphics, mPipeline.getPipelineLayout(), 0,
       mShaderParameters.getDescriptorSet(), nullptr);
 
-  currentCommandBuffer.draw(3, 1, 0, 0);
+  mMesh.draw(currentCommandBuffer);
 
   currentCommandBuffer.endRenderPass();
   currentCommandBuffer.end();

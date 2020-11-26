@@ -19,7 +19,7 @@ class DeferredRenderer {
   virtual ~DeferredRenderer();
 
  private:
-  ShaderParameterGroup<ShaderParameter<glm::vec4>> mShaderParameters;
+  ShaderParameterGroup<ShaderParameter<glm::mat4>> mShaderParameters;
 
   Pipeline mPipeline;
 

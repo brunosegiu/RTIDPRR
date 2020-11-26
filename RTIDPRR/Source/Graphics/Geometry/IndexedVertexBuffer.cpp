@@ -4,6 +4,29 @@
 
 using namespace RTIDPRR::Graphics;
 
+const vk::IndexType IndexedVertexBuffer::getIndexType() {
+  return vk::IndexType::eUint16;
+}
+
+vk::VertexInputBindingDescription IndexedVertexBuffer::getBindingDescription() {
+  static const vk::VertexInputBindingDescription bindingDescription =
+      vk::VertexInputBindingDescription()
+          .setBinding(0)
+          .setStride(sizeof(glm::vec3))
+          .setInputRate(vk::VertexInputRate::eVertex);
+  return bindingDescription;
+}
+
+vk::VertexInputAttributeDescription
+IndexedVertexBuffer::getAttributeDescription() {
+  static const vk::VertexInputAttributeDescription attributeDescription =
+      vk::VertexInputAttributeDescription{}
+          .setBinding(0)
+          .setLocation(0)
+          .setFormat(vk::Format::eR32G32B32Sfloat);
+  return attributeDescription;
+}
+
 template <typename T>
 Buffer initWithStagingBuffer(const std::vector<T>& data) {
   const Device& device = Context::get().getDevice();
@@ -11,7 +34,7 @@ Buffer initWithStagingBuffer(const std::vector<T>& data) {
   Buffer stagingBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc,
                        vk::MemoryPropertyFlagBits::eHostVisible |
                            vk::MemoryPropertyFlagBits::eHostCoherent);
-  stagingBuffer.update(&data);
+  stagingBuffer.update(data.data());
   Buffer hostLocalBuffer(bufferSize,
                          vk::BufferUsageFlagBits::eVertexBuffer |
                              vk::BufferUsageFlagBits::eTransferDst,
@@ -29,9 +52,8 @@ IndexedVertexBuffer::IndexedVertexBuffer(const std::vector<glm::vec3>& vertices,
 
 void IndexedVertexBuffer::draw(const vk::CommandBuffer& commandBuffer) {
   vk::DeviceSize offset{0};
-  commandBuffer.bindVertexBuffers(0, 1, &mVertexBuffer.getBufferHandle(),
-                                  &offset);
+  commandBuffer.bindVertexBuffers(0, mVertexBuffer.getBufferHandle(), offset);
   commandBuffer.bindIndexBuffer(mIndexBuffer.getBufferHandle(), offset,
-                                sIndexType);
+                                IndexedVertexBuffer::getIndexType());
   commandBuffer.drawIndexed(mIndexCount, 1, 0, 0, 0);
 }
