@@ -23,7 +23,7 @@ class DeferredRenderer {
 
   Pipeline mPipeline;
 
-  IndexedVertexBuffer mMesh;
+  std::unique_ptr<IndexedVertexBuffer> mMesh;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

@@ -1,6 +1,8 @@
 ﻿#include "DeferredRenderer.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "../Loaders/GLTFLoader.h"
 using namespace RTIDPRR::Graphics;
 
 std::vector<glm::vec3> vertices{
@@ -17,10 +19,12 @@ DeferredRenderer::DeferredRenderer()
           Context::get().getSwapchain().getMainRenderPass(),
           *Shader::loadShader("Source/Shaders/Build/test.vert"),
           *Shader::loadShader("Source/Shaders/Build/test.frag"),
-          std::vector<vk::DescriptorSetLayout>{mShaderParameters.getLayout()}),
-      mMesh(vertices, indices)
-
-{}
+          std::vector<vk::DescriptorSetLayout>{mShaderParameters.getLayout()}) {
+  GLTFLoader loader;
+  GLTFLoader::GeometryData data =
+      loader.load("Source/Assets/Models/monkey.glb")[0];
+  mMesh = std::make_unique<IndexedVertexBuffer>(data.mVertices, data.mIndices);
+}
 
 void DeferredRenderer::render() {
   const Device& device = Context::get().getDevice();
@@ -78,7 +82,7 @@ void DeferredRenderer::render() {
       vk::PipelineBindPoint::eGraphics, mPipeline.getPipelineLayout(), 0,
       mShaderParameters.getDescriptorSet(), nullptr);
 
-  mMesh.draw(currentCommandBuffer);
+  mMesh->draw(currentCommandBuffer);
 
   currentCommandBuffer.endRenderPass();
   currentCommandBuffer.end();

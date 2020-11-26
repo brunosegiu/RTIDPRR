@@ -52,6 +52,9 @@
     <ClCompile Include="Source\Graphics\Geometry\IndexedVertexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Loaders\GLTFLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Graphics\Core\Context.h">
@@ -93,12 +96,15 @@
     <ClInclude Include="Source\Graphics\Geometry\IndexedVertexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\Loaders\GLTFLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Source\Shaders\Source\test.vert" />
     <CustomBuild Include="Source\Shaders\Source\test.frag" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Source\Shaders\Source\test.vert" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
