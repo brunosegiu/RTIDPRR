@@ -28,7 +28,8 @@ IndexedVertexBuffer::getAttributeDescription() {
 }
 
 template <typename T>
-Buffer initWithStagingBuffer(const std::vector<T>& data) {
+Buffer initWithStagingBuffer(const std::vector<T>& data,
+                             const vk::BufferUsageFlags usage) {
   const Device& device = Context::get().getDevice();
   const size_t bufferSize = sizeof(T) * data.size();
   Buffer stagingBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc,
@@ -36,8 +37,7 @@ Buffer initWithStagingBuffer(const std::vector<T>& data) {
                            vk::MemoryPropertyFlagBits::eHostCoherent);
   stagingBuffer.update(data.data());
   Buffer hostLocalBuffer(bufferSize,
-                         vk::BufferUsageFlagBits::eVertexBuffer |
-                             vk::BufferUsageFlagBits::eTransferDst,
+                         usage | vk::BufferUsageFlagBits::eTransferDst,
                          vk::MemoryPropertyFlagBits::eDeviceLocal);
   stagingBuffer.copyInto(hostLocalBuffer);
   return hostLocalBuffer;
@@ -47,8 +47,10 @@ IndexedVertexBuffer::IndexedVertexBuffer(const std::vector<glm::vec3>& vertices,
                                          const std::vector<uint16_t>& indices)
     : mVertexCount(static_cast<uint32_t>(vertices.size())),
       mIndexCount(static_cast<uint32_t>(indices.size())),
-      mVertexBuffer(std::move(initWithStagingBuffer(vertices))),
-      mIndexBuffer(std::move(initWithStagingBuffer(indices))) {}
+      mVertexBuffer(std::move(initWithStagingBuffer(
+          vertices, vk::BufferUsageFlagBits::eVertexBuffer))),
+      mIndexBuffer(std::move(initWithStagingBuffer(
+          indices, vk::BufferUsageFlagBits::eIndexBuffer))) {}
 
 void IndexedVertexBuffer::draw(const vk::CommandBuffer& commandBuffer) {
   vk::DeviceSize offset{0};

@@ -3,6 +3,10 @@
 #include <Windows.h>
 #include <debugapi.h>
 
+#ifdef max
+#undef max
+#endif
+
 #include <sstream>
 
 #define LOG(message)                       \
@@ -29,7 +33,7 @@
     }                                                                      \
   }
 #else
-#define RTIDPRR_ASSERT(condition) (condition)
+#define RTIDPRR_ASSERT(condition, message) (condition)
 #endif
 
 #define RTIDPRR_ASSERT(condition) RTIDPRR_ASSERT_MSG(condition, "")

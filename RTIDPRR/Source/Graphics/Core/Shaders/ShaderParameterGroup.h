@@ -65,9 +65,12 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
   constexpr uint32_t paramCount = sShaderParameterCount;
 
   vk::DescriptorPoolSize poolSize =
-      vk::DescriptorPoolSize().setDescriptorCount(1);
+      vk::DescriptorPoolSize()
+          .setDescriptorCount(sShaderParameterCount)
+          .setType(vk::DescriptorType::eUniformBuffer);
   vk::DescriptorPoolCreateInfo poolCreateInfo =
-      vk::DescriptorPoolCreateInfo().setPoolSizes(poolSize).setMaxSets(1);
+      vk::DescriptorPoolCreateInfo().setPoolSizes(poolSize).setMaxSets(
+          sShaderParameterCount);
   mDescriptorPool =
       device.getLogicalDevice().createDescriptorPool(poolCreateInfo);
   std::vector<vk::DescriptorSetLayoutBinding> bindingInfos(paramCount);

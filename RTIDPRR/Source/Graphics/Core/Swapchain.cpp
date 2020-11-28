@@ -1,8 +1,10 @@
 ﻿#include "Swapchain.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 
+#include "../../Misc/DebugUtils.h"
 #include "Context.h"
 
 using namespace RTIDPRR::Graphics;
@@ -25,7 +27,21 @@ Swapchain::Swapchain(const SDL_Window* window, const Instance& instance,
       surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount,
       surfaceCapabilities.maxImageCount);
 
+  const std::vector<vk::SurfaceFormatKHR> surfaceFormats =
+      device.getPhysicalDevice().getSurfaceFormatsKHR(mWindowSurface);
   const vk::Format surfaceFormat = vk::Format::eB8G8R8A8Srgb;
+  const bool supportedFormat =
+      std::find_if(
+          surfaceFormats.begin(), surfaceFormats.end(),
+          [&surfaceFormat](const vk::SurfaceFormatKHR& supportedFormat) {
+            return surfaceFormat == supportedFormat.format;
+          }) != surfaceFormats.end();
+  RTIDPRR_ASSERT_MSG(supportedFormat,
+                     "B8G8R8A8Srgb format not supported by platform");
+  RTIDPRR_ASSERT_MSG(
+      device.getPhysicalDevice().getSurfaceSupportKHR(
+          device.getGraphicsQueue().getFamilyIndex(), mWindowSurface),
+      "Cannot present using the graphics queue");
 
   // Initialize main render pass
   vk::AttachmentDescription colorAttachmentDescription =
@@ -81,7 +97,12 @@ Swapchain::Swapchain(const SDL_Window* window, const Instance& instance,
         vk::ImageViewCreateInfo()
             .setImage(swapchainImage)
             .setViewType(vk::ImageViewType::e2D)
-            .setFormat(surfaceFormat);
+            .setFormat(surfaceFormat)
+            .setSubresourceRange(
+                vk::ImageSubresourceRange{}
+                    .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                    .setLevelCount(1)
+                    .setLayerCount(1));
     vk::ImageView swapchainImageView =
         device.getLogicalDevice().createImageView(swapchainImageViewCreateInfo);
     Framebuffer swapchainImageFramebuffer(device, mMainRenderPass,

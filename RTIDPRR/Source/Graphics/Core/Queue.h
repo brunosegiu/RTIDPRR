@@ -11,6 +11,7 @@ class Queue {
         const vk::Device& device);
 
   const vk::CommandPool& getCommandPool() const { return mCommandPool; };
+  const uint32_t getFamilyIndex() const { return mFamilyIndex; }
 
   void submit(const vk::SubmitInfo& submitInfo,
               const vk::Fence waitFence = nullptr) const;

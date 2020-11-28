@@ -11,14 +11,14 @@ Pipeline::Pipeline(
     const std::vector<vk::DescriptorSetLayout>& descriptorLayouts) {
   const Device& device = Context::get().getDevice();
   // Setup vertex layout
+  const std::vector<vk::VertexInputBindingDescription> bindingDescription{
+      IndexedVertexBuffer::getBindingDescription()};
+  const std::vector<vk::VertexInputAttributeDescription> attributeDescription{
+      IndexedVertexBuffer::getAttributeDescription()};
   vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo =
       vk::PipelineVertexInputStateCreateInfo()
-          .setVertexBindingDescriptions(
-              std::vector<vk::VertexInputBindingDescription>{
-                  IndexedVertexBuffer::getBindingDescription()})
-          .setVertexAttributeDescriptions(
-              std::vector<vk::VertexInputAttributeDescription>{
-                  IndexedVertexBuffer::getAttributeDescription()});
+          .setVertexBindingDescriptions(bindingDescription)
+          .setVertexAttributeDescriptions(attributeDescription);
 
   // Setup topology
   vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo =
