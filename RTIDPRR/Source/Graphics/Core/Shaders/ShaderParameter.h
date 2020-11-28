@@ -9,7 +9,7 @@ namespace Graphics {
 template <typename T>
 class ShaderParameter {
  public:
-  static const vk::DescriptorType getDescriptorType() {
+  static constexpr vk::DescriptorType getDescriptorType() {
     return vk::DescriptorType::eUniformBuffer;
   }
 

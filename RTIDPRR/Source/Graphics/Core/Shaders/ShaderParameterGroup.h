@@ -57,6 +57,22 @@ void bindAllParametersToGroup(std::tuple<T, Rest...>& parameters,
     bindAllParametersToGroup<Iterator + 1>(parameters, descriptorSet);
 }
 
+template <vk::DescriptorType DescriptorType, size_t Iterator = 0, class T,
+          class... Rest>
+uint32_t getDescriptorCountForType(std::tuple<T, Rest...>& parameters) {
+  if constexpr (T::getDescriptorType() == DescriptorType) {
+    if constexpr (Iterator != sizeof...(Rest))
+      return 1 + getDescriptorCountForType<Iterator + 1>(parameters);
+    else
+      return 1;
+  } else {
+    if constexpr (Iterator != sizeof...(Rest))
+      return getDescriptorCountForType<Iterator + 1>(parameters);
+    else
+      return 0;
+  }
+}
+
 template <class... TShaderParameters>
 ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
     const vk::ShaderStageFlags stage)
@@ -64,12 +80,14 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
   const Device& device = Context::get().getDevice();
   constexpr uint32_t paramCount = sShaderParameterCount;
 
-  vk::DescriptorPoolSize poolSize =
+  std::vector<vk::DescriptorPoolSize> poolSizes{
       vk::DescriptorPoolSize()
-          .setDescriptorCount(sShaderParameterCount)
-          .setType(vk::DescriptorType::eUniformBuffer);
+          .setDescriptorCount(
+              getDescriptorCountForType<vk::DescriptorType::eUniformBuffer>(
+                  mParameters))
+          .setType(vk::DescriptorType::eUniformBuffer)};
   vk::DescriptorPoolCreateInfo poolCreateInfo =
-      vk::DescriptorPoolCreateInfo().setPoolSizes(poolSize).setMaxSets(
+      vk::DescriptorPoolCreateInfo().setPoolSizes(poolSizes).setMaxSets(
           sShaderParameterCount);
   mDescriptorPool =
       device.getLogicalDevice().createDescriptorPool(poolCreateInfo);
