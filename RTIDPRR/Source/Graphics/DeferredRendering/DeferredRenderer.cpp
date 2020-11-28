@@ -21,8 +21,7 @@ DeferredRenderer::DeferredRenderer()
           *Shader::loadShader("Source/Shaders/Build/test.frag"),
           std::vector<vk::DescriptorSetLayout>{mShaderParameters.getLayout()}) {
   GLTFLoader loader;
-  GLTFLoader::GeometryData data =
-      loader.load("Source/Assets/Models/monkey.glb")[0];
+  GLTFLoader::GeometryData data = loader.load("Assets/Models/monkey.glb")[0];
   mMesh = std::make_unique<IndexedVertexBuffer>(data.mVertices, data.mIndices);
 }
 

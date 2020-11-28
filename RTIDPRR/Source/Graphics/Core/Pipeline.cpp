@@ -14,9 +14,11 @@ Pipeline::Pipeline(
   vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo =
       vk::PipelineVertexInputStateCreateInfo()
           .setVertexBindingDescriptions(
-              IndexedVertexBuffer::getBindingDescription())
+              std::vector<vk::VertexInputBindingDescription>{
+                  IndexedVertexBuffer::getBindingDescription()})
           .setVertexAttributeDescriptions(
-              IndexedVertexBuffer::getAttributeDescription());
+              std::vector<vk::VertexInputAttributeDescription>{
+                  IndexedVertexBuffer::getAttributeDescription()});
 
   // Setup topology
   vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo =

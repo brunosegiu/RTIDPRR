@@ -99,6 +99,9 @@
     <ClInclude Include="Source\Graphics\Loaders\GLTFLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Misc\DebugUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Source\Shaders\Source\test.vert" />

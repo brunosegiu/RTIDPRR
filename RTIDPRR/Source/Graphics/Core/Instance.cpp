@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 
+#include "../../Misc/DebugUtils.h"
+
 using namespace RTIDPRR::Graphics;
 
 const std::string APP_NAME = "RTDIRR";
@@ -13,7 +15,10 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL vkDebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* callbackData, void* userData) {
-  std::cerr << callbackData->pMessage << std::endl;
+  LOG(callbackData->pMessage);
+  RTIDPRR_ASSERT(
+      messageSeverity != VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+      callbackData->pMessage);
   return VK_FALSE;
 }
 

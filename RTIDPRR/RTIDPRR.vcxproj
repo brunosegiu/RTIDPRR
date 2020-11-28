@@ -247,6 +247,7 @@
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Misc\DebugUtils.h" />
     <ClInclude Include="Source\Graphics\Geometry\IndexedVertexBuffer.h" />
     <ClInclude Include="Source\Graphics\Core\Buffer.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterGroup.h" />
