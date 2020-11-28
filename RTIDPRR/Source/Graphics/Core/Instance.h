@@ -1,32 +1,33 @@
 ﻿#pragma once
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_vulkan.h>
 #include <vulkan/vulkan.hpp>
 
+#include "../../Misc/Window.h"
+
 namespace RTIDPRR {
-	namespace Graphics {
-		class Instance {
-		public:
-			Instance(const SDL_Window* window);
+namespace Graphics {
+class Instance {
+ public:
+  Instance(const Window& window);
 
-			const vk::SurfaceKHR initSurface(const SDL_Window* window) const;
+  const vk::SurfaceKHR initSurface(const Window& window) const;
 
-			const vk::Instance& getHandle() const { return mInstanceHandle; };
+  const vk::Instance& getHandle() const { return mInstanceHandle; };
 
-			virtual ~Instance();
+  virtual ~Instance();
 
-		private:
-			Instance(Instance const&) = delete;
-			Instance& operator=(Instance const&) = delete;
+ private:
+  Instance(Instance const&) = delete;
+  Instance& operator=(Instance const&) = delete;
 
-			static const std::vector<const char*> getRequiredExtensions(const SDL_Window* window);
+  static const std::vector<const char*> getRequiredExtensions(
+      const Window& window);
 
-			vk::Instance mInstanceHandle;
+  vk::Instance mInstanceHandle;
 
 #if defined(_DEBUG)
-			vk::DebugUtilsMessengerEXT mDebugMessenger;
+  vk::DebugUtilsMessengerEXT mDebugMessenger;
 #endif
-		};
-	} // namespace Graphics
-} // namespace RTIDPRR
+};
+}  // namespace Graphics
+}  // namespace RTIDPRR

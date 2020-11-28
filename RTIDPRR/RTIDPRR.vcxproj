@@ -245,6 +245,7 @@
     <ClCompile Include="Source\Graphics\Core\Swapchain.cpp" />
     <ClCompile Include="Source\Graphics\Loaders\GLTFLoader.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\Misc\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Misc\DebugUtils.h" />
@@ -262,6 +263,7 @@
     <ClInclude Include="Source\Graphics\Core\Context.h" />
     <ClInclude Include="Source\Graphics\Core\Swapchain.h" />
     <ClInclude Include="Source\Graphics\Loaders\GLTFLoader.h" />
+    <ClInclude Include="Source\Misc\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Source\Shaders\Source\test.frag">

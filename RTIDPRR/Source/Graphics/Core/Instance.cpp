@@ -46,7 +46,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
 }
 #endif
 
-Instance::Instance(const SDL_Window* window) {
+Instance::Instance(const Window& window) {
   vk::ApplicationInfo appInfo = vk::ApplicationInfo()
                                     .setPApplicationName(APP_NAME.data())
                                     .setApplicationVersion(1)
@@ -60,7 +60,7 @@ Instance::Instance(const SDL_Window* window) {
 #endif
   };
 
-  std::vector<const char*> extensions = Instance::getRequiredExtensions(window);
+  std::vector<const char*> extensions = window.getRequiredVkExtensions();
 
 #if defined(_DEBUG)
   const std::vector<const char*> debugExtensions{
@@ -102,29 +102,6 @@ Instance::Instance(const SDL_Window* window) {
   mDebugMessenger = mInstanceHandle.createDebugUtilsMessengerEXT(
       debugCallbackCreateInfo, nullptr, dynamicDispatcher);
 #endif
-}
-
-const std::vector<const char*> Instance::getRequiredExtensions(
-    const SDL_Window* window) {
-  unsigned int requiredExtensionsCount = 0;
-  const bool resExtensionsCount = SDL_Vulkan_GetInstanceExtensions(
-      const_cast<SDL_Window*>(window), &requiredExtensionsCount, NULL);
-  assert(resExtensionsCount);
-  std::vector<const char*> extensions(requiredExtensionsCount);
-  const bool resExtensions = SDL_Vulkan_GetInstanceExtensions(
-      const_cast<SDL_Window*>(window), &requiredExtensionsCount,
-      extensions.data());
-  assert(resExtensions);
-  return extensions;
-}
-
-const vk::SurfaceKHR Instance::initSurface(const SDL_Window* window) const {
-  VkSurfaceKHR surface{};
-  const bool res = SDL_Vulkan_CreateSurface(
-      const_cast<SDL_Window*>(window), static_cast<VkInstance>(mInstanceHandle),
-      &surface);
-  assert(res);
-  return vk::SurfaceKHR(surface);
 }
 
 Instance::~Instance() {

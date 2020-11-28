@@ -9,9 +9,10 @@
 
 using namespace RTIDPRR::Graphics;
 
-Swapchain::Swapchain(const SDL_Window* window, const Instance& instance,
+Swapchain::Swapchain(const Window& window, const Instance& instance,
                      const Device& device)
-    : mWindowSurface(instance.initSurface(window)), mCurrentImageIndex(0) {
+    : mWindowSurface(window.createSurface(instance.getHandle())),
+      mCurrentImageIndex(0) {
   const std::vector<vk::PresentModeKHR> presentModes =
       device.getPhysicalDevice().getSurfacePresentModesKHR(mWindowSurface);
   const vk::PresentModeKHR presentMode =
@@ -105,8 +106,9 @@ Swapchain::Swapchain(const SDL_Window* window, const Instance& instance,
                     .setLayerCount(1));
     vk::ImageView swapchainImageView =
         device.getLogicalDevice().createImageView(swapchainImageViewCreateInfo);
-    Framebuffer swapchainImageFramebuffer(device, mMainRenderPass,
-                                          {swapchainImageView}, 1280, 720);
+    Framebuffer swapchainImageFramebuffer(
+        device, mMainRenderPass, {swapchainImageView}, window.getWidth(),
+        window.getHeight());
     SwapchainResources resources{std::move(swapchainImage),
                                  std::move(swapchainImageView),
                                  std::move(swapchainImageFramebuffer)};

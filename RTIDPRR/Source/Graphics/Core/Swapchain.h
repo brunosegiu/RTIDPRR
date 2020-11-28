@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include "../../Misc/Window.h"
 #include "Device.h"
 #include "Framebuffer.h"
 
@@ -16,7 +17,7 @@ struct SwapchainResources {
 
 class Swapchain {
  public:
-  Swapchain(const SDL_Window* window, const Instance& instance,
+  Swapchain(const Window& window, const Instance& instance,
             const Device& device);
 
   const Framebuffer& getCurrentFramebuffer() const {
