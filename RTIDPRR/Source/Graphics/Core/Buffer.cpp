@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "Context.h"
+#include "DeviceMemory.h"
 
 using namespace RTIDPRR::Graphics;
 
@@ -20,8 +21,8 @@ Buffer::Buffer(const vk::DeviceSize& size, const vk::BufferUsageFlags& usage,
   vk::MemoryAllocateInfo memAllocInfo =
       vk::MemoryAllocateInfo()
           .setAllocationSize(memRequirements.size)
-          .setMemoryTypeIndex(findMemoryIndex(memRequirements.memoryTypeBits,
-                                              memoryProperties));
+          .setMemoryTypeIndex(DeviceMemory::findMemoryIndex(
+              memRequirements.memoryTypeBits, memoryProperties));
   mMemory = device.getLogicalDevice().allocateMemory(memAllocInfo);
   device.getLogicalDevice().bindBufferMemory(mBuffer, mMemory, 0);
 }
@@ -68,23 +69,4 @@ void Buffer::copyInto(Buffer& other) {
   device.getLogicalDevice().freeCommandBuffers(graphicsQueue.getCommandPool(),
                                                commandBuffer);
   device.getLogicalDevice().destroyFence(waitFence);
-}
-
-uint32_t Buffer::findMemoryIndex(const uint32_t filter,
-                                 const vk::MemoryPropertyFlags properties) {
-  const vk::PhysicalDevice& physicalDevice =
-      Context::get().getDevice().getPhysicalDevice();
-  vk::PhysicalDeviceMemoryProperties physicalMemoryProperties =
-      physicalDevice.getMemoryProperties();
-
-  for (uint32_t memoryIndex = 0;
-       memoryIndex < physicalMemoryProperties.memoryTypeCount; ++memoryIndex) {
-    if ((filter & (1 << memoryIndex)) &&
-        (physicalMemoryProperties.memoryTypes[memoryIndex].propertyFlags &
-         properties) == properties) {
-      return memoryIndex;
-    }
-  }
-  assert(false);
-  return 0;
 }

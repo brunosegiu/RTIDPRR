@@ -20,9 +20,6 @@ class Buffer {
   vk::Buffer mBuffer;
   vk::DeviceMemory mMemory;
   vk::DeviceSize mSize;
-
-  static uint32_t findMemoryIndex(const uint32_t filter,
-                                  const vk::MemoryPropertyFlags properties);
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

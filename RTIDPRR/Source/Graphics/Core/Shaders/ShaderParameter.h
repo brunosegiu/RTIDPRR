@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "../Buffer.h"
+#include "../Context.h"
 
 namespace RTIDPRR {
 namespace Graphics {
@@ -28,8 +29,6 @@ class ShaderParameter {
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR
-
-#include "../Context.h"
 
 using namespace RTIDPRR::Graphics;
 
