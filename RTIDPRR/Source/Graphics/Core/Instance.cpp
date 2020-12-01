@@ -1,6 +1,5 @@
 ﻿#include "Instance.h"
 
-#include <cassert>
 #include <iostream>
 #include <string>
 
@@ -16,7 +15,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL vkDebugCallback(
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* callbackData, void* userData) {
   LOG(callbackData->pMessage);
-  RTIDPRR_ASSERT(
+  RTIDPRR_ASSERT_MSG(
       messageSeverity != VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
       callbackData->pMessage);
   return VK_FALSE;

@@ -16,9 +16,8 @@
     OutputDebugStringW(os_.str().c_str()); \
   }
 
-#ifndef NDEBUG
+#if _DEBUG
 
-#include <exception>
 #include <string>
 
 #define RTIDPRR_ASSERT_MSG(condition, message)                             \
@@ -33,7 +32,7 @@
     }                                                                      \
   }
 #else
-#define RTIDPRR_ASSERT(condition, message) (condition)
+#define RTIDPRR_ASSERT_MSG(condition, message) (condition)
 #endif
 
 #define RTIDPRR_ASSERT(condition) RTIDPRR_ASSERT_MSG(condition, "")

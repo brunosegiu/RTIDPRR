@@ -1,20 +1,27 @@
-﻿#include "Pipeline.h"
+﻿#include "BasePassPipeline.h"
 
+#include "../Core/Context.h"
 #include "../Geometry/IndexedVertexBuffer.h"
-#include "Context.h"
 
 using namespace RTIDPRR::Graphics;
 
-Pipeline::Pipeline(
+BasePassPipeline::BasePassPipeline(
     const vk::RenderPass& renderPass,
-    const std::vector<vk::DescriptorSetLayout>& descriptorLayouts)
-    : mVertexShader(Shader::loadShader("Source/Shaders/Build/LightPass.vert")),
+    const std::vector<vk::DescriptorSetLayout> descriptorLayouts,
+    const vk::Extent2D extent)
+    : mVertexShader(Shader::loadShader("Source/Shaders/Build/BasePass.vert")),
       mFragmentShader(
-          Shader::loadShader("Source/Shaders/Build/LightPass.frag")) {
+          Shader::loadShader("Source/Shaders/Build/BasePass.frag")) {
   const Device& device = Context::get().getDevice();
   // Setup vertex layout
-
-  vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo{};
+  const std::vector<vk::VertexInputBindingDescription> bindingDescription{
+      IndexedVertexBuffer::getBindingDescription()};
+  const std::vector<vk::VertexInputAttributeDescription> attributeDescription{
+      IndexedVertexBuffer::getAttributeDescription()};
+  vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo =
+      vk::PipelineVertexInputStateCreateInfo()
+          .setVertexBindingDescriptions(bindingDescription)
+          .setVertexAttributeDescriptions(attributeDescription);
 
   // Setup topology
   vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo =
@@ -26,8 +33,8 @@ Pipeline::Pipeline(
   vk::Viewport viewport = vk::Viewport()
                               .setX(0.0f)
                               .setY(0.0f)
-                              .setWidth(1280.0f)
-                              .setHeight(720.0f)
+                              .setWidth(extent.width)
+                              .setHeight(extent.height)
                               .setMinDepth(0.0f)
                               .setMaxDepth(1.0f);
 
@@ -56,18 +63,32 @@ Pipeline::Pipeline(
           .setRasterizationSamples(vk::SampleCountFlagBits::e1);
 
   // Color blending state
-  vk::PipelineColorBlendAttachmentState colorAttachmentCreateInfo =
+  std::vector<vk::PipelineColorBlendAttachmentState> colorAttachmentCreateInfos{
       vk::PipelineColorBlendAttachmentState()
           .setColorWriteMask(
               vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
               vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
-          .setBlendEnable(false);
+          .setBlendEnable(false),
+      vk::PipelineColorBlendAttachmentState()
+          .setColorWriteMask(
+              vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
+              vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
+          .setBlendEnable(false)};
 
   vk::PipelineColorBlendStateCreateInfo colorBlendCreateInfo =
       vk::PipelineColorBlendStateCreateInfo()
           .setLogicOpEnable(false)
           .setLogicOp(vk::LogicOp::eCopy)
-          .setAttachments(colorAttachmentCreateInfo);
+          .setAttachments(colorAttachmentCreateInfos);
+
+  // Depth state
+  vk::PipelineDepthStencilStateCreateInfo depthStencilState =
+      vk::PipelineDepthStencilStateCreateInfo()
+          .setDepthTestEnable(true)
+          .setDepthWriteEnable(true)
+          .setDepthCompareOp(vk::CompareOp::eLess)
+          .setDepthBoundsTestEnable(false)
+          .setStencilTestEnable(false);
 
   // Shader parameter layout
   vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo =
@@ -113,4 +134,7 @@ Pipeline::Pipeline(
                         .value;
 }
 
-Pipeline::~Pipeline() {}
+BasePassPipeline::~BasePassPipeline() {
+  delete mVertexShader;
+  delete mFragmentShader;
+}

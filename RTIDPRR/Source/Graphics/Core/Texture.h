@@ -10,6 +10,9 @@ class Texture {
           const vk::ImageUsageFlags& usage,
           const vk::ImageAspectFlags& viewAspect,
           const vk::ImageTiling tiling = vk::ImageTiling::eOptimal);
+
+  const vk::ImageView& getImageView() const { return mImageView; }
+
   virtual ~Texture() = default;
 
  private:

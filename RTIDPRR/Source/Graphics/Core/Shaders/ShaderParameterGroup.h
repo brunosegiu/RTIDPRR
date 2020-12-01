@@ -12,7 +12,8 @@ namespace Graphics {
 template <class... TShaderParameters>
 class ShaderParameterGroup {
  public:
-  ShaderParameterGroup(const vk::ShaderStageFlags stage);
+  ShaderParameterGroup(const vk::ShaderStageFlags stage,
+                       TShaderParameters&&... values);
 
   static constexpr uint32_t sShaderParameterCount =
       std::tuple_size<std::tuple<TShaderParameters...>>::value;
@@ -45,7 +46,7 @@ void initializeBindings(std::tuple<T, Rest...>& parameters,
       .setDescriptorCount(1)
       .setStageFlags(stage);
 
-  if constexpr (Iterator != sizeof...(Rest))
+  if constexpr (Iterator < sizeof...(Rest))
     initializeBindings<Iterator + 1>(parameters, bindings, stage);
 }
 
@@ -53,21 +54,23 @@ template <size_t Iterator = 0, class T, class... Rest>
 void bindAllParametersToGroup(std::tuple<T, Rest...>& parameters,
                               const vk::DescriptorSet& descriptorSet) {
   std::get<Iterator>(parameters).bindToGroup(descriptorSet, Iterator);
-  if constexpr (Iterator != sizeof...(Rest))
+  if constexpr (Iterator < sizeof...(Rest))
     bindAllParametersToGroup<Iterator + 1>(parameters, descriptorSet);
 }
 
-template <vk::DescriptorType DescriptorType, size_t Iterator = 0, class T,
+template <size_t Iterator, vk::DescriptorType DescriptorType, class T,
           class... Rest>
 uint32_t getDescriptorCountForType(std::tuple<T, Rest...>& parameters) {
   if constexpr (T::getDescriptorType() == DescriptorType) {
-    if constexpr (Iterator != sizeof...(Rest))
-      return 1 + getDescriptorCountForType<Iterator + 1>(parameters);
+    if constexpr (Iterator < sizeof...(Rest))
+      return 1 + getDescriptorCountForType<Iterator + 1, DescriptorType>(
+                     parameters);
     else
       return 1;
   } else {
-    if constexpr (Iterator != sizeof...(Rest))
-      return getDescriptorCountForType<Iterator + 1>(parameters);
+    if constexpr (Iterator < sizeof...(Rest))
+      return getDescriptorCountForType<Iterator + 1, DescriptorType>(
+          parameters);
     else
       return 0;
   }
@@ -75,17 +78,31 @@ uint32_t getDescriptorCountForType(std::tuple<T, Rest...>& parameters) {
 
 template <class... TShaderParameters>
 ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
-    const vk::ShaderStageFlags stage)
-    : mParameters() {
+    const vk::ShaderStageFlags stage, TShaderParameters&&... values)
+    : mParameters(values...) {
   const Device& device = Context::get().getDevice();
   constexpr uint32_t paramCount = sShaderParameterCount;
 
-  std::vector<vk::DescriptorPoolSize> poolSizes{
-      vk::DescriptorPoolSize()
-          .setDescriptorCount(
-              getDescriptorCountForType<vk::DescriptorType::eUniformBuffer>(
-                  mParameters))
-          .setType(vk::DescriptorType::eUniformBuffer)};
+  std::vector<vk::DescriptorPoolSize> poolSizes;
+
+  uint32_t uniformBufferCount =
+      getDescriptorCountForType<0, vk::DescriptorType::eUniformBuffer>(
+          mParameters);
+  if (uniformBufferCount > 0) {
+    poolSizes.emplace_back(vk::DescriptorPoolSize()
+                               .setDescriptorCount(uniformBufferCount)
+                               .setType(vk::DescriptorType::eUniformBuffer));
+  }
+  uint32_t combinedSamplerCount =
+      getDescriptorCountForType<0, vk::DescriptorType::eCombinedImageSampler>(
+          mParameters);
+  if (combinedSamplerCount > 0) {
+    poolSizes.emplace_back(
+        vk::DescriptorPoolSize()
+            .setDescriptorCount(combinedSamplerCount)
+            .setType(vk::DescriptorType::eCombinedImageSampler));
+  }
+
   vk::DescriptorPoolCreateInfo poolCreateInfo =
       vk::DescriptorPoolCreateInfo().setPoolSizes(poolSizes).setMaxSets(
           sShaderParameterCount);

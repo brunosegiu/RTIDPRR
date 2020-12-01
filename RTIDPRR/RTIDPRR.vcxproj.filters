@@ -61,7 +61,10 @@
     <ClCompile Include="Source\Graphics\Core\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Core\DeviceMemory.cpp">
+    <ClCompile Include="Source\Graphics\DeferredRendering\BasePassPipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -120,12 +123,18 @@
     <ClInclude Include="Source\Graphics\Core\DeviceMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="Source\Shaders\Source\test.vert" />
-    <CustomBuild Include="Source\Shaders\Source\test.frag" />
+    <ClInclude Include="Source\Graphics\DeferredRendering\BasePassPipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Source\Shaders\Source\BasePass.frag" />
+    <None Include="Source\Shaders\Source\BasePass.vert" />
+    <None Include="Source\Shaders\Source\LightPass.frag" />
+    <None Include="Source\Shaders\Source\LightPass.vert" />
   </ItemGroup>
 </Project>

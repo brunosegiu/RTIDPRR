@@ -232,7 +232,7 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Graphics\Core\DeviceMemory.cpp" />
+    <ClCompile Include="Source\Graphics\DeferredRendering\BasePassPipeline.cpp" />
     <ClCompile Include="Source\Graphics\Geometry\IndexedVertexBuffer.cpp" />
     <ClCompile Include="Source\Graphics\Core\Buffer.cpp" />
     <ClCompile Include="Source\Graphics\DeferredRendering\DeferredRenderer.cpp" />
@@ -248,8 +248,10 @@
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Misc\Window.cpp" />
     <ClCompile Include="Source\Graphics\Core\Texture.cpp" />
+    <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Graphics\DeferredRendering\BasePassPipeline.h" />
     <ClInclude Include="Source\Graphics\Core\DeviceMemory.h" />
     <ClInclude Include="Source\Misc\DebugUtils.h" />
     <ClInclude Include="Source\Graphics\Geometry\IndexedVertexBuffer.h" />
@@ -268,23 +270,38 @@
     <ClInclude Include="Source\Graphics\Loaders\GLTFLoader.h" />
     <ClInclude Include="Source\Misc\Window.h" />
     <ClInclude Include="Source\Graphics\Core\Texture.h" />
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTexture.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Source\Shaders\Source\test.frag">
-      <FileType>Document</FileType>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="Source\Shaders\Source\test.vert">
+    <None Include="packages.config" />
+    <CustomBuild Include="Source\Shaders\Source\BasePass.frag">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <CustomBuild Include="Source\Shaders\Source\BasePass.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="Source\Shaders\Source\LightPass.frag">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="Source\Shaders\Source\LightPass.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

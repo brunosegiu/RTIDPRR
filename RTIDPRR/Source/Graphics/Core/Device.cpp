@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include "../../Misc/DebugUtils.h"
+
 using namespace RTIDPRR::Graphics;
 
 Device::Device(const Instance& instance) {
@@ -53,7 +55,7 @@ const vk::PhysicalDevice Device::findPhysicalDevice(
       return device;
     }
   }
-  assert(false);
+  RTIDPRR_ASSERT_MSG(false, "Couldn't find physical device");
   return nullptr;
 }
 
@@ -66,7 +68,7 @@ const uint32_t Device::findQueueFamilyIndex(
         queueFamilyProperty.queueFlags & vk::QueueFlagBits::eCompute)
       return index;
   }
-  assert(false);
+  RTIDPRR_ASSERT_MSG(false, "Couldn't find graphics/compute queue");
   return 0;
 }
 

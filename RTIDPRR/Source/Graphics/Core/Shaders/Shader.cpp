@@ -1,10 +1,9 @@
 ﻿#include "Shader.h"
 
-#include <assert.h>
-
 #include <filesystem>
 #include <fstream>
 
+#include "../../../Misc/DebugUtils.h"
 #include "../Context.h"
 
 using namespace RTIDPRR::Graphics;
@@ -31,14 +30,15 @@ static const std::unordered_map<std::string, vk::ShaderStageFlagBits>
         {".comp", vk::ShaderStageFlagBits::eCompute},
     };
 
-const Shader* Shader::loadShader(const std::string& path) {
+Shader* Shader::loadShader(const std::string& path) {
   const Device& device = Context::get().getDevice();
   // Check extension for stage
   // Expected name is <shader_name>.<shader_stage>.spirv
   const std::string extension =
       std::filesystem::path(path).extension().u8string();
   const auto it = shaderStageNames.find(extension);
-  assert(it != shaderStageNames.end());
+  RTIDPRR_ASSERT_MSG(it != shaderStageNames.end(),
+                     "Couldn't find matching shader extension");
   vk::ShaderStageFlagBits stage = it != shaderStageNames.end()
                                       ? it->second
                                       : vk::ShaderStageFlagBits::eVertex;
@@ -51,7 +51,11 @@ const Shader* Shader::loadShader(const std::string& path) {
     // Create shader
     return new Shader(rawData, stage);
   }
+  RTIDPRR_ASSERT_MSG(false, "Failed reading shader data");
   return nullptr;
 }
 
-Shader::~Shader() {}
+Shader::~Shader() {
+  Context::get().getDevice().getLogicalDevice().destroyShaderModule(
+      mShaderHandle);
+}

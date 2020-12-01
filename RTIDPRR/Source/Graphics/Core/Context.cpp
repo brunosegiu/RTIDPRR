@@ -1,11 +1,13 @@
 ﻿#include "Context.h"
 
+#include "../../Misc/DebugUtils.h"
+
 using namespace RTIDPRR::Graphics;
 
 std::unique_ptr<Context> Context::sContext = nullptr;
 
 const Context& Context::init(const Window& window) {
-  assert(!sContext);
+  RTIDPRR_ASSERT_MSG(!sContext, "Graphics context initialized twice!");
   if (!sContext) {
     sContext = std::make_unique<Context>(window);
   }
@@ -13,7 +15,7 @@ const Context& Context::init(const Window& window) {
 }
 
 Context& Context::get() {
-  assert(sContext);
+  RTIDPRR_ASSERT_MSG(sContext, "Graphics context not yet initialized!");
   return *sContext;
 }
 

@@ -12,7 +12,7 @@ Queue::Queue(const uint32_t queueFamilyIndex, const uint32_t queueIndex,
   vk::CommandPoolCreateInfo commandPoolCreateInfo =
       vk::CommandPoolCreateInfo()
           .setQueueFamilyIndex(queueFamilyIndex)
-          .setFlags(vk::CommandPoolCreateFlagBits::eTransient);
+          .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
   mCommandPool = device.createCommandPool(commandPoolCreateInfo);
 }
 

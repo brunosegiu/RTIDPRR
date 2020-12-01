@@ -1,7 +1,5 @@
 ﻿#include "Buffer.h"
 
-#include <cassert>
-
 #include "Context.h"
 #include "DeviceMemory.h"
 

@@ -20,9 +20,6 @@ class Instance {
   Instance(Instance const&) = delete;
   Instance& operator=(Instance const&) = delete;
 
-  static const std::vector<const char*> getRequiredExtensions(
-      const Window& window);
-
   vk::Instance mInstanceHandle;
 
 #if defined(_DEBUG)
