@@ -13,7 +13,7 @@ class Texture {
 
   const vk::ImageView& getImageView() const { return mImageView; }
 
-  virtual ~Texture() = default;
+  virtual ~Texture();
 
  private:
   vk::Image mImage;

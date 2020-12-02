@@ -13,7 +13,6 @@ Pipeline::Pipeline(
           Shader::loadShader("Source/Shaders/Build/LightPass.frag")) {
   const Device& device = Context::get().getDevice();
   // Setup vertex layout
-
   vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo{};
 
   // Setup topology
@@ -75,8 +74,8 @@ Pipeline::Pipeline(
           .setSetLayouts(descriptorLayouts)
           .setPushConstantRanges(nullptr);
 
-  mLayoutHandle =
-      device.getLogicalDevice().createPipelineLayout(pipelineLayoutCreateInfo);
+  mLayoutHandle = device.getLogicalDeviceHandle().createPipelineLayout(
+      pipelineLayoutCreateInfo);
 
   vk::PipelineShaderStageCreateInfo vertexStageCreateInfo =
       vk::PipelineShaderStageCreateInfo()
@@ -108,9 +107,15 @@ Pipeline::Pipeline(
           .setRenderPass(renderPass)
           .setSubpass(0);
 
-  mPipelineHandle = device.getLogicalDevice()
+  mPipelineHandle = device.getLogicalDeviceHandle()
                         .createGraphicsPipeline(nullptr, pipelineCreateInfo)
                         .value;
 }
 
-Pipeline::~Pipeline() {}
+Pipeline::~Pipeline() {
+  const Device& device = Context::get().getDevice();
+  device.getLogicalDeviceHandle().destroyPipelineLayout(mLayoutHandle);
+  device.getLogicalDeviceHandle().destroyPipeline(mPipelineHandle);
+  delete mFragmentShader;
+  delete mVertexShader;
+}

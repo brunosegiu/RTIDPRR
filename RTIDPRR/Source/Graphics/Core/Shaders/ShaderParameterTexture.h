@@ -14,10 +14,12 @@ class ShaderParameterTexture {
 
   ShaderParameterTexture(const Texture& texture);
 
+  ShaderParameterTexture(ShaderParameterTexture&& other);
+
   void bindToGroup(const vk::DescriptorSet& descriptorSet,
                    const uint32_t binding);
 
-  virtual ~ShaderParameterTexture() = default;
+  virtual ~ShaderParameterTexture();
 
  private:
   vk::Sampler mSampler;

@@ -96,8 +96,8 @@ BasePassPipeline::BasePassPipeline(
           .setSetLayouts(descriptorLayouts)
           .setPushConstantRanges(nullptr);
 
-  mLayoutHandle =
-      device.getLogicalDevice().createPipelineLayout(pipelineLayoutCreateInfo);
+  mLayoutHandle = device.getLogicalDeviceHandle().createPipelineLayout(
+      pipelineLayoutCreateInfo);
 
   vk::PipelineShaderStageCreateInfo vertexStageCreateInfo =
       vk::PipelineShaderStageCreateInfo()
@@ -129,7 +129,7 @@ BasePassPipeline::BasePassPipeline(
           .setRenderPass(renderPass)
           .setSubpass(0);
 
-  mPipelineHandle = device.getLogicalDevice()
+  mPipelineHandle = device.getLogicalDeviceHandle()
                         .createGraphicsPipeline(nullptr, pipelineCreateInfo)
                         .value;
 }
@@ -137,4 +137,7 @@ BasePassPipeline::BasePassPipeline(
 BasePassPipeline::~BasePassPipeline() {
   delete mVertexShader;
   delete mFragmentShader;
+  const Device& device = Context::get().getDevice();
+  device.getLogicalDeviceHandle().destroyPipelineLayout(mLayoutHandle);
+  device.getLogicalDeviceHandle().destroyPipeline(mPipelineHandle);
 }

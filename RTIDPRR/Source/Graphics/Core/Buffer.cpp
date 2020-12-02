@@ -12,25 +12,33 @@ Buffer::Buffer(const vk::DeviceSize& size, const vk::BufferUsageFlags& usage,
   vk::BufferCreateInfo bufferCreateInfo =
       vk::BufferCreateInfo().setSize(size).setUsage(usage).setSharingMode(
           vk::SharingMode::eExclusive);
-  mBuffer = device.getLogicalDevice().createBuffer(bufferCreateInfo);
+  mBuffer = device.getLogicalDeviceHandle().createBuffer(bufferCreateInfo);
 
   vk::MemoryRequirements memRequirements =
-      device.getLogicalDevice().getBufferMemoryRequirements(mBuffer);
+      device.getLogicalDeviceHandle().getBufferMemoryRequirements(mBuffer);
   vk::MemoryAllocateInfo memAllocInfo =
       vk::MemoryAllocateInfo()
           .setAllocationSize(memRequirements.size)
           .setMemoryTypeIndex(DeviceMemory::findMemoryIndex(
               memRequirements.memoryTypeBits, memoryProperties));
-  mMemory = device.getLogicalDevice().allocateMemory(memAllocInfo);
-  device.getLogicalDevice().bindBufferMemory(mBuffer, mMemory, 0);
+  mMemory = device.getLogicalDeviceHandle().allocateMemory(memAllocInfo);
+  device.getLogicalDeviceHandle().bindBufferMemory(mBuffer, mMemory, 0);
+}
+
+Buffer::Buffer(Buffer&& other)
+    : mBuffer(std::move(other.mBuffer)),
+      mMemory(std::move(other.mMemory)),
+      mSize(std::move(other.mSize)) {
+  other.mBuffer = nullptr;
+  other.mMemory = nullptr;
 }
 
 void Buffer::update(const void* value) {
   const Device& device = Context::get().getDevice();
-  void* data = device.getLogicalDevice().mapMemory(mMemory, 0, mSize,
-                                                   vk::MemoryMapFlags{});
+  void* data = device.getLogicalDeviceHandle().mapMemory(mMemory, 0, mSize,
+                                                         vk::MemoryMapFlags{});
   memcpy(data, value, mSize);
-  device.getLogicalDevice().unmapMemory(mMemory);
+  device.getLogicalDeviceHandle().unmapMemory(mMemory);
 }
 
 void Buffer::copyInto(Buffer& other) {
@@ -44,7 +52,8 @@ void Buffer::copyInto(Buffer& other) {
           .setCommandPool(graphicsQueue.getCommandPool())
           .setCommandBufferCount(1);
   vk::CommandBuffer commandBuffer =
-      device.getLogicalDevice().allocateCommandBuffers(commandAllocInfo)[0];
+      device.getLogicalDeviceHandle().allocateCommandBuffers(
+          commandAllocInfo)[0];
 
   // Copy
   vk::CommandBufferBeginInfo commandBeginInfo =
@@ -60,11 +69,18 @@ void Buffer::copyInto(Buffer& other) {
   vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(commandBuffer);
 
   vk::FenceCreateInfo fenceCreateInfo = vk::FenceCreateInfo();
-  vk::Fence waitFence = device.getLogicalDevice().createFence(fenceCreateInfo);
+  vk::Fence waitFence =
+      device.getLogicalDeviceHandle().createFence(fenceCreateInfo);
   graphicsQueue.submit(submitInfo, waitFence);
-  device.getLogicalDevice().waitForFences(waitFence, true,
-                                          std::numeric_limits<uint64_t>::max());
-  device.getLogicalDevice().freeCommandBuffers(graphicsQueue.getCommandPool(),
-                                               commandBuffer);
-  device.getLogicalDevice().destroyFence(waitFence);
+  device.getLogicalDeviceHandle().waitForFences(
+      waitFence, true, std::numeric_limits<uint64_t>::max());
+  device.getLogicalDeviceHandle().freeCommandBuffers(
+      graphicsQueue.getCommandPool(), commandBuffer);
+  device.getLogicalDeviceHandle().destroyFence(waitFence);
+}
+
+Buffer::~Buffer() {
+  const Device& device = Context::get().getDevice();
+  device.getLogicalDeviceHandle().destroyBuffer(mBuffer);
+  device.getLogicalDeviceHandle().freeMemory(mMemory);
 }

@@ -72,8 +72,7 @@ std::vector<GLTFLoader::GeometryData> GLTFLoader::load(std::string path) {
   if (loader.LoadBinaryFromFile(&model, &err, &warn, path)) {
     for (const auto& mesh : model.meshes) {
       for (const auto& primitive : mesh.primitives) {
-        entities.emplace_back(
-            std::move(processPrimitive(model, mesh, primitive)));
+        entities.emplace_back(processPrimitive(model, mesh, primitive));
       }
     }
   }

@@ -17,7 +17,7 @@ Shader::Shader(const std::vector<char>& code,
           .setPCode(reinterpret_cast<const unsigned int*>(code.data()));
   const Device& device = Context::get().getDevice();
   mShaderHandle =
-      device.getLogicalDevice().createShaderModule(shaderCreateInfo);
+      device.getLogicalDeviceHandle().createShaderModule(shaderCreateInfo);
 }
 
 static const std::unordered_map<std::string, vk::ShaderStageFlagBits>
@@ -56,6 +56,6 @@ Shader* Shader::loadShader(const std::string& path) {
 }
 
 Shader::~Shader() {
-  Context::get().getDevice().getLogicalDevice().destroyShaderModule(
+  Context::get().getDevice().getLogicalDeviceHandle().destroyShaderModule(
       mShaderHandle);
 }

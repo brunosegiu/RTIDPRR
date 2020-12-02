@@ -13,7 +13,7 @@ template <class... TShaderParameters>
 class ShaderParameterGroup {
  public:
   ShaderParameterGroup(const vk::ShaderStageFlags stage,
-                       TShaderParameters&&... values);
+                       TShaderParameters... values);
 
   static constexpr uint32_t sShaderParameterCount =
       std::tuple_size<std::tuple<TShaderParameters...>>::value;
@@ -21,7 +21,7 @@ class ShaderParameterGroup {
   const vk::DescriptorSetLayout& getLayout() const { return mLayout; }
   const vk::DescriptorSet& getDescriptorSet() const { return mDescriptorSet; }
 
-  virtual ~ShaderParameterGroup() = default;
+  virtual ~ShaderParameterGroup();
 
   std::tuple<TShaderParameters...> mParameters;
 
@@ -78,8 +78,8 @@ uint32_t getDescriptorCountForType(std::tuple<T, Rest...>& parameters) {
 
 template <class... TShaderParameters>
 ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
-    const vk::ShaderStageFlags stage, TShaderParameters&&... values)
-    : mParameters(values...) {
+    const vk::ShaderStageFlags stage, TShaderParameters... values)
+    : mParameters(std::move(values)...) {
   const Device& device = Context::get().getDevice();
   constexpr uint32_t paramCount = sShaderParameterCount;
 
@@ -107,7 +107,7 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
       vk::DescriptorPoolCreateInfo().setPoolSizes(poolSizes).setMaxSets(
           sShaderParameterCount);
   mDescriptorPool =
-      device.getLogicalDevice().createDescriptorPool(poolCreateInfo);
+      device.getLogicalDeviceHandle().createDescriptorPool(poolCreateInfo);
   std::vector<vk::DescriptorSetLayoutBinding> bindingInfos(paramCount);
   initializeBindings(mParameters, bindingInfos, stage);
 
@@ -116,16 +116,23 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
           .setBindingCount(paramCount)
           .setBindings(bindingInfos);
 
-  mLayout =
-      device.getLogicalDevice().createDescriptorSetLayout(layoutCreateInfo);
+  mLayout = device.getLogicalDeviceHandle().createDescriptorSetLayout(
+      layoutCreateInfo);
 
   vk::DescriptorSetAllocateInfo descriptorAllocInfo =
       vk::DescriptorSetAllocateInfo()
           .setDescriptorPool(mDescriptorPool)
           .setDescriptorSetCount(1)
           .setSetLayouts(mLayout);
-  mDescriptorSet =
-      device.getLogicalDevice().allocateDescriptorSets(descriptorAllocInfo)[0];
+  mDescriptorSet = device.getLogicalDeviceHandle().allocateDescriptorSets(
+      descriptorAllocInfo)[0];
 
   bindAllParametersToGroup(mParameters, mDescriptorSet);
 };
+
+template <class... TShaderParameters>
+ShaderParameterGroup<TShaderParameters...>::~ShaderParameterGroup() {
+  const Device& device = Context::get().getDevice();
+  device.getLogicalDeviceHandle().destroyDescriptorSetLayout(mLayout);
+  device.getLogicalDeviceHandle().destroyDescriptorPool(mDescriptorPool);
+}

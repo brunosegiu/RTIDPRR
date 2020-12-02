@@ -6,7 +6,8 @@
 
 using namespace RTIDPRR::Graphics;
 
-Device::Device(const Instance& instance) {
+Device::Device(const Instance& instance)
+    : mGraphicsQueue(nullptr), mComputeQueue(nullptr) {
   // Pick and initialize a physical device
   const std::vector<vk::PhysicalDevice> physicalDevices =
       instance.getHandle().enumeratePhysicalDevices();
@@ -40,8 +41,8 @@ Device::Device(const Instance& instance) {
 
   mLogicalHandle = mPhysicalHandle.createDevice(deviceCreateInfo);
 
-  mGraphicsQueue = std::move(Queue(queueFamilyIndex, 0, mLogicalHandle));
-  mComputeQueue = std::move(Queue(queueFamilyIndex, 1, mLogicalHandle));
+  mGraphicsQueue = std::make_unique<Queue>(queueFamilyIndex, 0, mLogicalHandle);
+  mComputeQueue = std::make_unique<Queue>(queueFamilyIndex, 1, mLogicalHandle);
 }
 
 const vk::PhysicalDevice Device::findPhysicalDevice(
@@ -72,4 +73,8 @@ const uint32_t Device::findQueueFamilyIndex(
   return 0;
 }
 
-Device::~Device() {}
+Device::~Device() {
+  mGraphicsQueue.reset();
+  mComputeQueue.reset();
+  mLogicalHandle.destroy();
+}

@@ -14,6 +14,7 @@ namespace Graphics {
 class Context {
  public:
   static const Context& init(const Window& window);
+  static void terminate();
   static Context& get();
 
   Context(const Window& window);

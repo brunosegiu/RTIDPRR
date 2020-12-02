@@ -9,12 +9,14 @@ class Buffer {
   Buffer(const vk::DeviceSize& size, const vk::BufferUsageFlags& usage,
          const vk::MemoryPropertyFlags& memoryProperties);
 
+  Buffer(Buffer&& other);
+
   const vk::Buffer& getBufferHandle() const { return mBuffer; };
 
   void update(const void* value);
   void copyInto(Buffer& other);
 
-  virtual ~Buffer() = default;
+  virtual ~Buffer();
 
  private:
   vk::Buffer mBuffer;

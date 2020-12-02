@@ -15,6 +15,7 @@ class ShaderParameter {
   }
 
   ShaderParameter();
+  ShaderParameter(ShaderParameter&&) = default;
 
   void bindToGroup(const vk::DescriptorSet& descriptorSet,
                    const uint32_t binding);
@@ -54,7 +55,7 @@ void ShaderParameter<T>::bindToGroup(const vk::DescriptorSet& descriptorSet,
           .setDstArrayElement(0)
           .setDescriptorType(getDescriptorType())
           .setBufferInfo(bufferInfo);
-  Context::get().getDevice().getLogicalDevice().updateDescriptorSets(
+  Context::get().getDevice().getLogicalDeviceHandle().updateDescriptorSets(
       descriptorWrite, nullptr);
 }
 

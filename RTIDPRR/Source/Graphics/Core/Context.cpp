@@ -14,6 +14,8 @@ const Context& Context::init(const Window& window) {
   return *sContext;
 }
 
+void Context::terminate() { sContext.reset(); }
+
 Context& Context::get() {
   RTIDPRR_ASSERT_MSG(sContext, "Graphics context not yet initialized!");
   return *sContext;

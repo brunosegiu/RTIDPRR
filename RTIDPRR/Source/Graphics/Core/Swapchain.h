@@ -18,7 +18,7 @@ struct SwapchainResources {
 class Swapchain {
  public:
   Swapchain(const Window& window, const Instance& instance,
-            const Device& device);
+            const Device& logicalDevice);
 
   const Framebuffer& getCurrentFramebuffer() const {
     return mSwapchainResources[mCurrentImageIndex].mFramebuffer;
@@ -40,6 +40,8 @@ class Swapchain {
   vk::Semaphore mPresentFinishedSemaphore;
 
   uint32_t mCurrentImageIndex;
+
+  const Device& mDevice;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

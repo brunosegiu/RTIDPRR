@@ -10,8 +10,8 @@ DeferredRenderer::DeferredRenderer()
     : mBasePassResources(vk::Extent2D(800, 600)),
       mFragmentStageParameters(
           vk::ShaderStageFlagBits::eFragment,
-          std::move(ShaderParameterTexture(mBasePassResources.mAlbedoTex)),
-          std::move(ShaderParameterTexture(mBasePassResources.mNormalTex))),
+          ShaderParameterTexture(mBasePassResources.mAlbedoTex),
+          ShaderParameterTexture(mBasePassResources.mNormalTex)),
       mPipeline(Context::get().getSwapchain().getMainRenderPass(),
                 std::vector<vk::DescriptorSetLayout>{
                     mFragmentStageParameters.getLayout()}) {
@@ -28,7 +28,7 @@ DeferredRenderer::DeferredRenderer()
           .setCommandBufferCount(1);
 
   std::vector<vk::CommandBuffer> commandBuffers =
-      device.getLogicalDevice().allocateCommandBuffers(commandAllocInfo);
+      device.getLogicalDeviceHandle().allocateCommandBuffers(commandAllocInfo);
 
   mCommandBuffer = commandBuffers[0];
 }
@@ -53,8 +53,7 @@ void DeferredRenderer::render() {
   vk::RenderPassBeginInfo renderPassBeginInfo =
       vk::RenderPassBeginInfo()
           .setRenderPass(swapchain.getMainRenderPass())
-          .setFramebuffer(
-              swapchain.getCurrentFramebuffer().getFramebufferHandle())
+          .setFramebuffer(swapchain.getCurrentFramebuffer().getHandle())
           .setRenderArea({vk::Offset2D{0, 0}, vk::Extent2D{1280, 720}})
           .setClearValues(clearValues);
 
@@ -76,7 +75,7 @@ void DeferredRenderer::render() {
   swapchain.submitCommand(mCommandBuffer);
 
   // TODO: REMOVE
-  device.getLogicalDevice().waitIdle();
+  device.getLogicalDeviceHandle().waitIdle();
 }
 
 void DeferredRenderer::renderBasePass() {
@@ -113,7 +112,7 @@ void DeferredRenderer::renderBasePass() {
   vk::RenderPassBeginInfo renderPassBeginInfo =
       vk::RenderPassBeginInfo()
           .setRenderPass(mBasePassResources.mBasePass)
-          .setFramebuffer(mBasePassResources.mGBuffer.getFramebufferHandle())
+          .setFramebuffer(mBasePassResources.mGBuffer.getHandle())
           .setRenderArea({vk::Offset2D{0, 0}, vk::Extent2D{800, 600}})
           .setClearValues(clearValues);
 
@@ -133,10 +132,16 @@ void DeferredRenderer::renderBasePass() {
       vk::SubmitInfo().setCommandBuffers(mCommandBuffer);
   graphicsQueue.submit(submitInfo);
   // TODO: REMOVE
-  device.getLogicalDevice().waitIdle();
+  device.getLogicalDeviceHandle().waitIdle();
 }
 
-DeferredRenderer::~DeferredRenderer() {}
+DeferredRenderer::~DeferredRenderer() {
+  const Device& device = Context::get().getDevice();
+  device.getLogicalDeviceHandle().freeCommandBuffers(
+      device.getGraphicsQueue().getCommandPool(), mCommandBuffer);
+  device.getLogicalDeviceHandle().destroyRenderPass(
+      mBasePassResources.mBasePass);
+}
 
 vk::RenderPass initBasePass(const vk::Format& albedoFormat,
                             const vk::Format& normalFormat,
@@ -202,7 +207,7 @@ vk::RenderPass initBasePass(const vk::Format& albedoFormat,
           .setAttachments(attachments)
           .setSubpasses(subpass);
 
-  return device.getLogicalDevice().createRenderPass(renderPassCreateInfo);
+  return device.getLogicalDeviceHandle().createRenderPass(renderPassCreateInfo);
 }
 
 static const vk::Format albedoFormat = vk::Format::eR8G8B8A8Unorm;
@@ -226,7 +231,7 @@ BasePassResources::BasePassResources(const vk::Extent2D& extent)
                {mAlbedoTex.getImageView(), mNormalTex.getImageView()},
                extent.width, extent.height),
       mVertexStageParameters(vk::ShaderStageFlagBits::eVertex,
-                             std::move(ShaderParameter<glm::mat4>())),
+                             ShaderParameter<glm::mat4>()),
       mBasePassPipeline(mBasePass,
                         std::vector<vk::DescriptorSetLayout>{
                             mVertexStageParameters.getLayout()},

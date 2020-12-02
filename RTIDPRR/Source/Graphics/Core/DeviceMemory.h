@@ -12,7 +12,7 @@ namespace DeviceMemory {
 static uint32_t findMemoryIndex(const uint32_t filter,
                                 const vk::MemoryPropertyFlags properties) {
   const vk::PhysicalDevice& physicalDevice =
-      RTIDPRR::Graphics::Context::get().getDevice().getPhysicalDevice();
+      RTIDPRR::Graphics::Context::get().getDevice().getPhysicalDeviceHandle();
   vk::PhysicalDeviceMemoryProperties physicalMemoryProperties =
       physicalDevice.getMemoryProperties();
   for (uint32_t memoryIndex = 0;

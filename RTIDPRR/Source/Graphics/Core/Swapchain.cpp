@@ -12,16 +12,19 @@ using namespace RTIDPRR::Graphics;
 Swapchain::Swapchain(const Window& window, const Instance& instance,
                      const Device& device)
     : mWindowSurface(window.createSurface(instance.getHandle())),
-      mCurrentImageIndex(0) {
+      mCurrentImageIndex(0),
+      mDevice(device) {
   const std::vector<vk::PresentModeKHR> presentModes =
-      device.getPhysicalDevice().getSurfacePresentModesKHR(mWindowSurface);
+      device.getPhysicalDeviceHandle().getSurfacePresentModesKHR(
+          mWindowSurface);
   const vk::PresentModeKHR presentMode =
       std::find(presentModes.begin(), presentModes.end(),
                 vk::PresentModeKHR::eFifo) != presentModes.end()
           ? vk::PresentModeKHR::eFifo
           : vk::PresentModeKHR::eMailbox;
   const vk::SurfaceCapabilitiesKHR surfaceCapabilities =
-      device.getPhysicalDevice().getSurfaceCapabilitiesKHR(mWindowSurface);
+      device.getPhysicalDeviceHandle().getSurfaceCapabilitiesKHR(
+          mWindowSurface);
 
   vk::Extent2D swapchainExtent = surfaceCapabilities.currentExtent;
   uint32_t imageCount = std::clamp<uint32_t>(
@@ -29,7 +32,7 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
       surfaceCapabilities.maxImageCount);
 
   const std::vector<vk::SurfaceFormatKHR> surfaceFormats =
-      device.getPhysicalDevice().getSurfaceFormatsKHR(mWindowSurface);
+      device.getPhysicalDeviceHandle().getSurfaceFormatsKHR(mWindowSurface);
   const vk::Format surfaceFormat = vk::Format::eB8G8R8A8Srgb;
   const bool supportedFormat =
       std::find_if(
@@ -40,7 +43,7 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
   RTIDPRR_ASSERT_MSG(supportedFormat,
                      "B8G8R8A8Srgb format not supported by platform");
   RTIDPRR_ASSERT_MSG(
-      device.getPhysicalDevice().getSurfaceSupportKHR(
+      device.getPhysicalDeviceHandle().getSurfaceSupportKHR(
           device.getGraphicsQueue().getFamilyIndex(), mWindowSurface),
       "Cannot present using the graphics queue");
 
@@ -69,7 +72,7 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
           .setSubpasses(subpass);
 
   mMainRenderPass =
-      device.getLogicalDevice().createRenderPass(renderPassCreateInfo);
+      device.getLogicalDeviceHandle().createRenderPass(renderPassCreateInfo);
 
   vk::SwapchainCreateInfoKHR swapchainCreateInfo =
       vk::SwapchainCreateInfoKHR()
@@ -87,9 +90,9 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
           .setClipped(true);
 
   mSwapchainHandle =
-      device.getLogicalDevice().createSwapchainKHR(swapchainCreateInfo);
+      device.getLogicalDeviceHandle().createSwapchainKHR(swapchainCreateInfo);
   std::vector<vk::Image> images =
-      device.getLogicalDevice().getSwapchainImagesKHR(mSwapchainHandle);
+      device.getLogicalDeviceHandle().getSwapchainImagesKHR(mSwapchainHandle);
 
   mSwapchainResources.reserve(images.size());
 
@@ -105,7 +108,8 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
                     .setLevelCount(1)
                     .setLayerCount(1));
     vk::ImageView swapchainImageView =
-        device.getLogicalDevice().createImageView(swapchainImageViewCreateInfo);
+        device.getLogicalDeviceHandle().createImageView(
+            swapchainImageViewCreateInfo);
     Framebuffer swapchainImageFramebuffer(
         device, mMainRenderPass, {swapchainImageView}, window.getWidth(),
         window.getHeight());
@@ -117,16 +121,16 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
 
   vk::SemaphoreCreateInfo semaphoreCreateInfo;
   mImageAvailableSemaphore =
-      device.getLogicalDevice().createSemaphore(semaphoreCreateInfo);
+      device.getLogicalDeviceHandle().createSemaphore(semaphoreCreateInfo);
   mPresentFinishedSemaphore =
-      device.getLogicalDevice().createSemaphore(semaphoreCreateInfo);
+      device.getLogicalDeviceHandle().createSemaphore(semaphoreCreateInfo);
 }
 
 void Swapchain::swapBuffers() {
   const Device& device = Context::get().getDevice();
 
   mCurrentImageIndex =
-      device.getLogicalDevice()
+      device.getLogicalDeviceHandle()
           .acquireNextImageKHR(mSwapchainHandle,
                                std::numeric_limits<uint64_t>::max(),
                                mImageAvailableSemaphore, nullptr)
@@ -155,4 +159,14 @@ void Swapchain::submitCommand(const vk::CommandBuffer& commandBuffer) {
   queue.present(presentInfo);
 }
 
-Swapchain::~Swapchain() {}
+Swapchain::~Swapchain() {
+  mDevice.getLogicalDeviceHandle().destroySwapchainKHR(mSwapchainHandle);
+  for (SwapchainResources& resource : mSwapchainResources) {
+    mDevice.getLogicalDeviceHandle().destroyImageView(resource.mImageView);
+    // Framebuffer destroyed by Framebuffer::~Framebuffer
+    // Image destroyed by swapchain
+  }
+  mDevice.getLogicalDeviceHandle().destroyRenderPass(mMainRenderPass);
+  mDevice.getLogicalDeviceHandle().destroySemaphore(mImageAvailableSemaphore);
+  mDevice.getLogicalDeviceHandle().destroySemaphore(mPresentFinishedSemaphore);
+}

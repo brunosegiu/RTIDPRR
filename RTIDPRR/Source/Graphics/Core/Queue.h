@@ -6,9 +6,8 @@ namespace RTIDPRR {
 namespace Graphics {
 class Queue {
  public:
-  Queue() = default;
   Queue(const uint32_t queueFamilyIndex, const uint32_t queueIndex,
-        const vk::Device& device);
+        const vk::Device& logicalDevice);
 
   const vk::CommandPool& getCommandPool() const { return mCommandPool; };
   const uint32_t getFamilyIndex() const { return mFamilyIndex; }
@@ -24,6 +23,8 @@ class Queue {
   uint32_t mFamilyIndex;
   uint32_t mIndex;
   vk::CommandPool mCommandPool;
+
+  const vk::Device& mLogicalDeviceHandle;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

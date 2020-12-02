@@ -20,7 +20,12 @@ ShaderParameterTexture::ShaderParameterTexture(const Texture& texture)
           .setMinLod(0.0f)
           .setMaxLod(1.0f)
           .setBorderColor(vk::BorderColor::eFloatOpaqueWhite);
-  mSampler = device.getLogicalDevice().createSampler(samplerCreateInfo);
+  mSampler = device.getLogicalDeviceHandle().createSampler(samplerCreateInfo);
+}
+
+ShaderParameterTexture::ShaderParameterTexture(ShaderParameterTexture&& other)
+    : mSampler(std::move(other.mSampler)), mTexture(std::move(other.mTexture)) {
+  other.mSampler = nullptr;
 }
 
 void ShaderParameterTexture::bindToGroup(const vk::DescriptorSet& descriptorSet,
@@ -39,6 +44,10 @@ void ShaderParameterTexture::bindToGroup(const vk::DescriptorSet& descriptorSet,
           .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
           .setImageInfo(descriptorImageInfo);
 
-  Context::get().getDevice().getLogicalDevice().updateDescriptorSets(
+  Context::get().getDevice().getLogicalDeviceHandle().updateDescriptorSets(
       descriptorWrite, nullptr);
+}
+
+ShaderParameterTexture::~ShaderParameterTexture() {
+  Context::get().getDevice().getLogicalDeviceHandle().destroySampler(mSampler);
 }

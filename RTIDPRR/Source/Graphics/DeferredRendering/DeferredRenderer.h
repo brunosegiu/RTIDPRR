@@ -21,10 +21,9 @@ class BasePassResources {
   vk::RenderPass mBasePass;
 
   Texture mAlbedoTex, mNormalTex, mDepthTex;
+  Framebuffer mGBuffer;
 
   ShaderParameterGroup<ShaderParameter<glm::mat4>> mVertexStageParameters;
-
-  Framebuffer mGBuffer;
 
   BasePassPipeline mBasePassPipeline;
 };
