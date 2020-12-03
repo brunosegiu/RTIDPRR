@@ -12,6 +12,7 @@ class Shader {
   Shader(Shader&&) = default;
 
   const vk::ShaderModule& getModule() const { return mShaderHandle; }
+  const vk::ShaderStageFlagBits& getStage() const { return mStage; }
 
   virtual ~Shader();
 

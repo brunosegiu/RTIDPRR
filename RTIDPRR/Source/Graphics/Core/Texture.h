@@ -12,6 +12,7 @@ class Texture {
           const vk::ImageTiling tiling = vk::ImageTiling::eOptimal);
 
   const vk::ImageView& getImageView() const { return mImageView; }
+  const vk::Format& getFormat() const { return mFormat; }
 
   virtual ~Texture();
 

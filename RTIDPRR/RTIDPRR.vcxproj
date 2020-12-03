@@ -232,7 +232,9 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Graphics\Core\RenderPass.cpp" />
     <ClCompile Include="Source\Graphics\DeferredRendering\BasePassPipeline.cpp" />
+    <ClCompile Include="Source\Graphics\DeferredRendering\LightPassPipeline.cpp" />
     <ClCompile Include="Source\Graphics\Geometry\IndexedVertexBuffer.cpp" />
     <ClCompile Include="Source\Graphics\Core\Buffer.cpp" />
     <ClCompile Include="Source\Graphics\DeferredRendering\DeferredRenderer.cpp" />
@@ -251,8 +253,11 @@
     <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Graphics\Core\RenderPass.h" />
     <ClInclude Include="Source\Graphics\DeferredRendering\BasePassPipeline.h" />
     <ClInclude Include="Source\Graphics\Core\DeviceMemory.h" />
+    <ClInclude Include="Source\Graphics\DeferredRendering\LightPassPipeline.h" />
+    <ClInclude Include="Source\Graphics\Geometry\GeometryLayout.h" />
     <ClInclude Include="Source\Misc\DebugUtils.h" />
     <ClInclude Include="Source\Graphics\Geometry\IndexedVertexBuffer.h" />
     <ClInclude Include="Source\Graphics\Core\Buffer.h" />

@@ -13,7 +13,8 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
                      const Device& device)
     : mWindowSurface(window.createSurface(instance.getHandle())),
       mCurrentImageIndex(0),
-      mDevice(device) {
+      mDevice(device),
+      mInstance(instance) {
   const std::vector<vk::PresentModeKHR> presentModes =
       device.getPhysicalDeviceHandle().getSurfacePresentModesKHR(
           mWindowSurface);
@@ -26,7 +27,7 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
       device.getPhysicalDeviceHandle().getSurfaceCapabilitiesKHR(
           mWindowSurface);
 
-  vk::Extent2D swapchainExtent = surfaceCapabilities.currentExtent;
+  mSwapchainExtent = surfaceCapabilities.currentExtent;
   uint32_t imageCount = std::clamp<uint32_t>(
       surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount,
       surfaceCapabilities.maxImageCount);
@@ -80,7 +81,7 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
           .setMinImageCount(imageCount)
           .setImageFormat(surfaceFormat)
           .setImageColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
-          .setImageExtent(swapchainExtent)
+          .setImageExtent(mSwapchainExtent)
           .setImageArrayLayers(1)
           .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
           .setImageSharingMode(vk::SharingMode::eExclusive)
@@ -169,4 +170,5 @@ Swapchain::~Swapchain() {
   mDevice.getLogicalDeviceHandle().destroyRenderPass(mMainRenderPass);
   mDevice.getLogicalDeviceHandle().destroySemaphore(mImageAvailableSemaphore);
   mDevice.getLogicalDeviceHandle().destroySemaphore(mPresentFinishedSemaphore);
+  mInstance.getHandle().destroySurfaceKHR(mWindowSurface);
 }

@@ -24,6 +24,7 @@ class Swapchain {
     return mSwapchainResources[mCurrentImageIndex].mFramebuffer;
   }
   const vk::RenderPass& getMainRenderPass() const { return mMainRenderPass; };
+  const vk::Extent2D& getExtent() const { return mSwapchainExtent; };
 
   void swapBuffers();
   void submitCommand(const vk::CommandBuffer& commandBuffer);
@@ -41,7 +42,10 @@ class Swapchain {
 
   uint32_t mCurrentImageIndex;
 
+  vk::Extent2D mSwapchainExtent;
+
   const Device& mDevice;
+  const Instance& mInstance;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

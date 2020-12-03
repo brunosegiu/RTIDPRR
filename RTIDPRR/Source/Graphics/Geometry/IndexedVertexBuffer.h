@@ -10,8 +10,6 @@ namespace Graphics {
 class IndexedVertexBuffer {
  public:
   static const vk::IndexType getIndexType();
-  static vk::VertexInputBindingDescription getBindingDescription();
-  static vk::VertexInputAttributeDescription getAttributeDescription();
 
   IndexedVertexBuffer(const std::vector<glm::vec3>& vertices,
                       const std::vector<uint16_t>& indices);

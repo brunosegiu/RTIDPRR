@@ -8,25 +8,6 @@ const vk::IndexType IndexedVertexBuffer::getIndexType() {
   return vk::IndexType::eUint16;
 }
 
-vk::VertexInputBindingDescription IndexedVertexBuffer::getBindingDescription() {
-  static const vk::VertexInputBindingDescription bindingDescription =
-      vk::VertexInputBindingDescription()
-          .setBinding(0)
-          .setStride(sizeof(glm::vec3))
-          .setInputRate(vk::VertexInputRate::eVertex);
-  return bindingDescription;
-}
-
-vk::VertexInputAttributeDescription
-IndexedVertexBuffer::getAttributeDescription() {
-  static const vk::VertexInputAttributeDescription attributeDescription =
-      vk::VertexInputAttributeDescription{}
-          .setBinding(0)
-          .setLocation(0)
-          .setFormat(vk::Format::eR32G32B32Sfloat);
-  return attributeDescription;
-}
-
 template <typename T>
 Buffer initWithStagingBuffer(const std::vector<T>& data,
                              const vk::BufferUsageFlags usage) {

@@ -6,14 +6,22 @@
 using namespace RTIDPRR::Graphics;
 
 Pipeline::Pipeline(
-    const vk::RenderPass& renderPass,
-    const std::vector<vk::DescriptorSetLayout>& descriptorLayouts)
-    : mVertexShader(Shader::loadShader("Source/Shaders/Build/LightPass.vert")),
-      mFragmentShader(
-          Shader::loadShader("Source/Shaders/Build/LightPass.frag")) {
+    const RenderPass& renderPass, const vk::Extent2D& extent,
+    const GeometryLayout& geometryLayout,
+    const std::vector<std::string>& shaderPaths,
+    const std::vector<vk::DescriptorSetLayout>& descriptorLayouts,
+    const std::vector<vk::PushConstantRange>& pushConstants) {
   const Device& device = Context::get().getDevice();
-  // Setup vertex layout
-  vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo{};
+
+  // Setup geometry state
+  vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo =
+      geometryLayout != GeometryLayout::None
+          ? vk::PipelineVertexInputStateCreateInfo()
+                .setVertexBindingDescriptions(
+                    geometryLayout.getBindingDescription(geometryLayout))
+                .setVertexAttributeDescriptions(
+                    geometryLayout.getAttributeDescription(geometryLayout))
+          : vk::PipelineVertexInputStateCreateInfo();
 
   // Setup topology
   vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo =
@@ -25,13 +33,12 @@ Pipeline::Pipeline(
   vk::Viewport viewport = vk::Viewport()
                               .setX(0.0f)
                               .setY(0.0f)
-                              .setWidth(1280.0f)
-                              .setHeight(720.0f)
+                              .setWidth(static_cast<float>(extent.width))
+                              .setHeight(static_cast<float>(extent.height))
                               .setMinDepth(0.0f)
                               .setMaxDepth(1.0f);
 
-  vk::Rect2D scissor =
-      vk::Rect2D().setOffset(0).setExtent(vk::Extent2D(1280, 720));
+  vk::Rect2D scissor = vk::Rect2D().setOffset(0).setExtent(extent);
 
   vk::PipelineViewportStateCreateInfo viewportCreateInfo =
       vk::PipelineViewportStateCreateInfo().setViewports(viewport).setScissors(
@@ -55,42 +62,42 @@ Pipeline::Pipeline(
           .setRasterizationSamples(vk::SampleCountFlagBits::e1);
 
   // Color blending state
-  vk::PipelineColorBlendAttachmentState colorAttachmentCreateInfo =
+  vk::PipelineColorBlendAttachmentState baseAttachmentCreateInfo =
       vk::PipelineColorBlendAttachmentState()
           .setColorWriteMask(
               vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
               vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
           .setBlendEnable(false);
 
+  std::vector<vk::PipelineColorBlendAttachmentState> blendAttachments(
+      renderPass.getColorAttachmentCount(), baseAttachmentCreateInfo);
+
   vk::PipelineColorBlendStateCreateInfo colorBlendCreateInfo =
       vk::PipelineColorBlendStateCreateInfo()
           .setLogicOpEnable(false)
           .setLogicOp(vk::LogicOp::eCopy)
-          .setAttachments(colorAttachmentCreateInfo);
+          .setAttachments(blendAttachments);
 
   // Shader parameter layout
   vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo =
       vk::PipelineLayoutCreateInfo()
           .setSetLayouts(descriptorLayouts)
-          .setPushConstantRanges(nullptr);
+          .setPushConstantRanges(pushConstants);
 
   mLayoutHandle = device.getLogicalDeviceHandle().createPipelineLayout(
       pipelineLayoutCreateInfo);
 
-  vk::PipelineShaderStageCreateInfo vertexStageCreateInfo =
-      vk::PipelineShaderStageCreateInfo()
-          .setStage(vk::ShaderStageFlagBits::eVertex)
-          .setModule(mVertexShader->getModule())
-          .setPName("main");
-
-  vk::PipelineShaderStageCreateInfo fragmentStageCreateInfo =
-      vk::PipelineShaderStageCreateInfo()
-          .setStage(vk::ShaderStageFlagBits::eFragment)
-          .setModule(mFragmentShader->getModule())
-          .setPName("main");
-
-  const std::vector<vk::PipelineShaderStageCreateInfo> shaderStages{
-      vertexStageCreateInfo, fragmentStageCreateInfo};
+  // Load and bind shaders
+  mShaders.reserve(shaderPaths.size());
+  std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
+  shaderStages.reserve(shaderPaths.size());
+  for (const std::string& shaderPath : shaderPaths) {
+    Shader* shader = mShaders.emplace_back(Shader::loadShader(shaderPath));
+    shaderStages.emplace_back(vk::PipelineShaderStageCreateInfo()
+                                  .setStage(shader->getStage())
+                                  .setModule(shader->getModule())
+                                  .setPName("main"));
+  }
 
   vk::GraphicsPipelineCreateInfo pipelineCreateInfo =
       vk::GraphicsPipelineCreateInfo()
@@ -104,7 +111,7 @@ Pipeline::Pipeline(
           .setPColorBlendState(&colorBlendCreateInfo)
           .setPDynamicState(nullptr)
           .setLayout(mLayoutHandle)
-          .setRenderPass(renderPass)
+          .setRenderPass(renderPass.getHandle())
           .setSubpass(0);
 
   mPipelineHandle = device.getLogicalDeviceHandle()
@@ -116,6 +123,7 @@ Pipeline::~Pipeline() {
   const Device& device = Context::get().getDevice();
   device.getLogicalDeviceHandle().destroyPipelineLayout(mLayoutHandle);
   device.getLogicalDeviceHandle().destroyPipeline(mPipelineHandle);
-  delete mFragmentShader;
-  delete mVertexShader;
+  for (Shader* shader : mShaders) {
+    delete shader;
+  }
 }

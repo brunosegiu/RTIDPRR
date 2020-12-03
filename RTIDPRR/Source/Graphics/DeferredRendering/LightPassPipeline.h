@@ -7,14 +7,14 @@
 
 namespace RTIDPRR {
 namespace Graphics {
-class BasePassPipeline : public Pipeline {
+class LightPassPipeline : public Pipeline {
  public:
-  BasePassPipeline(
+  LightPassPipeline(
       const RenderPass& renderPass, const vk::Extent2D& extent,
       const std::vector<vk::DescriptorSetLayout>& descriptorLayouts,
       const std::vector<vk::PushConstantRange>& pushConstants);
 
-  virtual ~BasePassPipeline() = default;
+  virtual ~LightPassPipeline() = default;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

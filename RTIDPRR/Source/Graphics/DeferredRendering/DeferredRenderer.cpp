@@ -8,13 +8,9 @@ using namespace RTIDPRR::Graphics;
 
 DeferredRenderer::DeferredRenderer()
     : mBasePassResources(vk::Extent2D(800, 600)),
-      mFragmentStageParameters(
-          vk::ShaderStageFlagBits::eFragment,
-          ShaderParameterTexture(mBasePassResources.mAlbedoTex),
-          ShaderParameterTexture(mBasePassResources.mNormalTex)),
-      mPipeline(Context::get().getSwapchain().getMainRenderPass(),
-                std::vector<vk::DescriptorSetLayout>{
-                    mFragmentStageParameters.getLayout()}) {
+      mLightPassResources(Context::get().getSwapchain().getExtent(),
+                          mBasePassResources.mAlbedoTex,
+                          mBasePassResources.mNormalTex) {
   GLTFLoader loader;
   GLTFLoader::GeometryData data = loader.load("Assets/Models/monkey.glb")[0];
   mMesh = std::make_unique<IndexedVertexBuffer>(data.mVertices, data.mIndices);
@@ -42,35 +38,10 @@ void DeferredRenderer::render() {
 
   renderBasePass();
 
-  vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
-  mCommandBuffer.begin(beginInfo);
+  // TODO: REMOVE
+  device.getLogicalDeviceHandle().waitIdle();
 
-  const vk::ClearColorValue clearColor(
-      std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
-
-  const std::vector<vk::ClearValue> clearValues{clearColor};
-
-  vk::RenderPassBeginInfo renderPassBeginInfo =
-      vk::RenderPassBeginInfo()
-          .setRenderPass(swapchain.getMainRenderPass())
-          .setFramebuffer(swapchain.getCurrentFramebuffer().getHandle())
-          .setRenderArea({vk::Offset2D{0, 0}, vk::Extent2D{1280, 720}})
-          .setClearValues(clearValues);
-
-  mCommandBuffer.beginRenderPass(renderPassBeginInfo,
-                                 vk::SubpassContents::eInline);
-
-  mCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics,
-                              mPipeline.getPipelineHandle());
-
-  mCommandBuffer.bindDescriptorSets(
-      vk::PipelineBindPoint::eGraphics, mPipeline.getPipelineLayout(), 0,
-      mFragmentStageParameters.getDescriptorSet(), nullptr);
-
-  mCommandBuffer.draw(3, 1, 0, 0);
-
-  mCommandBuffer.endRenderPass();
-  mCommandBuffer.end();
+  renderLightPass();
 
   swapchain.submitCommand(mCommandBuffer);
 
@@ -111,7 +82,7 @@ void DeferredRenderer::renderBasePass() {
 
   vk::RenderPassBeginInfo renderPassBeginInfo =
       vk::RenderPassBeginInfo()
-          .setRenderPass(mBasePassResources.mBasePass)
+          .setRenderPass(mBasePassResources.mBasePass.getHandle())
           .setFramebuffer(mBasePassResources.mGBuffer.getHandle())
           .setRenderArea({vk::Offset2D{0, 0}, vk::Extent2D{800, 600}})
           .setClearValues(clearValues);
@@ -131,83 +102,48 @@ void DeferredRenderer::renderBasePass() {
   vk::SubmitInfo submitInfo =
       vk::SubmitInfo().setCommandBuffers(mCommandBuffer);
   graphicsQueue.submit(submitInfo);
-  // TODO: REMOVE
-  device.getLogicalDeviceHandle().waitIdle();
+}
+
+void DeferredRenderer::renderLightPass() {
+  Swapchain& swapchain = Context::get().getSwapchain();
+
+  vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
+  mCommandBuffer.begin(beginInfo);
+
+  const vk::ClearColorValue clearColor(
+      std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
+
+  const std::vector<vk::ClearValue> clearValues{clearColor};
+
+  vk::RenderPassBeginInfo renderPassBeginInfo =
+      vk::RenderPassBeginInfo()
+          .setRenderPass(mLightPassResources.mLightPass.getHandle())
+          .setFramebuffer(swapchain.getCurrentFramebuffer().getHandle())
+          .setRenderArea({vk::Offset2D{0, 0}, vk::Extent2D{1280, 720}})
+          .setClearValues(clearValues);
+
+  mCommandBuffer.beginRenderPass(renderPassBeginInfo,
+                                 vk::SubpassContents::eInline);
+
+  mCommandBuffer.bindPipeline(
+      vk::PipelineBindPoint::eGraphics,
+      mLightPassResources.mLightPassPipeline.getPipelineHandle());
+
+  mCommandBuffer.bindDescriptorSets(
+      vk::PipelineBindPoint::eGraphics,
+      mLightPassResources.mLightPassPipeline.getPipelineLayout(), 0,
+      mLightPassResources.mFragmentStageParameters.getDescriptorSet(), nullptr);
+
+  mCommandBuffer.draw(3, 1, 0, 0);
+
+  mCommandBuffer.endRenderPass();
+  mCommandBuffer.end();
 }
 
 DeferredRenderer::~DeferredRenderer() {
   const Device& device = Context::get().getDevice();
   device.getLogicalDeviceHandle().freeCommandBuffers(
       device.getGraphicsQueue().getCommandPool(), mCommandBuffer);
-  device.getLogicalDeviceHandle().destroyRenderPass(
-      mBasePassResources.mBasePass);
-}
-
-vk::RenderPass initBasePass(const vk::Format& albedoFormat,
-                            const vk::Format& normalFormat,
-                            const vk::Format& depthFormat) {
-  const Device& device = Context::get().getDevice();
-
-  vk::AttachmentDescription albedoAttachmentDescription =
-      vk::AttachmentDescription()
-          .setFormat(albedoFormat)
-          .setSamples(vk::SampleCountFlagBits::e1)
-          .setLoadOp(vk::AttachmentLoadOp::eClear)
-          .setStoreOp(vk::AttachmentStoreOp::eStore)
-          .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-          .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-          .setInitialLayout(vk::ImageLayout::eUndefined)
-          .setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-  vk::AttachmentDescription normalAttachmentDescription =
-      vk::AttachmentDescription()
-          .setFormat(normalFormat)
-          .setSamples(vk::SampleCountFlagBits::e1)
-          .setLoadOp(vk::AttachmentLoadOp::eClear)
-          .setStoreOp(vk::AttachmentStoreOp::eStore)
-          .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-          .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-          .setInitialLayout(vk::ImageLayout::eUndefined)
-          .setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-
-  const std::vector<vk::AttachmentReference> colorReference{
-      vk::AttachmentReference()
-          .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
-          .setAttachment(0),
-      vk::AttachmentReference()
-          .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
-          .setAttachment(1)};
-
-  vk::AttachmentDescription depthAttachmentDescription =
-      vk::AttachmentDescription()
-          .setFormat(depthFormat)
-          .setSamples(vk::SampleCountFlagBits::e1)
-          .setLoadOp(vk::AttachmentLoadOp::eClear)
-          .setStoreOp(vk::AttachmentStoreOp::eStore)
-          .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-          .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-          .setInitialLayout(vk::ImageLayout::eUndefined)
-          .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-
-  vk::AttachmentReference depthReference =
-      vk::AttachmentReference()
-          .setAttachment(static_cast<uint32_t>(colorReference.size()))
-          .setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-
-  vk::SubpassDescription subpass =
-      vk::SubpassDescription()
-          .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
-          .setColorAttachments(colorReference)
-          .setPDepthStencilAttachment(nullptr);
-
-  std::vector<vk::AttachmentDescription> attachments{
-      albedoAttachmentDescription, normalAttachmentDescription};
-
-  vk::RenderPassCreateInfo renderPassCreateInfo =
-      vk::RenderPassCreateInfo()
-          .setAttachments(attachments)
-          .setSubpasses(subpass);
-
-  return device.getLogicalDeviceHandle().createRenderPass(renderPassCreateInfo);
 }
 
 static const vk::Format albedoFormat = vk::Format::eR8G8B8A8Unorm;
@@ -215,8 +151,7 @@ static const vk::Format normalFormat = vk::Format::eR16G16B16A16Sfloat;
 static const vk::Format depthFormat = vk::Format::eD32Sfloat;
 
 BasePassResources::BasePassResources(const vk::Extent2D& extent)
-    : mBasePass(initBasePass(albedoFormat, normalFormat, depthFormat)),
-      mAlbedoTex(extent, albedoFormat,
+    : mAlbedoTex(extent, albedoFormat,
                  vk::ImageUsageFlagBits::eColorAttachment |
                      vk::ImageUsageFlagBits::eSampled,
                  vk::ImageAspectFlagBits::eColor),
@@ -227,12 +162,25 @@ BasePassResources::BasePassResources(const vk::Extent2D& extent)
       mDepthTex(extent, depthFormat,
                 vk::ImageUsageFlagBits::eDepthStencilAttachment,
                 vk::ImageAspectFlagBits::eDepth),
-      mGBuffer(Context::get().getDevice(), mBasePass,
+      mBasePass({&mAlbedoTex, &mNormalTex}, false),
+      mGBuffer(Context::get().getDevice(), mBasePass.getHandle(),
                {mAlbedoTex.getImageView(), mNormalTex.getImageView()},
                extent.width, extent.height),
       mVertexStageParameters(vk::ShaderStageFlagBits::eVertex,
                              ShaderParameter<glm::mat4>()),
-      mBasePassPipeline(mBasePass,
+      mBasePassPipeline(mBasePass, extent,
                         std::vector<vk::DescriptorSetLayout>{
                             mVertexStageParameters.getLayout()},
-                        extent) {}
+                        {}) {}
+
+RTIDPRR::Graphics::LightPassResources::LightPassResources(
+    const vk::Extent2D& extent, const Texture& albedoTex,
+    const Texture& normalTex)
+    : mFragmentStageParameters(vk::ShaderStageFlagBits::eFragment,
+                               ShaderParameterTexture(albedoTex),
+                               ShaderParameterTexture(normalTex)),
+      mLightPass(Context::get().getSwapchain().getMainRenderPass(), 1, false),
+      mLightPassPipeline(mLightPass, extent,
+                         std::vector<vk::DescriptorSetLayout>{
+                             mFragmentStageParameters.getLayout()},
+                         {}) {}

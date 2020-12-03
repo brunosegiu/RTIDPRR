@@ -11,7 +11,7 @@ class Framebuffer {
   Framebuffer(const Device& device, const vk::RenderPass& renderPass,
               const std::vector<vk::ImageView>& imageViews,
               const uint32_t width, const uint32_t height);
-  Framebuffer(Framebuffer&& other);
+  Framebuffer(Framebuffer&& other) noexcept;
 
   const vk::Framebuffer& getHandle() const { return mFramebufferHandle; };
 

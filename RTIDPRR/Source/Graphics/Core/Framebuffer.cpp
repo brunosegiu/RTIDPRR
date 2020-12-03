@@ -18,9 +18,9 @@ Framebuffer::Framebuffer(const Device& device, const vk::RenderPass& renderPass,
       device.getLogicalDeviceHandle().createFramebuffer(framebufferCreateInfo);
 }
 
-Framebuffer::Framebuffer(Framebuffer&& other)
+Framebuffer::Framebuffer(Framebuffer&& other) noexcept
     : mFramebufferHandle(std::move(other.mFramebufferHandle)),
-      mDevice(std::move(other.mDevice)) {
+      mDevice(other.mDevice) {
   other.mFramebufferHandle = nullptr;
 }
 

@@ -5,27 +5,36 @@
 
 #include "../Core/Context.h"
 #include "../Core/Pipeline.h"
+#include "../Core/RenderPass.h"
 #include "../Core/Shaders/ShaderParameterGroup.h"
 #include "../Core/Shaders/ShaderParameterTexture.h"
 #include "../Core/Texture.h"
 #include "../Geometry/IndexedVertexBuffer.h"
 #include "BasePassPipeline.h"
+#include "LightPassPipeline.h"
 
 namespace RTIDPRR {
 namespace Graphics {
 
-class BasePassResources {
- public:
+struct BasePassResources {
   BasePassResources(const vk::Extent2D& extent);
 
-  vk::RenderPass mBasePass;
-
   Texture mAlbedoTex, mNormalTex, mDepthTex;
+  RenderPass mBasePass;
   Framebuffer mGBuffer;
 
   ShaderParameterGroup<ShaderParameter<glm::mat4>> mVertexStageParameters;
 
   BasePassPipeline mBasePassPipeline;
+};
+
+struct LightPassResources {
+  LightPassResources(const vk::Extent2D& extent, const Texture& albedoTex,
+                     const Texture& normalTex);
+  RenderPass mLightPass;
+  ShaderParameterGroup<ShaderParameterTexture, ShaderParameterTexture>
+      mFragmentStageParameters;
+  LightPassPipeline mLightPassPipeline;
 };
 
 class DeferredRenderer {
@@ -42,12 +51,10 @@ class DeferredRenderer {
   std::unique_ptr<IndexedVertexBuffer> mMesh;
 
   BasePassResources mBasePassResources;
-
-  ShaderParameterGroup<ShaderParameterTexture, ShaderParameterTexture>
-      mFragmentStageParameters;
-  Pipeline mPipeline;
+  LightPassResources mLightPassResources;
 
   void renderBasePass();
+  void renderLightPass();
 };
 
 }  // namespace Graphics
