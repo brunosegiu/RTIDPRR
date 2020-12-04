@@ -232,6 +232,10 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Input\InputController.cpp" />
+    <ClCompile Include="Source\Input\CameraController.cpp" />
+    <ClCompile Include="Source\Graphics\Scene\Scene.cpp" />
+    <ClCompile Include="Source\Graphics\Scene\Camera.cpp" />
     <ClCompile Include="Source\Graphics\Core\RenderPass.cpp" />
     <ClCompile Include="Source\Graphics\DeferredRendering\BasePassPipeline.cpp" />
     <ClCompile Include="Source\Graphics\DeferredRendering\LightPassPipeline.cpp" />
@@ -251,8 +255,14 @@
     <ClCompile Include="Source\Misc\Window.cpp" />
     <ClCompile Include="Source\Graphics\Core\Texture.cpp" />
     <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTexture.cpp" />
+    <ClCompile Include="Source\Misc\Time\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Input\InputEventListener.h" />
+    <ClInclude Include="Source\Input\InputController.h" />
+    <ClInclude Include="Source\Input\CameraController.h" />
+    <ClInclude Include="Source\Graphics\Scene\Scene.h" />
+    <ClInclude Include="Source\Graphics\Scene\Camera.h" />
     <ClInclude Include="Source\Graphics\Core\RenderPass.h" />
     <ClInclude Include="Source\Graphics\DeferredRendering\BasePassPipeline.h" />
     <ClInclude Include="Source\Graphics\Core\DeviceMemory.h" />
@@ -276,6 +286,7 @@
     <ClInclude Include="Source\Misc\Window.h" />
     <ClInclude Include="Source\Graphics\Core\Texture.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTexture.h" />
+    <ClInclude Include="Source\Misc\Time\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -13,12 +13,17 @@ class IndexedVertexBuffer {
 
   IndexedVertexBuffer(const std::vector<glm::vec3>& vertices,
                       const std::vector<uint16_t>& indices);
+  IndexedVertexBuffer(IndexedVertexBuffer&& other);
+  IndexedVertexBuffer& operator=(IndexedVertexBuffer&& other) { return *this; }
 
-  void draw(const vk::CommandBuffer& commandBuffer);
+  void draw(const vk::CommandBuffer& commandBuffer) const;
 
   virtual ~IndexedVertexBuffer() = default;
 
  private:
+  IndexedVertexBuffer(const IndexedVertexBuffer&) = delete;
+  IndexedVertexBuffer& operator=(const IndexedVertexBuffer&) = delete;
+
   Buffer mVertexBuffer;
   Buffer mIndexBuffer;
   const uint32_t mIndexCount, mVertexCount;

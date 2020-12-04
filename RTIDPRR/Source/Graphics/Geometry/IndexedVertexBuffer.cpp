@@ -26,14 +26,20 @@ Buffer initWithStagingBuffer(const std::vector<T>& data,
 
 IndexedVertexBuffer::IndexedVertexBuffer(const std::vector<glm::vec3>& vertices,
                                          const std::vector<uint16_t>& indices)
-    : mVertexCount(static_cast<uint32_t>(vertices.size())),
-      mIndexCount(static_cast<uint32_t>(indices.size())),
-      mVertexBuffer(std::move(initWithStagingBuffer(
+    : mVertexBuffer(std::move(initWithStagingBuffer(
           vertices, vk::BufferUsageFlagBits::eVertexBuffer))),
       mIndexBuffer(std::move(initWithStagingBuffer(
-          indices, vk::BufferUsageFlagBits::eIndexBuffer))) {}
+          indices, vk::BufferUsageFlagBits::eIndexBuffer))),
+      mIndexCount(static_cast<uint32_t>(indices.size())),
+      mVertexCount(static_cast<uint32_t>(vertices.size())) {}
 
-void IndexedVertexBuffer::draw(const vk::CommandBuffer& commandBuffer) {
+IndexedVertexBuffer::IndexedVertexBuffer(IndexedVertexBuffer&& other)
+    : mVertexBuffer(std::move(other.mVertexBuffer)),
+      mIndexBuffer(std::move(other.mIndexBuffer)),
+      mIndexCount(other.mIndexCount),
+      mVertexCount(other.mVertexCount) {}
+
+void IndexedVertexBuffer::draw(const vk::CommandBuffer& commandBuffer) const {
   vk::DeviceSize offset{0};
   commandBuffer.bindVertexBuffers(0, mVertexBuffer.getBufferHandle(), offset);
   commandBuffer.bindIndexBuffer(mIndexBuffer.getBufferHandle(), offset,

@@ -2,8 +2,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../Loaders/GLTFLoader.h"
-
 using namespace RTIDPRR::Graphics;
 
 DeferredRenderer::DeferredRenderer()
@@ -11,10 +9,6 @@ DeferredRenderer::DeferredRenderer()
       mLightPassResources(Context::get().getSwapchain().getExtent(),
                           mBasePassResources.mAlbedoTex,
                           mBasePassResources.mNormalTex) {
-  GLTFLoader loader;
-  GLTFLoader::GeometryData data = loader.load("Assets/Models/monkey.glb")[0];
-  mMesh = std::make_unique<IndexedVertexBuffer>(data.mVertices, data.mIndices);
-
   const Device& device = Context::get().getDevice();
   const Queue& graphicsQueue = device.getGraphicsQueue();
   vk::CommandBufferAllocateInfo commandAllocInfo =
@@ -29,14 +23,14 @@ DeferredRenderer::DeferredRenderer()
   mCommandBuffer = commandBuffers[0];
 }
 
-void DeferredRenderer::render() {
+void DeferredRenderer::render(const Scene& scene) {
   const Device& device = Context::get().getDevice();
   const Queue& graphicsQueue = device.getGraphicsQueue();
   Swapchain& swapchain = Context::get().getSwapchain();
 
   swapchain.swapBuffers();
 
-  renderBasePass();
+  renderBasePass(scene);
 
   // TODO: REMOVE
   device.getLogicalDeviceHandle().waitIdle();
@@ -49,7 +43,7 @@ void DeferredRenderer::render() {
   device.getLogicalDeviceHandle().waitIdle();
 }
 
-void DeferredRenderer::renderBasePass() {
+void DeferredRenderer::renderBasePass(const Scene& scene) {
   const Device& device = Context::get().getDevice();
   const Queue& graphicsQueue = device.getGraphicsQueue();
 
@@ -62,18 +56,13 @@ void DeferredRenderer::renderBasePass() {
   const std::vector<vk::ClearValue> clearValues{
       albedoClearColor, normalClearColor, depthClearColor};
 
-  glm::mat4 proj =
-      glm::perspective(glm::radians(70.0f), 1280.0f / 720.0f, 0.1f, 10.0f);
-  proj[1][1] *= -1.0f;
-  glm::mat4 view =
-      glm::lookAt(glm::vec3(-5.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                  glm::vec3(0.0f, 1.0f, 0.0f));
-  static float time = 0.0f;
+  glm::mat4 viewProjection = scene.getCamera().getViewProjection();
+  float time = 0.0f;
   time += 0.01f;
   glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
                                 glm::vec3(0.0f, 0.0f, 1.0f));
 
-  glm::mat4 viewProj = proj * view * model;
+  glm::mat4 viewProj = viewProjection;
   std::get<0>(mBasePassResources.mVertexStageParameters.mParameters)
       .update(viewProj);
 
@@ -96,7 +85,11 @@ void DeferredRenderer::renderBasePass() {
       vk::PipelineBindPoint::eGraphics,
       mBasePassResources.mBasePassPipeline.getPipelineLayout(), 0,
       mBasePassResources.mVertexStageParameters.getDescriptorSet(), nullptr);
-  mMesh->draw(mCommandBuffer);
+
+  for (const IndexedVertexBuffer& mesh : scene.getMeshes()) {
+    mesh.draw(mCommandBuffer);
+  }
+
   mCommandBuffer.endRenderPass();
   mCommandBuffer.end();
   vk::SubmitInfo submitInfo =

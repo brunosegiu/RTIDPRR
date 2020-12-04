@@ -10,6 +10,7 @@
 #include "../Core/Shaders/ShaderParameterTexture.h"
 #include "../Core/Texture.h"
 #include "../Geometry/IndexedVertexBuffer.h"
+#include "../Scene/Scene.h"
 #include "BasePassPipeline.h"
 #include "LightPassPipeline.h"
 
@@ -41,19 +42,17 @@ class DeferredRenderer {
  public:
   DeferredRenderer();
 
-  void render();
+  void render(const Scene& scene);
 
   virtual ~DeferredRenderer();
 
  private:
   vk::CommandBuffer mCommandBuffer;
 
-  std::unique_ptr<IndexedVertexBuffer> mMesh;
-
   BasePassResources mBasePassResources;
   LightPassResources mLightPassResources;
 
-  void renderBasePass();
+  void renderBasePass(const Scene& scene);
   void renderLightPass();
 };
 
