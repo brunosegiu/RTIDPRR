@@ -47,9 +47,13 @@ RenderPass::RenderPass(const std::vector<const Texture*>& renderTargets,
           .setInitialLayout(vk::ImageLayout::eUndefined)
           .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
+  if (depthTestEnabled) {
+    attachments.emplace_back(depthAttachmentDescription);
+  }
+
   vk::AttachmentReference depthReference =
       vk::AttachmentReference()
-          .setAttachment(static_cast<uint32_t>(renderTargets.size()))
+          .setAttachment(mColorAttachmentCount)
           .setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
   vk::SubpassDescription subpass =

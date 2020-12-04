@@ -4,8 +4,10 @@
 
 using namespace RTIDPRR::Graphics;
 
+static const vk::Extent2D DEFERRED_RESOLUTION = vk::Extent2D(1920, 1080);
+
 DeferredRenderer::DeferredRenderer()
-    : mBasePassResources(vk::Extent2D(800, 600)),
+    : mBasePassResources(DEFERRED_RESOLUTION),
       mLightPassResources(Context::get().getSwapchain().getExtent(),
                           mBasePassResources.mAlbedoTex,
                           mBasePassResources.mNormalTex) {
@@ -52,19 +54,19 @@ void DeferredRenderer::renderBasePass(const Scene& scene) {
   const vk::ClearColorValue normalClearColor(
       std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
   const vk::ClearDepthStencilValue depthClearColor =
-      vk::ClearDepthStencilValue(0.0f, 1u);
+      vk::ClearDepthStencilValue(1.0f, 1u);
   const std::vector<vk::ClearValue> clearValues{
       albedoClearColor, normalClearColor, depthClearColor};
 
   glm::mat4 viewProjection = scene.getCamera().getViewProjection();
-  float time = 0.0f;
+  static float time = 0.0f;
   time += 0.01f;
   glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
-                                glm::vec3(0.0f, 0.0f, 1.0f));
+                                glm::vec3(0.0f, 1.0f, 0.0f));
 
-  glm::mat4 viewProj = viewProjection;
+  glm::mat4 modelViewProjection = viewProjection * model;
   std::get<0>(mBasePassResources.mVertexStageParameters.mParameters)
-      .update(viewProj);
+      .update(modelViewProjection);
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
   mCommandBuffer.begin(beginInfo);
@@ -73,7 +75,7 @@ void DeferredRenderer::renderBasePass(const Scene& scene) {
       vk::RenderPassBeginInfo()
           .setRenderPass(mBasePassResources.mBasePass.getHandle())
           .setFramebuffer(mBasePassResources.mGBuffer.getHandle())
-          .setRenderArea({vk::Offset2D{0, 0}, vk::Extent2D{800, 600}})
+          .setRenderArea({vk::Offset2D{0, 0}, DEFERRED_RESOLUTION})
           .setClearValues(clearValues);
 
   mCommandBuffer.beginRenderPass(renderPassBeginInfo,
@@ -155,9 +157,10 @@ BasePassResources::BasePassResources(const vk::Extent2D& extent)
       mDepthTex(extent, depthFormat,
                 vk::ImageUsageFlagBits::eDepthStencilAttachment,
                 vk::ImageAspectFlagBits::eDepth),
-      mBasePass({&mAlbedoTex, &mNormalTex}, false),
+      mBasePass({&mAlbedoTex, &mNormalTex, &mDepthTex}, true),
       mGBuffer(Context::get().getDevice(), mBasePass.getHandle(),
-               {mAlbedoTex.getImageView(), mNormalTex.getImageView()},
+               {mAlbedoTex.getImageView(), mNormalTex.getImageView(),
+                mDepthTex.getImageView()},
                extent.width, extent.height),
       mVertexStageParameters(vk::ShaderStageFlagBits::eVertex,
                              ShaderParameter<glm::mat4>()),

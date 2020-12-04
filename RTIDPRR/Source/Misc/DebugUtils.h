@@ -25,9 +25,10 @@
     if (!(condition)) {                                                    \
       std::string fileInfo = message;                                      \
       std::wstring wInfo = std::wstring(fileInfo.begin(), fileInfo.end()); \
-      LOG(message << "Condition failed : " << #condition << std::endl      \
-                  << "In file: " << __FILE__ << ", line: " << __LINE__     \
-                  << " of function: " << __FUNCTION__ << std::endl);       \
+      LOG("In file: " << __FILE__ << ", line: " << __LINE__                \
+                      << " of function: " << __FUNCTION__                  \
+                      << "Condition failed : " << #condition << std::endl  \
+                      << message << std::endl);                            \
       __debugbreak();                                                      \
     }                                                                      \
   }

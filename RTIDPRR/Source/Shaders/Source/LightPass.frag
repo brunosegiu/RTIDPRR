@@ -10,9 +10,9 @@ layout (binding = 0) uniform sampler2D albedoSampler;
 layout (binding = 1) uniform sampler2D normalSampler;
 
 void main() {
-    vec3 albedo = texture(albedoSampler, uv).xyz;
+    vec3 albedo = texture(albedoSampler, uv).rgb;
     vec3 normal = texture(normalSampler, uv).xyz;
 	
-	outColor = vec4(albedo, 1.0);
+	outColor = vec4(albedo * (0.05f + vec3(clamp(dot(normal, normalize(vec3(-1,-1,0))), 0, 1))), 1.0);
 }
 

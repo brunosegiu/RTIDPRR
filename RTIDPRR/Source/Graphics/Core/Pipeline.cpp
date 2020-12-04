@@ -52,7 +52,7 @@ Pipeline::Pipeline(
           .setPolygonMode(vk::PolygonMode::eFill)
           .setLineWidth(1.0f)
           .setCullMode(vk::CullModeFlagBits::eBack)
-          .setFrontFace(vk::FrontFace::eClockwise)
+          .setFrontFace(vk::FrontFace::eCounterClockwise)
           .setDepthBiasEnable(false);
 
   // Multisampling state
@@ -84,6 +84,15 @@ Pipeline::Pipeline(
           .setSetLayouts(descriptorLayouts)
           .setPushConstantRanges(pushConstants);
 
+  // Depth testing
+  vk::PipelineDepthStencilStateCreateInfo depthStencilState =
+      vk::PipelineDepthStencilStateCreateInfo{}
+          .setDepthTestEnable(true)
+          .setDepthWriteEnable(true)
+          .setDepthCompareOp(vk::CompareOp::eLess)
+          .setDepthBoundsTestEnable(false)
+          .setStencilTestEnable(false);
+
   mLayoutHandle = device.getLogicalDeviceHandle().createPipelineLayout(
       pipelineLayoutCreateInfo);
 
@@ -107,7 +116,8 @@ Pipeline::Pipeline(
           .setPViewportState(&viewportCreateInfo)
           .setPRasterizationState(&rasterizerCreateInfo)
           .setPMultisampleState(&multisampleCreateInfo)
-          .setPDepthStencilState(nullptr)
+          .setPDepthStencilState(
+              renderPass.getDepthTestEnabled() ? &depthStencilState : nullptr)
           .setPColorBlendState(&colorBlendCreateInfo)
           .setPDynamicState(nullptr)
           .setLayout(mLayoutHandle)
