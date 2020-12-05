@@ -10,7 +10,8 @@ DeferredRenderer::DeferredRenderer()
     : mBasePassResources(DEFERRED_RESOLUTION),
       mLightPassResources(Context::get().getSwapchain().getExtent(),
                           mBasePassResources.mAlbedoTex,
-                          mBasePassResources.mNormalTex) {
+                          mBasePassResources.mNormalTex,
+                          mBasePassResources.mDepthTex) {
   const Device& device = Context::get().getDevice();
   const Queue& graphicsQueue = device.getGraphicsQueue();
   vk::CommandBufferAllocateInfo commandAllocInfo =
@@ -34,6 +35,31 @@ void DeferredRenderer::render(const Scene& scene) {
 
   renderBasePass(scene);
 
+  // TODO: REMOVE
+  device.getLogicalDeviceHandle().waitIdle();
+
+  {
+    vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
+    mCommandBuffer.begin(beginInfo);
+    vk::ImageMemoryBarrier imageBarrier =
+        vk::ImageMemoryBarrier()
+            .setOldLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+            .setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+            .setImage(mBasePassResources.mDepthTex.getImage())
+            .setSubresourceRange(
+                vk::ImageSubresourceRange()
+                    .setAspectMask(vk::ImageAspectFlagBits::eDepth)
+                    .setBaseMipLevel(0)
+                    .setLevelCount(1)
+                    .setLayerCount(1));
+    mCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eBottomOfPipe,
+                                   vk::PipelineStageFlagBits::eTopOfPipe, {},
+                                   nullptr, nullptr, imageBarrier);
+    mCommandBuffer.end();
+    vk::SubmitInfo submitInfo =
+        vk::SubmitInfo().setCommandBuffers(mCommandBuffer);
+    graphicsQueue.submit(submitInfo);
+  }
   // TODO: REMOVE
   device.getLogicalDeviceHandle().waitIdle();
 
@@ -75,7 +101,6 @@ void DeferredRenderer::renderBasePass(const Scene& scene) {
           .setFramebuffer(mBasePassResources.mGBuffer.getHandle())
           .setRenderArea({vk::Offset2D{0, 0}, DEFERRED_RESOLUTION})
           .setClearValues(clearValues);
-
   mCommandBuffer.beginRenderPass(renderPassBeginInfo,
                                  vk::SubpassContents::eInline);
   mCommandBuffer.bindPipeline(
@@ -154,7 +179,8 @@ BasePassResources::BasePassResources(const vk::Extent2D& extent)
                      vk::ImageUsageFlagBits::eSampled,
                  vk::ImageAspectFlagBits::eColor),
       mDepthTex(extent, depthFormat,
-                vk::ImageUsageFlagBits::eDepthStencilAttachment,
+                vk::ImageUsageFlagBits::eDepthStencilAttachment |
+                    vk::ImageUsageFlagBits::eSampled,
                 vk::ImageAspectFlagBits::eDepth),
       mBasePass({&mAlbedoTex, &mNormalTex, &mDepthTex}, true),
       mGBuffer(Context::get().getDevice(), mBasePass.getHandle(),
@@ -167,10 +193,10 @@ BasePassResources::BasePassResources(const vk::Extent2D& extent)
 
 RTIDPRR::Graphics::LightPassResources::LightPassResources(
     const vk::Extent2D& extent, const Texture& albedoTex,
-    const Texture& normalTex)
-    : mFragmentStageParameters(vk::ShaderStageFlagBits::eFragment,
-                               ShaderParameterTexture(albedoTex),
-                               ShaderParameterTexture(normalTex)),
+    const Texture& normalTex, const Texture& depthTex)
+    : mFragmentStageParameters(
+          vk::ShaderStageFlagBits::eFragment, ShaderParameterTexture(albedoTex),
+          ShaderParameterTexture(normalTex), ShaderParameterTexture(depthTex)),
       mLightPass(Context::get().getSwapchain().getMainRenderPass(), 1, false),
       mLightPassPipeline(mLightPass, extent,
                          std::vector<vk::DescriptorSetLayout>{

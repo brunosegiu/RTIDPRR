@@ -38,9 +38,10 @@ struct BasePassResources {
 
 struct LightPassResources {
   LightPassResources(const vk::Extent2D& extent, const Texture& albedoTex,
-                     const Texture& normalTex);
+                     const Texture& normalTex, const Texture& depthTex);
   RenderPass mLightPass;
-  ShaderParameterGroup<ShaderParameterTexture, ShaderParameterTexture>
+  ShaderParameterGroup<ShaderParameterTexture, ShaderParameterTexture,
+                       ShaderParameterTexture>
       mFragmentStageParameters;
   LightPassPipeline mLightPassPipeline;
 };

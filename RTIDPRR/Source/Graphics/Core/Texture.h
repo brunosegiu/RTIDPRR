@@ -11,6 +11,7 @@ class Texture {
           const vk::ImageAspectFlags& viewAspect,
           const vk::ImageTiling tiling = vk::ImageTiling::eOptimal);
 
+  const vk::Image& getImage() const { return mImage; }
   const vk::ImageView& getImageView() const { return mImageView; }
   const vk::Format& getFormat() const { return mFormat; }
 
