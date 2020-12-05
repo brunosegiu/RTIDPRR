@@ -15,7 +15,7 @@ class ShaderParameter {
   }
 
   ShaderParameter();
-  ShaderParameter(ShaderParameter&&) = default;
+  ShaderParameter(ShaderParameter&&) noexcept = default;
 
   void bindToGroup(const vk::DescriptorSet& descriptorSet,
                    const uint32_t binding);

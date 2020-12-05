@@ -258,6 +258,7 @@
     <ClCompile Include="Source\Misc\Time\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterInlineGroup.h" />
     <ClInclude Include="Source\Input\InputEventListener.h" />
     <ClInclude Include="Source\Input\InputController.h" />
     <ClInclude Include="Source\Input\CameraController.h" />

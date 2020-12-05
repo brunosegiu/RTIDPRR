@@ -65,8 +65,6 @@ void DeferredRenderer::renderBasePass(const Scene& scene) {
                                 glm::vec3(0.0f, 1.0f, 0.0f));
 
   glm::mat4 modelViewProjection = viewProjection * model;
-  std::get<0>(mBasePassResources.mVertexStageParameters.mParameters)
-      .update(modelViewProjection);
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
   mCommandBuffer.begin(beginInfo);
@@ -83,12 +81,13 @@ void DeferredRenderer::renderBasePass(const Scene& scene) {
   mCommandBuffer.bindPipeline(
       vk::PipelineBindPoint::eGraphics,
       mBasePassResources.mBasePassPipeline.getPipelineHandle());
-  mCommandBuffer.bindDescriptorSets(
-      vk::PipelineBindPoint::eGraphics,
-      mBasePassResources.mBasePassPipeline.getPipelineLayout(), 0,
-      mBasePassResources.mVertexStageParameters.getDescriptorSet(), nullptr);
+
+  std::vector<CameraMatrices> matrices{{model, modelViewProjection}};
 
   for (const IndexedVertexBuffer& mesh : scene.getMeshes()) {
+    mCommandBuffer.pushConstants<CameraMatrices>(
+        mBasePassResources.mBasePassPipeline.getPipelineLayout(),
+        vk::ShaderStageFlagBits::eVertex, 0, matrices);
     mesh.draw(mCommandBuffer);
   }
 
@@ -162,12 +161,9 @@ BasePassResources::BasePassResources(const vk::Extent2D& extent)
                {mAlbedoTex.getImageView(), mNormalTex.getImageView(),
                 mDepthTex.getImageView()},
                extent.width, extent.height),
-      mVertexStageParameters(vk::ShaderStageFlagBits::eVertex,
-                             ShaderParameter<glm::mat4>()),
-      mBasePassPipeline(mBasePass, extent,
-                        std::vector<vk::DescriptorSetLayout>{
-                            mVertexStageParameters.getLayout()},
-                        {}) {}
+      mInlineParameters({vk::ShaderStageFlagBits::eVertex}),
+      mBasePassPipeline(mBasePass, extent, {},
+                        mInlineParameters.getPushConstantRanges()) {}
 
 RTIDPRR::Graphics::LightPassResources::LightPassResources(
     const vk::Extent2D& extent, const Texture& albedoTex,

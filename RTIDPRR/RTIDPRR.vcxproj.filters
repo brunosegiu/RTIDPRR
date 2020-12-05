@@ -177,6 +177,9 @@
     <ClInclude Include="Source\Misc\Time\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterInlineGroup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

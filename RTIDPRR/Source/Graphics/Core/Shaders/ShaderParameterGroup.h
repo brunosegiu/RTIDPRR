@@ -5,7 +5,6 @@
 #include <vulkan/vulkan.hpp>
 
 #include "../Context.h"
-#include "ShaderParameter.h"
 
 namespace RTIDPRR {
 namespace Graphics {
@@ -23,9 +22,13 @@ class ShaderParameterGroup {
 
   virtual ~ShaderParameterGroup();
 
-  std::tuple<TShaderParameters...> mParameters;
+  std::tuple<TShaderParameters...>& getShaderParameters() {
+    return mParameters;
+  };
 
  private:
+  std::tuple<TShaderParameters...> mParameters;
+
   vk::DescriptorPool mDescriptorPool;
 
   vk::DescriptorSet mDescriptorSet;

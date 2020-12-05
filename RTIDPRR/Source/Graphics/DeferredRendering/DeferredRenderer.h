@@ -6,7 +6,9 @@
 #include "../Core/Context.h"
 #include "../Core/Pipeline.h"
 #include "../Core/RenderPass.h"
+#include "../Core/Shaders/ShaderParameter.h"
 #include "../Core/Shaders/ShaderParameterGroup.h"
+#include "../Core/Shaders/ShaderParameterInlineGroup.h"
 #include "../Core/Shaders/ShaderParameterTexture.h"
 #include "../Core/Texture.h"
 #include "../Geometry/IndexedVertexBuffer.h"
@@ -17,6 +19,11 @@
 namespace RTIDPRR {
 namespace Graphics {
 
+struct CameraMatrices {
+  glm::mat4 mModel;
+  glm::mat4 mvp;
+};
+
 struct BasePassResources {
   BasePassResources(const vk::Extent2D& extent);
 
@@ -24,7 +31,7 @@ struct BasePassResources {
   RenderPass mBasePass;
   Framebuffer mGBuffer;
 
-  ShaderParameterGroup<ShaderParameter<glm::mat4>> mVertexStageParameters;
+  ShaderParameterInlineGroup<CameraMatrices> mInlineParameters;
 
   BasePassPipeline mBasePassPipeline;
 };
