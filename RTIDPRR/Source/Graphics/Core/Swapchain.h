@@ -5,6 +5,7 @@
 #include "../../Misc/Window.h"
 #include "Device.h"
 #include "Framebuffer.h"
+#include "RenderPass.h"
 
 namespace RTIDPRR {
 namespace Graphics {
@@ -23,7 +24,7 @@ class Swapchain {
   const Framebuffer& getCurrentFramebuffer() const {
     return mSwapchainResources[mCurrentImageIndex].mFramebuffer;
   }
-  const vk::RenderPass& getMainRenderPass() const { return mMainRenderPass; };
+  const RenderPass& getMainRenderPass() const { return *mMainRenderPass; };
   const vk::Extent2D& getExtent() const { return mSwapchainExtent; };
 
   void swapBuffers();
@@ -35,7 +36,7 @@ class Swapchain {
   vk::SurfaceKHR mWindowSurface;
   vk::SwapchainKHR mSwapchainHandle;
   std::vector<SwapchainResources> mSwapchainResources;
-  vk::RenderPass mMainRenderPass;
+  std::unique_ptr<RenderPass> mMainRenderPass;
 
   vk::Semaphore mImageAvailableSemaphore;
   vk::Semaphore mPresentFinishedSemaphore;
@@ -46,6 +47,9 @@ class Swapchain {
 
   const Device& mDevice;
   const Instance& mInstance;
+
+  void createResources(const Device& device);
+  void cleanupResources();
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

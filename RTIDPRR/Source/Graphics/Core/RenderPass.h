@@ -25,8 +25,6 @@ class RenderPass {
 
   bool mDepthTestEnabled;
   uint32_t mColorAttachmentCount;
-
-  bool mIsHandleOwner;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

@@ -10,7 +10,7 @@
 #include "Misc/Window.h"
 
 int main() {
-  RTIDPRR::Window& window = RTIDPRR::Window::init(1280, 720);
+  RTIDPRR::Window& window = RTIDPRR::Window::init(1378, 768);
   RTIDPRR::Graphics::Context::init(window);
   RTIDPRR::Graphics::DeferredRenderer renderer;
   RTIDPRR::Graphics::Scene scene;

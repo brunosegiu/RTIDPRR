@@ -1,5 +1,6 @@
 ﻿#include "RenderPass.h"
 
+#include "../../Misc/DebugUtils.h"
 #include "Context.h"
 
 using namespace RTIDPRR::Graphics;
@@ -7,9 +8,9 @@ using namespace RTIDPRR::Graphics;
 RenderPass::RenderPass(const std::vector<const Texture*>& renderTargets,
                        bool depthTestEnabled)
     : mDepthTestEnabled(depthTestEnabled),
-      mColorAttachmentCount(depthTestEnabled ? renderTargets.size() - 1
-                                             : renderTargets.size()),
-      mIsHandleOwner(true) {
+      mColorAttachmentCount(
+          depthTestEnabled ? static_cast<uint32_t>(renderTargets.size()) - 1
+                           : static_cast<uint32_t>(renderTargets.size())) {
   const Device& device = Context::get().getDevice();
 
   std::vector<vk::AttachmentDescription> attachments;
@@ -68,20 +69,17 @@ RenderPass::RenderPass(const std::vector<const Texture*>& renderTargets,
           .setAttachments(attachments)
           .setSubpasses(subpass);
 
-  mHandle =
-      device.getLogicalDeviceHandle().createRenderPass(renderPassCreateInfo);
+  mHandle = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createRenderPass(renderPassCreateInfo));
 }
 
 RenderPass::RenderPass(vk::RenderPass renderPass, uint32_t colorAttachmentCount,
                        bool depthTestEnabled)
     : mHandle(renderPass),
       mColorAttachmentCount(colorAttachmentCount),
-      mDepthTestEnabled(depthTestEnabled),
-      mIsHandleOwner(false) {}
+      mDepthTestEnabled(depthTestEnabled) {}
 
 RenderPass::~RenderPass() {
-  if (mIsHandleOwner) {
-    const Device& device = Context::get().getDevice();
-    device.getLogicalDeviceHandle().destroyRenderPass(mHandle);
-  }
+  const Device& device = Context::get().getDevice();
+  device.getLogicalDeviceHandle().destroyRenderPass(mHandle);
 }

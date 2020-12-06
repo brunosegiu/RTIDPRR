@@ -39,7 +39,8 @@ Device::Device(const Instance& instance)
           .setQueueCreateInfos(graphicsQueueCreateInfo)
           .setPEnabledExtensionNames(enabledExtensionNames);
 
-  mLogicalHandle = mPhysicalHandle.createDevice(deviceCreateInfo);
+  mLogicalHandle =
+      RTIDPRR_ASSERT_VK(mPhysicalHandle.createDevice(deviceCreateInfo));
 
   mGraphicsQueue = std::make_unique<Queue>(queueFamilyIndex, 0, mLogicalHandle);
   mComputeQueue = std::make_unique<Queue>(queueFamilyIndex, 1, mLogicalHandle);

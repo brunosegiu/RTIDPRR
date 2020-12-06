@@ -12,7 +12,8 @@ Buffer::Buffer(const vk::DeviceSize& size, const vk::BufferUsageFlags& usage,
   vk::BufferCreateInfo bufferCreateInfo =
       vk::BufferCreateInfo().setSize(size).setUsage(usage).setSharingMode(
           vk::SharingMode::eExclusive);
-  mBuffer = device.getLogicalDeviceHandle().createBuffer(bufferCreateInfo);
+  mBuffer = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createBuffer(bufferCreateInfo));
 
   vk::MemoryRequirements memRequirements =
       device.getLogicalDeviceHandle().getBufferMemoryRequirements(mBuffer);
@@ -21,7 +22,8 @@ Buffer::Buffer(const vk::DeviceSize& size, const vk::BufferUsageFlags& usage,
           .setAllocationSize(memRequirements.size)
           .setMemoryTypeIndex(DeviceMemory::findMemoryIndex(
               memRequirements.memoryTypeBits, memoryProperties));
-  mMemory = device.getLogicalDeviceHandle().allocateMemory(memAllocInfo);
+  mMemory = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().allocateMemory(memAllocInfo));
   device.getLogicalDeviceHandle().bindBufferMemory(mBuffer, mMemory, 0);
 }
 
@@ -52,9 +54,8 @@ void Buffer::copyInto(Buffer& other) {
           .setCommandPool(graphicsQueue.getCommandPool())
           .setCommandBufferCount(1);
   vk::CommandBuffer commandBuffer =
-      device.getLogicalDeviceHandle().allocateCommandBuffers(
-          commandAllocInfo)[0];
-
+      RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().allocateCommandBuffers(
+          commandAllocInfo))[0];
   // Copy
   vk::CommandBufferBeginInfo commandBeginInfo =
       vk::CommandBufferBeginInfo().setFlags(
@@ -72,8 +73,9 @@ void Buffer::copyInto(Buffer& other) {
   vk::Fence waitFence =
       device.getLogicalDeviceHandle().createFence(fenceCreateInfo);
   graphicsQueue.submit(submitInfo, waitFence);
-  device.getLogicalDeviceHandle().waitForFences(
+  vk::Result copyRes = device.getLogicalDeviceHandle().waitForFences(
       waitFence, true, std::numeric_limits<uint64_t>::max());
+  RTIDPRR_ASSERT(copyRes == vk::Result::eSuccess);
   device.getLogicalDeviceHandle().freeCommandBuffers(
       graphicsQueue.getCommandPool(), commandBuffer);
   device.getLogicalDeviceHandle().destroyFence(waitFence);

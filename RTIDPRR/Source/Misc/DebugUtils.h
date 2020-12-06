@@ -3,6 +3,8 @@
 #include <Windows.h>
 #include <debugapi.h>
 
+#include <vulkan/vulkan.hpp>
+
 #ifdef max
 #undef max
 #endif
@@ -37,3 +39,9 @@
 #endif
 
 #define RTIDPRR_ASSERT(condition) RTIDPRR_ASSERT_MSG(condition, "")
+
+template <typename ResultValue>
+auto RTIDPRR_ASSERT_VK(ResultValue& resultValue) {
+  RTIDPRR_ASSERT(resultValue.result == vk::Result::eSuccess);
+  return resultValue.value;
+}

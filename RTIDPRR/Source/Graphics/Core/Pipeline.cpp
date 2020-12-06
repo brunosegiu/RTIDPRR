@@ -93,8 +93,9 @@ Pipeline::Pipeline(
           .setDepthBoundsTestEnable(false)
           .setStencilTestEnable(false);
 
-  mLayoutHandle = device.getLogicalDeviceHandle().createPipelineLayout(
-      pipelineLayoutCreateInfo);
+  mLayoutHandle =
+      RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().createPipelineLayout(
+          pipelineLayoutCreateInfo));
 
   // Load and bind shaders
   mShaders.reserve(shaderPaths.size());
@@ -108,6 +109,11 @@ Pipeline::Pipeline(
                                   .setPName("main"));
   }
 
+  const std::vector<vk::DynamicState> dynamicStates{
+      vk::DynamicState::eViewport};
+  vk::PipelineDynamicStateCreateInfo dynamicStateCreateInfo =
+      vk::PipelineDynamicStateCreateInfo().setDynamicStates(dynamicStates);
+
   vk::GraphicsPipelineCreateInfo pipelineCreateInfo =
       vk::GraphicsPipelineCreateInfo()
           .setStages(shaderStages)
@@ -119,7 +125,7 @@ Pipeline::Pipeline(
           .setPDepthStencilState(
               renderPass.getDepthTestEnabled() ? &depthStencilState : nullptr)
           .setPColorBlendState(&colorBlendCreateInfo)
-          .setPDynamicState(nullptr)
+          .setPDynamicState(&dynamicStateCreateInfo)
           .setLayout(mLayoutHandle)
           .setRenderPass(renderPass.getHandle())
           .setSubpass(0);

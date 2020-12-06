@@ -15,6 +15,62 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
       mCurrentImageIndex(0),
       mDevice(device),
       mInstance(instance) {
+  createResources(device);
+}
+
+void Swapchain::swapBuffers() {
+  const Device& device = Context::get().getDevice();
+
+  mCurrentImageIndex =
+      device.getLogicalDeviceHandle()
+          .acquireNextImageKHR(mSwapchainHandle,
+                               std::numeric_limits<uint64_t>::max(),
+                               mImageAvailableSemaphore, nullptr)
+          .value;
+}
+
+void Swapchain::submitCommand(const vk::CommandBuffer& commandBuffer) {
+  const std::vector<vk::PipelineStageFlags> waitStages{
+      vk::PipelineStageFlagBits::eColorAttachmentOutput};
+  const std::vector<vk::CommandBuffer> commands{commandBuffer};
+  vk::SubmitInfo submitInfo =
+      vk::SubmitInfo()
+          .setWaitSemaphores(mImageAvailableSemaphore)
+          .setWaitDstStageMask(waitStages)
+          .setCommandBuffers(commands)
+          .setSignalSemaphores(mPresentFinishedSemaphore);
+  const Queue& queue = Context::get().getDevice().getGraphicsQueue();
+  queue.submit(submitInfo);
+
+  vk::PresentInfoKHR presentInfo =
+      vk::PresentInfoKHR()
+          .setWaitSemaphores(mPresentFinishedSemaphore)
+          .setSwapchains(mSwapchainHandle)
+          .setImageIndices(mCurrentImageIndex);
+
+  vk::Result presentResult = queue.present(presentInfo);
+
+  if (presentResult == vk::Result::eErrorOutOfDateKHR ||
+      presentResult == vk::Result::eSuboptimalKHR) {
+    cleanupResources();
+    createResources(Context::get().getDevice());
+  }
+}
+
+Swapchain::~Swapchain() {
+  mDevice.getLogicalDeviceHandle().destroySwapchainKHR(mSwapchainHandle);
+  for (SwapchainResources& resource : mSwapchainResources) {
+    mDevice.getLogicalDeviceHandle().destroyImageView(resource.mImageView);
+    // Framebuffer destroyed by Framebuffer::~Framebuffer
+    // Image destroyed by swapchain
+  }
+  mDevice.getLogicalDeviceHandle().destroySemaphore(mImageAvailableSemaphore);
+  mDevice.getLogicalDeviceHandle().destroySemaphore(mPresentFinishedSemaphore);
+  mInstance.getHandle().destroySurfaceKHR(mWindowSurface);
+}
+
+void Swapchain::createResources(const Device& device) {
+  mCurrentImageIndex = 0;
   const std::vector<vk::PresentModeKHR> presentModes =
       device.getPhysicalDeviceHandle().getSurfacePresentModesKHR(
           mWindowSurface);
@@ -72,8 +128,9 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
           .setAttachments(colorAttachmentDescription)
           .setSubpasses(subpass);
 
-  mMainRenderPass =
-      device.getLogicalDeviceHandle().createRenderPass(renderPassCreateInfo);
+  mMainRenderPass = std::make_unique<RenderPass>(
+      device.getLogicalDeviceHandle().createRenderPass(renderPassCreateInfo), 1,
+      false);
 
   vk::SwapchainCreateInfoKHR swapchainCreateInfo =
       vk::SwapchainCreateInfoKHR()
@@ -88,13 +145,15 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
           .setPreTransform(surfaceCapabilities.currentTransform)
           .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
           .setPresentMode(presentMode)
-          .setClipped(true);
+          .setClipped(true)
+          .setOldSwapchain(mSwapchainHandle);
 
-  mSwapchainHandle =
-      device.getLogicalDeviceHandle().createSwapchainKHR(swapchainCreateInfo);
+  mSwapchainHandle = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createSwapchainKHR(swapchainCreateInfo));
   std::vector<vk::Image> images =
       device.getLogicalDeviceHandle().getSwapchainImagesKHR(mSwapchainHandle);
 
+  mSwapchainResources.clear();
   mSwapchainResources.reserve(images.size());
 
   for (const vk::Image& swapchainImage : images) {
@@ -112,8 +171,8 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
         device.getLogicalDeviceHandle().createImageView(
             swapchainImageViewCreateInfo);
     Framebuffer swapchainImageFramebuffer(
-        device, mMainRenderPass, {swapchainImageView}, window.getWidth(),
-        window.getHeight());
+        device, mMainRenderPass->getHandle(), {swapchainImageView},
+        mSwapchainExtent.width, mSwapchainExtent.height);
     SwapchainResources resources{std::move(swapchainImage),
                                  std::move(swapchainImageView),
                                  std::move(swapchainImageFramebuffer)};
@@ -121,54 +180,19 @@ Swapchain::Swapchain(const Window& window, const Instance& instance,
   }
 
   vk::SemaphoreCreateInfo semaphoreCreateInfo;
-  mImageAvailableSemaphore =
-      device.getLogicalDeviceHandle().createSemaphore(semaphoreCreateInfo);
-  mPresentFinishedSemaphore =
-      device.getLogicalDeviceHandle().createSemaphore(semaphoreCreateInfo);
+  mImageAvailableSemaphore = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createSemaphore(semaphoreCreateInfo));
+  mPresentFinishedSemaphore = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createSemaphore(semaphoreCreateInfo));
 }
 
-void Swapchain::swapBuffers() {
-  const Device& device = Context::get().getDevice();
-
-  mCurrentImageIndex =
-      device.getLogicalDeviceHandle()
-          .acquireNextImageKHR(mSwapchainHandle,
-                               std::numeric_limits<uint64_t>::max(),
-                               mImageAvailableSemaphore, nullptr)
-          .value;
-}
-
-void Swapchain::submitCommand(const vk::CommandBuffer& commandBuffer) {
-  const std::vector<vk::PipelineStageFlags> waitStages{
-      vk::PipelineStageFlagBits::eColorAttachmentOutput};
-  const std::vector<vk::CommandBuffer> commands{commandBuffer};
-  vk::SubmitInfo submitInfo =
-      vk::SubmitInfo()
-          .setWaitSemaphores(mImageAvailableSemaphore)
-          .setWaitDstStageMask(waitStages)
-          .setCommandBuffers(commands)
-          .setSignalSemaphores(mPresentFinishedSemaphore);
-  const Queue& queue = Context::get().getDevice().getGraphicsQueue();
-  queue.submit(submitInfo);
-
-  vk::PresentInfoKHR presentInfo =
-      vk::PresentInfoKHR()
-          .setWaitSemaphores(mPresentFinishedSemaphore)
-          .setSwapchains(mSwapchainHandle)
-          .setImageIndices(mCurrentImageIndex);
-
-  queue.present(presentInfo);
-}
-
-Swapchain::~Swapchain() {
-  mDevice.getLogicalDeviceHandle().destroySwapchainKHR(mSwapchainHandle);
+void Swapchain::cleanupResources() {
+  Context::get().getDevice().getLogicalDeviceHandle().waitIdle();
   for (SwapchainResources& resource : mSwapchainResources) {
     mDevice.getLogicalDeviceHandle().destroyImageView(resource.mImageView);
     // Framebuffer destroyed by Framebuffer::~Framebuffer
     // Image destroyed by swapchain
   }
-  mDevice.getLogicalDeviceHandle().destroyRenderPass(mMainRenderPass);
   mDevice.getLogicalDeviceHandle().destroySemaphore(mImageAvailableSemaphore);
   mDevice.getLogicalDeviceHandle().destroySemaphore(mPresentFinishedSemaphore);
-  mInstance.getHandle().destroySurfaceKHR(mWindowSurface);
 }

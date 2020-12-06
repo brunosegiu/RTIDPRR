@@ -78,7 +78,7 @@ Instance::Instance(const Window& window) {
           .setEnabledLayerCount(static_cast<uint32_t>(layers.size()))
           .setPpEnabledLayerNames(layers.data());
 
-  mInstanceHandle = vk::createInstance(instanceInfo);
+  mInstanceHandle = RTIDPRR_ASSERT_VK(vk::createInstance(instanceInfo));
 
 #if defined(_DEBUG)
   vk::DispatchLoaderDynamic dynamicDispatcher =
@@ -98,8 +98,9 @@ Instance::Instance(const Window& window) {
                           vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
           .setPfnUserCallback(vkDebugCallback);
 
-  mDebugMessenger = mInstanceHandle.createDebugUtilsMessengerEXT(
-      debugCallbackCreateInfo, nullptr, dynamicDispatcher);
+  mDebugMessenger =
+      RTIDPRR_ASSERT_VK(mInstanceHandle.createDebugUtilsMessengerEXT(
+          debugCallbackCreateInfo, nullptr, dynamicDispatcher));
 #endif
 }
 

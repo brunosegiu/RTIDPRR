@@ -16,8 +16,8 @@ Shader::Shader(const std::vector<char>& code,
           .setCodeSize(code.size() * sizeof(char))
           .setPCode(reinterpret_cast<const unsigned int*>(code.data()));
   const Device& device = Context::get().getDevice();
-  mShaderHandle =
-      device.getLogicalDeviceHandle().createShaderModule(shaderCreateInfo);
+  mShaderHandle = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createShaderModule(shaderCreateInfo));
 }
 
 static const std::unordered_map<std::string, vk::ShaderStageFlagBits>

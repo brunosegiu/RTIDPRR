@@ -1,11 +1,13 @@
 ﻿#include "Framebuffer.h"
 
+#include "../../Misc/DebugUtils.h"
+
 using namespace RTIDPRR::Graphics;
 
 Framebuffer::Framebuffer(const Device& device, const vk::RenderPass& renderPass,
                          const std::vector<vk::ImageView>& imageViews,
                          const uint32_t width, const uint32_t height)
-    : mDevice(device) {
+    : mDevice(device), mWidth(width), mHeight(height) {
   vk::FramebufferCreateInfo framebufferCreateInfo =
       vk::FramebufferCreateInfo()
           .setRenderPass(renderPass)
@@ -14,13 +16,15 @@ Framebuffer::Framebuffer(const Device& device, const vk::RenderPass& renderPass,
           .setHeight(height)
           .setLayers(1);
 
-  mFramebufferHandle =
-      device.getLogicalDeviceHandle().createFramebuffer(framebufferCreateInfo);
+  mFramebufferHandle = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createFramebuffer(framebufferCreateInfo));
 }
 
 Framebuffer::Framebuffer(Framebuffer&& other) noexcept
     : mFramebufferHandle(std::move(other.mFramebufferHandle)),
-      mDevice(other.mDevice) {
+      mDevice(other.mDevice),
+      mWidth(other.mWidth),
+      mHeight(other.mHeight) {
   other.mFramebufferHandle = nullptr;
 }
 

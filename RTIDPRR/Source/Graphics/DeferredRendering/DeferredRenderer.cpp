@@ -107,6 +107,15 @@ void DeferredRenderer::renderBasePass(const Scene& scene) {
       vk::PipelineBindPoint::eGraphics,
       mBasePassResources.mBasePassPipeline.getPipelineHandle());
 
+  const vk::Viewport viewport{
+      0.0f,
+      0.0f,
+      static_cast<float>(mBasePassResources.mGBuffer.getWidth()),
+      static_cast<float>(mBasePassResources.mGBuffer.getHeight()),
+      0.0f,
+      1.0f};
+  mCommandBuffer.setViewport(0, viewport);
+
   std::vector<CameraMatrices> matrices{{model, modelViewProjection}};
 
   for (const IndexedVertexBuffer& mesh : scene.getMeshes()) {
@@ -136,9 +145,12 @@ void DeferredRenderer::renderLightPass() {
 
   vk::RenderPassBeginInfo renderPassBeginInfo =
       vk::RenderPassBeginInfo()
-          .setRenderPass(mLightPassResources.mLightPass.getHandle())
+          .setRenderPass(swapchain.getMainRenderPass().getHandle())
           .setFramebuffer(swapchain.getCurrentFramebuffer().getHandle())
-          .setRenderArea({vk::Offset2D{0, 0}, vk::Extent2D{1280, 720}})
+          .setRenderArea(
+              {vk::Offset2D{0, 0},
+               vk::Extent2D{swapchain.getCurrentFramebuffer().getWidth(),
+                            swapchain.getCurrentFramebuffer().getHeight()}})
           .setClearValues(clearValues);
 
   mCommandBuffer.beginRenderPass(renderPassBeginInfo,
@@ -147,6 +159,15 @@ void DeferredRenderer::renderLightPass() {
   mCommandBuffer.bindPipeline(
       vk::PipelineBindPoint::eGraphics,
       mLightPassResources.mLightPassPipeline.getPipelineHandle());
+
+  const vk::Viewport viewport{
+      0.0f,
+      0.0f,
+      static_cast<float>(swapchain.getCurrentFramebuffer().getWidth()),
+      static_cast<float>(swapchain.getCurrentFramebuffer().getHeight()),
+      0.0f,
+      1.0f};
+  mCommandBuffer.setViewport(0, viewport);
 
   mCommandBuffer.bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics,
@@ -197,8 +218,8 @@ RTIDPRR::Graphics::LightPassResources::LightPassResources(
     : mFragmentStageParameters(
           vk::ShaderStageFlagBits::eFragment, ShaderParameterTexture(albedoTex),
           ShaderParameterTexture(normalTex), ShaderParameterTexture(depthTex)),
-      mLightPass(Context::get().getSwapchain().getMainRenderPass(), 1, false),
-      mLightPassPipeline(mLightPass, extent,
+      mLightPassPipeline(Context::get().getSwapchain().getMainRenderPass(),
+                         extent,
                          std::vector<vk::DescriptorSetLayout>{
                              mFragmentStageParameters.getLayout()},
                          {}) {}

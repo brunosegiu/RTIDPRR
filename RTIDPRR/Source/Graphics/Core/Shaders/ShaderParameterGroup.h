@@ -109,8 +109,8 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
   vk::DescriptorPoolCreateInfo poolCreateInfo =
       vk::DescriptorPoolCreateInfo().setPoolSizes(poolSizes).setMaxSets(
           sShaderParameterCount);
-  mDescriptorPool =
-      device.getLogicalDeviceHandle().createDescriptorPool(poolCreateInfo);
+  mDescriptorPool = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createDescriptorPool(poolCreateInfo));
   std::vector<vk::DescriptorSetLayoutBinding> bindingInfos(paramCount);
   initializeBindings(mParameters, bindingInfos, stage);
 
@@ -119,16 +119,18 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
           .setBindingCount(paramCount)
           .setBindings(bindingInfos);
 
-  mLayout = device.getLogicalDeviceHandle().createDescriptorSetLayout(
-      layoutCreateInfo);
+  mLayout = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createDescriptorSetLayout(
+          layoutCreateInfo));
 
   vk::DescriptorSetAllocateInfo descriptorAllocInfo =
       vk::DescriptorSetAllocateInfo()
           .setDescriptorPool(mDescriptorPool)
           .setDescriptorSetCount(1)
           .setSetLayouts(mLayout);
-  mDescriptorSet = device.getLogicalDeviceHandle().allocateDescriptorSets(
-      descriptorAllocInfo)[0];
+  mDescriptorSet =
+      RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().allocateDescriptorSets(
+          descriptorAllocInfo))[0];
 
   bindAllParametersToGroup(mParameters, mDescriptorSet);
 };

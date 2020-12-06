@@ -39,6 +39,8 @@ class Window {
   uint32_t getHeight() const { return mHeight; };
   RTIDPRR::Input::InputController& getInputController();
 
+  void setSize(uint32_t width, uint32_t height);
+
   void warpCursorToCenter();
   void toggleCursor(bool show);
 

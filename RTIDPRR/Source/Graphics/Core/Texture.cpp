@@ -22,7 +22,8 @@ Texture::Texture(const vk::Extent2D& extent, const vk::Format& format,
           .setTiling(tiling)
           .setUsage(usage)
           .setInitialLayout(vk::ImageLayout::eUndefined);
-  mImage = device.getLogicalDeviceHandle().createImage(imageCreateInfo);
+  mImage = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createImage(imageCreateInfo));
   vk::MemoryRequirements memReqs =
       device.getLogicalDeviceHandle().getImageMemoryRequirements(mImage);
   vk::MemoryAllocateInfo memAllocInfo =
@@ -31,7 +32,8 @@ Texture::Texture(const vk::Extent2D& extent, const vk::Format& format,
           .setMemoryTypeIndex(DeviceMemory::findMemoryIndex(
               memReqs.memoryTypeBits,
               vk::MemoryPropertyFlagBits::eDeviceLocal));
-  mMemory = device.getLogicalDeviceHandle().allocateMemory(memAllocInfo);
+  mMemory = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().allocateMemory(memAllocInfo));
   device.getLogicalDeviceHandle().bindImageMemory(mImage, mMemory, 0);
 
   vk::ImageSubresourceRange subsurfaceRange = vk::ImageSubresourceRange()
@@ -46,8 +48,8 @@ Texture::Texture(const vk::Extent2D& extent, const vk::Format& format,
           .setFormat(format)
           .setSubresourceRange(subsurfaceRange)
           .setImage(mImage);
-  mImageView =
-      device.getLogicalDeviceHandle().createImageView(imageViewCreateInfo);
+  mImageView = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createImageView(imageViewCreateInfo));
 }
 
 Texture::~Texture() {

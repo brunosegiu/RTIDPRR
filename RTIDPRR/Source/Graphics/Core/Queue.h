@@ -14,7 +14,7 @@ class Queue {
 
   void submit(const vk::SubmitInfo& submitInfo,
               const vk::Fence waitFence = nullptr) const;
-  void present(const vk::PresentInfoKHR& presentInfo) const;
+  vk::Result present(const vk::PresentInfoKHR& presentInfo) const;
 
   virtual ~Queue();
 

@@ -1,5 +1,6 @@
 ﻿#include "ShaderParameterTexture.h"
 
+#include "../../../Misc/DebugUtils.h"
 #include "../Context.h"
 
 using namespace RTIDPRR::Graphics;
@@ -20,7 +21,8 @@ ShaderParameterTexture::ShaderParameterTexture(const Texture& texture)
           .setMinLod(0.0f)
           .setMaxLod(1.0f)
           .setBorderColor(vk::BorderColor::eFloatOpaqueWhite);
-  mSampler = device.getLogicalDeviceHandle().createSampler(samplerCreateInfo);
+  mSampler = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createSampler(samplerCreateInfo));
 }
 
 ShaderParameterTexture::ShaderParameterTexture(ShaderParameterTexture&& other)
