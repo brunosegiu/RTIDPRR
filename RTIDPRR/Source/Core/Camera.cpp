@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-using namespace RTIDPRR::Graphics;
+using namespace RTIDPRR::Core;
 
 Camera::Camera() {
   mProjection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 1000.0f);

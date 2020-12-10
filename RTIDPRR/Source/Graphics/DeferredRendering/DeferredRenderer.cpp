@@ -1,7 +1,5 @@
 ﻿#include "DeferredRenderer.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-
 using namespace RTIDPRR::Graphics;
 
 static const vk::Extent2D DEFERRED_RESOLUTION = vk::Extent2D(1920, 1080);
@@ -26,7 +24,7 @@ DeferredRenderer::DeferredRenderer()
   mCommandBuffer = commandBuffers[0];
 }
 
-void DeferredRenderer::render(const Scene& scene) {
+void DeferredRenderer::render(Scene& scene) {
   const Device& device = Context::get().getDevice();
   const Queue& graphicsQueue = device.getGraphicsQueue();
   Swapchain& swapchain = Context::get().getSwapchain();
@@ -71,7 +69,7 @@ void DeferredRenderer::render(const Scene& scene) {
   device.getLogicalDeviceHandle().waitIdle();
 }
 
-void DeferredRenderer::renderBasePass(const Scene& scene) {
+void DeferredRenderer::renderBasePass(Scene& scene) {
   const Device& device = Context::get().getDevice();
   const Queue& graphicsQueue = device.getGraphicsQueue();
 
@@ -83,14 +81,6 @@ void DeferredRenderer::renderBasePass(const Scene& scene) {
       vk::ClearDepthStencilValue(1.0f, 1u);
   const std::vector<vk::ClearValue> clearValues{
       albedoClearColor, normalClearColor, depthClearColor};
-
-  glm::mat4 viewProjection = scene.getCamera().getViewProjection();
-  static float time = 0.0f;
-  time += 0.01f;
-  glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
-                                glm::vec3(0.0f, 1.0f, 0.0f));
-
-  glm::mat4 modelViewProjection = viewProjection * model;
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
   mCommandBuffer.begin(beginInfo);
@@ -116,15 +106,30 @@ void DeferredRenderer::renderBasePass(const Scene& scene) {
       1.0f};
   mCommandBuffer.setViewport(0, viewport);
 
-  std::vector<CameraMatrices> matrices{{model, modelViewProjection}};
+  {
+    using namespace RTIDPRR::Component;
+    MeshSystem& meshSystem = scene.getSystem<RTIDPRR::Component::MeshSystem>();
 
-  for (const IndexedVertexBuffer& mesh : scene.getMeshes()) {
-    mCommandBuffer.pushConstants<CameraMatrices>(
-        mBasePassResources.mBasePassPipeline.getPipelineLayout(),
-        vk::ShaderStageFlagBits::eVertex, 0, matrices);
-    mesh.draw(mCommandBuffer);
+    glm::mat4 viewProjection = scene.getCamera().getViewProjection();
+
+    for (Mesh& mesh : meshSystem.getComponents()) {
+      if (Object* obj = mesh.getObject()) {
+        Transform* transform = obj->getComponent<Transform>();
+        if (transform) {
+          const glm::mat4 modelMatrix = transform->getAbsoluteTransform();
+          glm::mat4 modelViewProjection = viewProjection * modelMatrix;
+
+          std::vector<CameraMatrices> matrices{
+              {modelMatrix, modelViewProjection}};
+
+          mCommandBuffer.pushConstants<CameraMatrices>(
+              mBasePassResources.mBasePassPipeline.getPipelineLayout(),
+              vk::ShaderStageFlagBits::eVertex, 0, matrices);
+          mesh.draw(mCommandBuffer);
+        }
+      }
+    }
   }
-
   mCommandBuffer.endRenderPass();
   mCommandBuffer.end();
   vk::SubmitInfo submitInfo =

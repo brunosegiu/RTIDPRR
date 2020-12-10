@@ -1,13 +1,13 @@
 ﻿#pragma once
 
-#include "../Graphics/Scene/Camera.h"
+#include "../Core/Scene.h"
 #include "InputEventListener.h"
 
 namespace RTIDPRR {
 namespace Input {
 class CameraController : public InputEventListener {
  public:
-  CameraController(RTIDPRR::Graphics::Camera& camera);
+  CameraController(RTIDPRR::Core::Camera& camera);
 
   void onKeyPress(const float timeDelta, const SDL_Scancode key) override;
   void onCursorMovement(const float timeDelta,
@@ -20,7 +20,7 @@ class CameraController : public InputEventListener {
   virtual ~CameraController();
 
  private:
-  RTIDPRR::Graphics::Camera& mCamera;
+  RTIDPRR::Core::Camera& mCamera;
   float mSpeed;
   bool mIsEnabled;
 

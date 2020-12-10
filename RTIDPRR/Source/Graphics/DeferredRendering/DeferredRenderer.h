@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
 
+#include "../../Core/Scene.h"
 #include "../Core/Context.h"
 #include "../Core/Pipeline.h"
 #include "../Core/RenderPass.h"
@@ -12,7 +13,6 @@
 #include "../Core/Shaders/ShaderParameterTexture.h"
 #include "../Core/Texture.h"
 #include "../Geometry/IndexedVertexBuffer.h"
-#include "../Scene/Scene.h"
 #include "BasePassPipeline.h"
 #include "LightPassPipeline.h"
 
@@ -49,7 +49,7 @@ class DeferredRenderer {
  public:
   DeferredRenderer();
 
-  void render(const Scene& scene);
+  void render(Scene& scene);
 
   virtual ~DeferredRenderer();
 
@@ -59,7 +59,7 @@ class DeferredRenderer {
   BasePassResources mBasePassResources;
   LightPassResources mLightPassResources;
 
-  void renderBasePass(const Scene& scene);
+  void renderBasePass(Scene& scene);
   void renderLightPass();
 };
 

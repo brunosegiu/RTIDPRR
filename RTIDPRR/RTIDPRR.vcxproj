@@ -121,7 +121,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;VULKAN_HPP_ASSERT ((void)0);VULKAN_HPP_NO_EXCEPTIONS;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;VULKAN_HPP_NO_EXCEPTIONS;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VULKAN_SDK)\Third-Party\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -232,10 +232,14 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\Component.cpp" />
+    <ClCompile Include="Source\Components\Mesh\Mesh.cpp" />
+    <ClCompile Include="Source\Components\Mesh\MeshSystem.cpp" />
+    <ClCompile Include="Source\Core\Camera.cpp" />
+    <ClCompile Include="Source\Core\Object.cpp" />
+    <ClCompile Include="Source\Core\Scene.cpp" />
     <ClCompile Include="Source\Input\InputController.cpp" />
     <ClCompile Include="Source\Input\CameraController.cpp" />
-    <ClCompile Include="Source\Graphics\Scene\Scene.cpp" />
-    <ClCompile Include="Source\Graphics\Scene\Camera.cpp" />
     <ClCompile Include="Source\Graphics\Core\RenderPass.cpp" />
     <ClCompile Include="Source\Graphics\DeferredRendering\BasePassPipeline.cpp" />
     <ClCompile Include="Source\Graphics\DeferredRendering\LightPassPipeline.cpp" />
@@ -256,14 +260,22 @@
     <ClCompile Include="Source\Graphics\Core\Texture.cpp" />
     <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTexture.cpp" />
     <ClCompile Include="Source\Misc\Time\Timer.cpp" />
+    <ClCompile Include="Source\Misc\Random\UUIDGenerator.cpp" />
+    <ClCompile Include="Source\Components\Transform\Transform.cpp" />
+    <ClCompile Include="Source\Components\Transform\TransformSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\Component.h" />
+    <ClInclude Include="Source\Components\Mesh\Mesh.h" />
+    <ClInclude Include="Source\Components\Mesh\MeshSystem.h" />
+    <ClInclude Include="Source\Core\Camera.h" />
+    <ClInclude Include="Source\Core\Object.h" />
+    <ClInclude Include="Source\Core\Scene.h" />
+    <ClInclude Include="Source\Core\System.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterInlineGroup.h" />
     <ClInclude Include="Source\Input\InputEventListener.h" />
     <ClInclude Include="Source\Input\InputController.h" />
     <ClInclude Include="Source\Input\CameraController.h" />
-    <ClInclude Include="Source\Graphics\Scene\Scene.h" />
-    <ClInclude Include="Source\Graphics\Scene\Camera.h" />
     <ClInclude Include="Source\Graphics\Core\RenderPass.h" />
     <ClInclude Include="Source\Graphics\DeferredRendering\BasePassPipeline.h" />
     <ClInclude Include="Source\Graphics\Core\DeviceMemory.h" />
@@ -288,6 +300,9 @@
     <ClInclude Include="Source\Graphics\Core\Texture.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTexture.h" />
     <ClInclude Include="Source\Misc\Time\Timer.h" />
+    <ClInclude Include="Source\Misc\Random\UUIDGenerator.h" />
+    <ClInclude Include="Source\Components\Transform\Transform.h" />
+    <ClInclude Include="Source\Components\Transform\TransformSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

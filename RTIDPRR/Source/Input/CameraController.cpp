@@ -4,7 +4,7 @@
 
 using namespace RTIDPRR::Input;
 
-CameraController::CameraController(RTIDPRR::Graphics::Camera& camera)
+CameraController::CameraController(RTIDPRR::Core::Camera& camera)
     : InputEventListener(),
       mCamera(camera),
       mSpeed(0.00001f),

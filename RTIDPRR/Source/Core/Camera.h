@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 
 namespace RTIDPRR {
-namespace Graphics {
+namespace Core {
 class Camera {
  public:
   Camera();
@@ -40,5 +40,5 @@ class Camera {
   mutable glm::mat4 mView;
   mutable glm::mat4 mVP;
 };
-}  // namespace Graphics
+}  // namespace Core
 }  // namespace RTIDPRR
