@@ -5,22 +5,17 @@
 #include <string>
 
 #include "../../Core/Component.h"
+#include "../../Core/System.h"
 #include "../../Graphics/Geometry/IndexedVertexBuffer.h"
 
 namespace RTIDPRR {
 namespace Component {
-class MeshSystem;
-}
-}  // namespace RTIDPRR
-
-namespace RTIDPRR {
-namespace Component {
-class Mesh : public Component {
+class Mesh : public RTIDPRR::Core::Component {
  public:
-  using SystemType = MeshSystem;
+  using SystemType = RTIDPRR::Core::System<Mesh>;
 
-  Mesh(Object* object, const std::string& filePath);
-  Mesh::Mesh(Mesh&& other) noexcept;
+  Mesh(RTIDPRR::Core::Object* object, const std::string& filePath);
+  Mesh(Mesh&& other) noexcept;
 
   void draw(vk::CommandBuffer& commandBuffer);
 

@@ -1,6 +1,10 @@
 ﻿#pragma once
 
-#include "Object.h"
+namespace RTIDPRR {
+namespace Core {
+class Object;
+}
+}  // namespace RTIDPRR
 
 namespace RTIDPRR {
 namespace Core {

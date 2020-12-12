@@ -17,7 +17,7 @@ class Object {
   Object(Object&& other) noexcept;
 
   template <class TComponent, typename... TArgs>
-  TComponent& addComponent(TArgs&&... args);
+  TComponent* addComponent(TArgs&&... args);
 
   template <class TComponent>
   TComponent* getComponent();
@@ -34,10 +34,12 @@ class Object {
 }  // namespace Core
 }  // namespace RTIDPRR
 
+#include "Scene.h"
+
 using namespace RTIDPRR::Core;
 
 template <class TComponent, typename... TArgs>
-TComponent& Object::addComponent(TArgs&&... args) {
+TComponent* Object::addComponent(TArgs&&... args) {
   Scene& scene = *mScene;
   TComponent::SystemType& system = scene.getSystem<TComponent::SystemType>();
   return system.addComponent(this, std::forward<TArgs>(args)...);

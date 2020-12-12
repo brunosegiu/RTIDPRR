@@ -5,19 +5,18 @@
 
 using namespace RTIDPRR::Component;
 
-Transform::Transform(Object* object, Transform* parent)
+Transform::Transform(RTIDPRR::Core::Object* object)
     : Component(object),
       mAbsoluteTransform(1.0f),
       mLocalTransform(1.0f),
-      mParent(parent),
+      mParent(nullptr),
       mLocalRotation(glm::vec3(0.0f)),
       mLocalScale(1.0f),
       mLocalTranslation(0.0f),
-      mChildren() {
-  if (mParent) {
-    mParent->addChild(this);
-  }
-}
+      mAbsoluteRotation(glm::vec3(0.0f)),
+      mAbsoluteScale(1.0f),
+      mAbsoluteTranslation(0.0f),
+      mChildren() {}
 
 Transform::Transform(Transform&& other) noexcept
     : Component(std::move(other)),
@@ -35,7 +34,7 @@ void Transform::rotate(const glm::vec3& value) {
   mLocalRotation *= glm::quat(value);
 }
 
-void Transform::rotate(const glm::quat& value) { mLocalRotation += value; }
+void Transform::rotate(const glm::quat& value) { mLocalRotation *= value; }
 
 void Transform::translate(const glm::vec3& value) {
   mLocalTranslation += value;
@@ -53,19 +52,39 @@ void Transform::setLocalTranslation(const glm::vec3& value) {
 
 void Transform::setLocalScale(const glm::vec3& value) { mLocalScale = value; }
 
-void RTIDPRR::Component::Transform::addChild(Transform* transform) {
-  mChildren.push_back(transform);
+void Transform::setParent(Transform* parent) {
+  if (mParent) {
+    mParent->removeChild(this);
+  }
+  mParent = parent;
+  if (parent) {
+    parent->addChild(this);
+  }
 }
 
-void Transform::update(const glm::mat4& parentAbsoluteMatrix) {
+void RTIDPRR::Component::Transform::addChild(Transform* transform) {
+  mChildren.emplace(transform);
+}
+
+void Transform::removeChild(Transform* child) { mChildren.erase(child); }
+
+void Transform::update(const glm::mat4& parentAbsoluteMatrix,
+                       const glm::vec3& parentAbsoluteTranslation,
+                       const glm::vec3& parentAbsoluteScale,
+                       const glm::quat& parentAbsoluteRotation) {
   mLocalTransform = glm::translate(glm::mat4(1.0f), mLocalTranslation);
   mLocalTransform *= glm::scale(glm::mat4(1.0f), mLocalScale);
   mLocalTransform *= glm::toMat4(glm::normalize(mLocalRotation));
 
+  mAbsoluteTranslation = parentAbsoluteTranslation + mLocalTranslation;
+  mAbsoluteScale = parentAbsoluteScale * mLocalScale;
+  mAbsoluteRotation = parentAbsoluteRotation * mLocalRotation;
+
   mAbsoluteTransform = mLocalTransform * parentAbsoluteMatrix;
   for (Transform* child : mChildren) {
     if (child != nullptr) {
-      child->update(mAbsoluteTransform);
+      child->update(mAbsoluteTransform, mAbsoluteTranslation, mAbsoluteScale,
+                    mAbsoluteRotation);
     }
   }
 }

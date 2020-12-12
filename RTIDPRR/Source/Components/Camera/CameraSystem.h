@@ -1,17 +1,17 @@
 ﻿#pragma once
 
 #include "../../Core/System.h"
-#include "Mesh.h"
+#include "Camera.h"
 
 namespace RTIDPRR {
 namespace Component {
-class MeshSystem : public RTIDPRR::Core::System<Mesh> {
+class CameraSystem : public RTIDPRR::Core::System<Camera> {
  public:
-  MeshSystem();
+  CameraSystem();
 
   virtual void update(const float deltaTime) override;
 
-  virtual ~MeshSystem();
+  virtual ~CameraSystem();
 };
 
 }  // namespace Component

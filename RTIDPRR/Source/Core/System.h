@@ -4,7 +4,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Object.h"
+namespace RTIDPRR {
+namespace Core {
+class Object;
+}
+}  // namespace RTIDPRR
 
 namespace RTIDPRR {
 namespace Core {
@@ -13,10 +17,10 @@ class System {
  public:
   System();
 
-  virtual void update(const float deltaTime) = 0;
+  virtual void update(const float deltaTime){};
 
   template <typename... TArgs>
-  TComponent& addComponent(Object* object, TArgs&&... args);
+  TComponent* addComponent(Object* object, TArgs&&... args);
 
   TComponent* getComponent(const uint32_t id);
 
@@ -42,12 +46,12 @@ RTIDPRR::Core::System<TComponent>::System()
 
 template <class TComponent>
 template <typename... TArgs>
-TComponent& RTIDPRR::Core::System<TComponent>::addComponent(Object* object,
+TComponent* RTIDPRR::Core::System<TComponent>::addComponent(Object* object,
                                                             TArgs&&... args) {
   TComponent& newComponent =
       mComponents.emplace_back(object, std::forward<TArgs>(args)...);
   mObjectIdToComponent.emplace(object->getId(), mComponents.size() - 1);
-  return newComponent;
+  return &newComponent;
 }
 
 template <class TComponent>

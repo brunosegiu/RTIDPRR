@@ -4,7 +4,8 @@
 
 using namespace RTIDPRR::Component;
 
-Mesh::Mesh(Object* object, const std::string& filePath) : Component(object) {
+Mesh::Mesh(RTIDPRR::Core::Object* object, const std::string& filePath)
+    : Component(object) {
   RTIDPRR::Graphics::GLTFLoader loader;
   RTIDPRR::Graphics::GLTFLoader::GeometryData data = loader.load(filePath)[0];
   mIndexedBuffer = std::make_unique<RTIDPRR::Graphics::IndexedVertexBuffer>(

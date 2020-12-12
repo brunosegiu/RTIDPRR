@@ -1,8 +1,9 @@
 ﻿#pragma once
 
-#include "../Components/Mesh/MeshSystem.h"
+#include "../Components/Camera/Camera.h"
+#include "../Components/Camera/CameraSystem.h"
+#include "../Components/Mesh/Mesh.h"
 #include "../Components/Transform/TransformSystem.h"
-#include "Camera.h"
 #include "Object.h"
 #include "System.h"
 
@@ -12,8 +13,8 @@ class Scene {
  public:
   Scene();
 
-  const Camera& getCamera() const { return mCamera; }
-  Camera& getCamera() { return mCamera; }
+  const RTIDPRR::Component::Camera& getCamera() const { return *mCamera; }
+  RTIDPRR::Component::Camera& getCamera() { return *mCamera; }
 
   template <class TSystem>
   TSystem& getSystem();
@@ -25,12 +26,13 @@ class Scene {
   virtual ~Scene();
 
  private:
-  Camera mCamera;
+  RTIDPRR::Component::Camera* mCamera;
 
   std::list<Object> mObjects;
 
   RTIDPRR::Component::TransformSystem mTransformSystem;
-  RTIDPRR::Component::MeshSystem mMeshSystem;
+  RTIDPRR::Core::System<RTIDPRR::Component::Mesh> mMeshSystem;
+  RTIDPRR::Component::CameraSystem mCameraSystem;
 
   void updateSystems(float deltaTime);
 };

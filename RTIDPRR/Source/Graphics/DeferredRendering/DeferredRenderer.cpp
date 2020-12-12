@@ -107,8 +107,9 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
   mCommandBuffer.setViewport(0, viewport);
 
   {
+    using namespace RTIDPRR::Core;
     using namespace RTIDPRR::Component;
-    MeshSystem& meshSystem = scene.getSystem<RTIDPRR::Component::MeshSystem>();
+    System<Mesh>& meshSystem = scene.getSystem<System<Mesh>>();
 
     glm::mat4 viewProjection = scene.getCamera().getViewProjection();
 
