@@ -2,6 +2,7 @@
 
 #include "../Components/Camera/Camera.h"
 #include "../Components/Camera/CameraSystem.h"
+#include "../Components/Light/Light.h"
 #include "../Components/Mesh/Mesh.h"
 #include "../Components/Transform/TransformSystem.h"
 #include "Object.h"
@@ -33,6 +34,7 @@ class Scene {
   RTIDPRR::Component::TransformSystem mTransformSystem;
   RTIDPRR::Core::System<RTIDPRR::Component::Mesh> mMeshSystem;
   RTIDPRR::Component::CameraSystem mCameraSystem;
+  RTIDPRR::Core::System<RTIDPRR::Component::Light> mLightSystem;
 
   void updateSystems(float deltaTime);
 };

@@ -4,7 +4,8 @@
 
 using namespace RTIDPRR::Core;
 
-Scene::Scene() : mTransformSystem(), mMeshSystem(), mCameraSystem() {
+Scene::Scene()
+    : mTransformSystem(), mMeshSystem(), mCameraSystem(), mLightSystem() {
   Object& camera = addObject();
   mCamera = camera.addComponent<RTIDPRR::Component::Camera>();
   camera.getComponent<RTIDPRR::Component::Transform>()->setLocalTranslation(
@@ -37,6 +38,11 @@ RTIDPRR::Core::System<RTIDPRR::Component::Mesh>& Scene::getSystem() {
 template <>
 RTIDPRR::Component::CameraSystem& Scene::getSystem() {
   return mCameraSystem;
+}
+
+template <>
+RTIDPRR::Core::System<RTIDPRR::Component::Light>& Scene::getSystem() {
+  return mLightSystem;
 }
 
 void Scene::updateSystems(float deltaTime) {

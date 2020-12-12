@@ -40,7 +40,8 @@ struct LightPassResources {
   LightPassResources(const vk::Extent2D& extent, const Texture& albedoTex,
                      const Texture& normalTex, const Texture& depthTex);
   ShaderParameterGroup<ShaderParameterTexture, ShaderParameterTexture,
-                       ShaderParameterTexture>
+                       ShaderParameterTexture,
+                       ShaderParameter<RTIDPRR::Component::LightProxy>>
       mFragmentStageParameters;
   LightPassPipeline mLightPassPipeline;
 };
@@ -60,7 +61,7 @@ class DeferredRenderer {
   LightPassResources mLightPassResources;
 
   void renderBasePass(Scene& scene);
-  void renderLightPass();
+  void renderLightPass(Scene& scene);
 };
 
 }  // namespace Graphics

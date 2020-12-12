@@ -61,8 +61,6 @@ void ShaderParameter<T>::bindToGroup(const vk::DescriptorSet& descriptorSet,
 
 template <typename T>
 void ShaderParameter<T>::update(const T& value) {
-  if (mValue != value) {
-    mValue = value;
-    mBuffer.update(&mValue);
-  }
+  mValue = value;
+  mBuffer.update(&mValue);
 }

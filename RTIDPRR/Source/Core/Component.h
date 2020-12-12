@@ -13,7 +13,7 @@ class Component {
   Component(Object* object);
   Component(Component&& other) noexcept;
 
-  Object* getObject() { return mPObject; }
+  Object* getObject() const { return mPObject; }
 
   virtual ~Component();
 

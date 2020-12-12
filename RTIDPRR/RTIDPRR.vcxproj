@@ -234,6 +234,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Components\Camera\CameraSystem.cpp" />
     <ClCompile Include="Source\Components\Camera\Camera.cpp" />
+    <ClCompile Include="Source\Components\Light\Light.cpp" />
     <ClCompile Include="Source\Core\Component.cpp" />
     <ClCompile Include="Source\Components\Mesh\Mesh.cpp" />
     <ClCompile Include="Source\Core\Object.cpp" />
@@ -266,6 +267,7 @@
   <ItemGroup>
     <ClInclude Include="Source\Components\Camera\CameraSystem.h" />
     <ClInclude Include="Source\Components\Camera\Camera.h" />
+    <ClInclude Include="Source\Components\Light\Light.h" />
     <ClInclude Include="Source\Core\Component.h" />
     <ClInclude Include="Source\Components\Mesh\Mesh.h" />
     <ClInclude Include="Source\Core\Object.h" />

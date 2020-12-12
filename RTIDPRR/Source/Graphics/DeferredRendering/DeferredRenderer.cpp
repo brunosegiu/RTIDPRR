@@ -61,7 +61,7 @@ void DeferredRenderer::render(Scene& scene) {
   // TODO: REMOVE
   device.getLogicalDeviceHandle().waitIdle();
 
-  renderLightPass();
+  renderLightPass(scene);
 
   swapchain.submitCommand(mCommandBuffer);
 
@@ -138,7 +138,7 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
   graphicsQueue.submit(submitInfo);
 }
 
-void DeferredRenderer::renderLightPass() {
+void DeferredRenderer::renderLightPass(Scene& scene) {
   Swapchain& swapchain = Context::get().getSwapchain();
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
@@ -148,6 +148,17 @@ void DeferredRenderer::renderLightPass() {
       std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
 
   const std::vector<vk::ClearValue> clearValues{clearColor};
+
+  using namespace RTIDPRR::Core;
+  using namespace RTIDPRR::Component;
+
+  const std::vector<Light>& lights =
+      scene.getSystem<System<Light>>().getComponents();
+  if (lights.size()) {
+    std::get<3>(
+        mLightPassResources.mFragmentStageParameters.getShaderParameters())
+        .update(lights[0].getProxy());
+  }
 
   vk::RenderPassBeginInfo renderPassBeginInfo =
       vk::RenderPassBeginInfo()
@@ -223,7 +234,8 @@ RTIDPRR::Graphics::LightPassResources::LightPassResources(
     const Texture& normalTex, const Texture& depthTex)
     : mFragmentStageParameters(
           vk::ShaderStageFlagBits::eFragment, ShaderParameterTexture(albedoTex),
-          ShaderParameterTexture(normalTex), ShaderParameterTexture(depthTex)),
+          ShaderParameterTexture(normalTex), ShaderParameterTexture(depthTex),
+          ShaderParameter<RTIDPRR::Component::LightProxy>()),
       mLightPassPipeline(Context::get().getSwapchain().getMainRenderPass(),
                          extent,
                          std::vector<vk::DescriptorSetLayout>{

@@ -54,8 +54,6 @@ class Camera : public RTIDPRR::Core::Component,
   float mSpeed;
   bool mIsEnabled;
 
-  glm::vec3 getDirection();
-
   bool isEnabled() { return mIsEnabled; }
 };
 

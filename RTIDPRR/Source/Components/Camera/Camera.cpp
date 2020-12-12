@@ -46,14 +46,14 @@ Camera::Camera(Camera&& other) noexcept
 void Camera::update() {
   mProjection = glm::perspective(glm::radians(mFOV), 1.0f, mNear, mFar);
   mProjection[1][1] *= -1.0f;
-  glm::vec3 eyePos = mTransform->getAbsoluteTransform()[3];
-  mView = glm::lookAt(eyePos, eyePos + getDirection(), mUp);
+  glm::vec3 eyePos = mTransform->getAbsoluteTranslation();
+  mView = glm::lookAt(eyePos, eyePos + mTransform->getDirection(), mUp);
   mViewProjection = mProjection * mView;
 }
 
 void Camera::onKeyPress(const float timeDelta, const SDL_Scancode key) {
   if (isEnabled()) {
-    glm::vec3 currentDir = getDirection();
+    glm::vec3 currentDir = mTransform->getDirection();
     const float factor = mSpeed * timeDelta;
     switch (key) {
       case SDL_SCANCODE_W:
@@ -95,14 +95,6 @@ void Camera::onInputProcessed() {
     window.warpCursorToCenter();
   }
   window.toggleCursor(!isEnabled());
-}
-
-glm::vec3 Camera::getDirection() {
-  const glm::quat& rotation = mTransform->getAbsoluteRotation();
-  const glm::vec3 forward = glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f));
-  const glm::vec4 lookDir =
-      glm::toMat4(glm::normalize(rotation)) * glm::vec4(forward, 1.0f);
-  return glm::normalize(glm::vec3(lookDir.x, lookDir.y, lookDir.z));
 }
 
 Camera::~Camera() {}

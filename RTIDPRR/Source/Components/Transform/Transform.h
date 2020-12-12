@@ -18,6 +18,8 @@ class Transform : public RTIDPRR::Core::Component {
  public:
   using SystemType = TransformSystem;
 
+  static const glm::vec3 sForward;
+
   Transform(RTIDPRR::Core::Object* object);
   Transform::Transform(Transform&& other) noexcept;
 
@@ -35,9 +37,11 @@ class Transform : public RTIDPRR::Core::Component {
   void setLocalTranslation(const glm::vec3& value);
   void setLocalScale(const glm::vec3& value);
 
-  const glm::vec3& getAbsoluteTranslation() { return mAbsoluteTranslation; };
-  const glm::vec3& getAbsoluteScale() { return mAbsoluteScale; };
-  const glm::quat& getAbsoluteRotation() { return mAbsoluteRotation; };
+  const glm::vec3& getAbsoluteTranslation() { return mAbsoluteTranslation; }
+  const glm::vec3& getAbsoluteScale() { return mAbsoluteScale; }
+  const glm::quat& getAbsoluteRotation() { return mAbsoluteRotation; }
+
+  glm::vec3 getDirection();
 
   void setParent(Transform* parent);
 

@@ -5,6 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
+#include "Components/Light/Light.h"
 #include "Components/Mesh/Mesh.h"
 #include "Components/Transform/Transform.h"
 #include "Core/Scene.h"
@@ -26,8 +27,10 @@ int main() {
 
   // Testing
   Object& newObject = scene.addObject();
-  Transform* transform = newObject.getComponent<Transform>();
-  Mesh* mesh = newObject.addComponent<Mesh>("Assets/Models/monkey.glb");
+  newObject.addComponent<Mesh>("Assets/Models/monkey.glb");
+
+  Object& light = scene.addObject();
+  light.addComponent<Light>();
 
   bool open = true;
   RTIDPRR::Time::Timer timer;
@@ -37,8 +40,8 @@ int main() {
     open = !window.processInput(deltaTime);
 
     // Update test objects
-    // transform->rotate((deltaTime * 0.000001f) * glm::vec3(0, 1, 0));
-
+    light.getComponent<Transform>()->rotate((deltaTime * 0.000001f) *
+                                            glm::vec3(0, 1, 0));
     // Update scene, systems and render
     scene.update(deltaTime);
     renderer.render(scene);

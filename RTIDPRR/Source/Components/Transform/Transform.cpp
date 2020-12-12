@@ -5,6 +5,8 @@
 
 using namespace RTIDPRR::Component;
 
+const glm::vec3 Transform::sForward = glm::vec3(1.0f, 0.0f, 0.0f);
+
 Transform::Transform(RTIDPRR::Core::Object* object)
     : Component(object),
       mAbsoluteTransform(1.0f),
@@ -51,6 +53,12 @@ void Transform::setLocalTranslation(const glm::vec3& value) {
 }
 
 void Transform::setLocalScale(const glm::vec3& value) { mLocalScale = value; }
+
+glm::vec3 Transform::getDirection() {
+  const glm::quat& rotation = getAbsoluteRotation();
+  const glm::vec4 lookDir = glm::toMat4(rotation) * glm::vec4(sForward, 1.0f);
+  return glm::normalize(glm::vec3(lookDir.x, lookDir.y, lookDir.z));
+}
 
 void Transform::setParent(Transform* parent) {
   if (mParent) {
