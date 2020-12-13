@@ -19,6 +19,7 @@ class ShaderParameter {
 
   void bindToGroup(const vk::DescriptorSet& descriptorSet,
                    const uint32_t binding);
+  uint32_t getDescriptorCount() const { return 1; }
 
   void update(const T& value);
 

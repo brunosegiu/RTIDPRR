@@ -13,10 +13,13 @@ class Buffer {
 
   const vk::Buffer& getBufferHandle() const { return mBuffer; };
 
-  void update(const void* value);
+  void update(const void* value, const vk::DeviceSize& offset = 0,
+              const vk::DeviceSize& size = Buffer::sInvalidSize);
   void copyInto(Buffer& other);
 
   virtual ~Buffer();
+
+  static const vk::DeviceSize sInvalidSize;
 
  private:
   vk::Buffer mBuffer;

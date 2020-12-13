@@ -8,6 +8,7 @@
 #include "../Core/Pipeline.h"
 #include "../Core/RenderPass.h"
 #include "../Core/Shaders/ShaderParameter.h"
+#include "../Core/Shaders/ShaderParameterArray.h"
 #include "../Core/Shaders/ShaderParameterGroup.h"
 #include "../Core/Shaders/ShaderParameterInlineGroup.h"
 #include "../Core/Shaders/ShaderParameterTexture.h"
@@ -41,7 +42,7 @@ struct LightPassResources {
                      const Texture& normalTex, const Texture& depthTex);
   ShaderParameterGroup<ShaderParameterTexture, ShaderParameterTexture,
                        ShaderParameterTexture,
-                       ShaderParameter<RTIDPRR::Component::LightProxy>>
+                       ShaderParameterArray<RTIDPRR::Component::LightProxy>>
       mFragmentStageParameters;
   LightPassPipeline mLightPassPipeline;
 };

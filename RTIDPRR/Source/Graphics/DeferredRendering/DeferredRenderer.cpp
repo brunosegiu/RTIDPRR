@@ -1,15 +1,17 @@
 ﻿#include "DeferredRenderer.h"
 
+#include "../../Misc/DebugUtils.h"
+
 using namespace RTIDPRR::Graphics;
 
 static const vk::Extent2D DEFERRED_RESOLUTION = vk::Extent2D(1920, 1080);
 
 DeferredRenderer::DeferredRenderer()
-    : mBasePassResources(DEFERRED_RESOLUTION),
-      mLightPassResources(Context::get().getSwapchain().getExtent(),
+    : mLightPassResources(Context::get().getSwapchain().getExtent(),
                           mBasePassResources.mAlbedoTex,
                           mBasePassResources.mNormalTex,
-                          mBasePassResources.mDepthTex) {
+                          mBasePassResources.mDepthTex),
+      mBasePassResources(DEFERRED_RESOLUTION) {
   const Device& device = Context::get().getDevice();
   const Queue& graphicsQueue = device.getGraphicsQueue();
   vk::CommandBufferAllocateInfo commandAllocInfo =
@@ -18,8 +20,8 @@ DeferredRenderer::DeferredRenderer()
           .setLevel(vk::CommandBufferLevel::ePrimary)
           .setCommandBufferCount(1);
 
-  std::vector<vk::CommandBuffer> commandBuffers =
-      device.getLogicalDeviceHandle().allocateCommandBuffers(commandAllocInfo);
+  std::vector<vk::CommandBuffer> commandBuffers = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().allocateCommandBuffers(commandAllocInfo));
 
   mCommandBuffer = commandBuffers[0];
 }
@@ -34,11 +36,11 @@ void DeferredRenderer::render(Scene& scene) {
   renderBasePass(scene);
 
   // TODO: REMOVE
-  device.getLogicalDeviceHandle().waitIdle();
+  RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().waitIdle());
 
   {
     vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
-    mCommandBuffer.begin(beginInfo);
+    RTIDPRR_ASSERT_VK(mCommandBuffer.begin(beginInfo));
     vk::ImageMemoryBarrier imageBarrier =
         vk::ImageMemoryBarrier()
             .setOldLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
@@ -53,20 +55,20 @@ void DeferredRenderer::render(Scene& scene) {
     mCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eBottomOfPipe,
                                    vk::PipelineStageFlagBits::eTopOfPipe, {},
                                    nullptr, nullptr, imageBarrier);
-    mCommandBuffer.end();
+    RTIDPRR_ASSERT_VK(mCommandBuffer.end());
     vk::SubmitInfo submitInfo =
         vk::SubmitInfo().setCommandBuffers(mCommandBuffer);
     graphicsQueue.submit(submitInfo);
   }
   // TODO: REMOVE
-  device.getLogicalDeviceHandle().waitIdle();
+  RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().waitIdle());
 
   renderLightPass(scene);
 
   swapchain.submitCommand(mCommandBuffer);
 
   // TODO: REMOVE
-  device.getLogicalDeviceHandle().waitIdle();
+  RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().waitIdle());
 }
 
 void DeferredRenderer::renderBasePass(Scene& scene) {
@@ -83,7 +85,7 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
       albedoClearColor, normalClearColor, depthClearColor};
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
-  mCommandBuffer.begin(beginInfo);
+  RTIDPRR_ASSERT_VK(mCommandBuffer.begin(beginInfo));
 
   vk::RenderPassBeginInfo renderPassBeginInfo =
       vk::RenderPassBeginInfo()
@@ -132,7 +134,7 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
     }
   }
   mCommandBuffer.endRenderPass();
-  mCommandBuffer.end();
+  RTIDPRR_ASSERT_VK(mCommandBuffer.end());
   vk::SubmitInfo submitInfo =
       vk::SubmitInfo().setCommandBuffers(mCommandBuffer);
   graphicsQueue.submit(submitInfo);
@@ -142,7 +144,7 @@ void DeferredRenderer::renderLightPass(Scene& scene) {
   Swapchain& swapchain = Context::get().getSwapchain();
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
-  mCommandBuffer.begin(beginInfo);
+  RTIDPRR_ASSERT_VK(mCommandBuffer.begin(beginInfo));
 
   const vk::ClearColorValue clearColor(
       std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
@@ -154,10 +156,11 @@ void DeferredRenderer::renderLightPass(Scene& scene) {
 
   const std::vector<Light>& lights =
       scene.getSystem<System<Light>>().getComponents();
-  if (lights.size()) {
+  for (uint32_t index = 0; index < lights.size(); ++index) {
+    const Light& light = lights[index];
     std::get<3>(
         mLightPassResources.mFragmentStageParameters.getShaderParameters())
-        .update(lights[0].getProxy());
+        .update(index, light.getProxy());
   }
 
   vk::RenderPassBeginInfo renderPassBeginInfo =
@@ -194,7 +197,7 @@ void DeferredRenderer::renderLightPass(Scene& scene) {
   mCommandBuffer.draw(3, 1, 0, 0);
 
   mCommandBuffer.endRenderPass();
-  mCommandBuffer.end();
+  RTIDPRR_ASSERT_VK(mCommandBuffer.end());
 }
 
 DeferredRenderer::~DeferredRenderer() {
@@ -235,7 +238,7 @@ RTIDPRR::Graphics::LightPassResources::LightPassResources(
     : mFragmentStageParameters(
           vk::ShaderStageFlagBits::eFragment, ShaderParameterTexture(albedoTex),
           ShaderParameterTexture(normalTex), ShaderParameterTexture(depthTex),
-          ShaderParameter<RTIDPRR::Component::LightProxy>()),
+          ShaderParameterArray<RTIDPRR::Component::LightProxy>(3)),
       mLightPassPipeline(Context::get().getSwapchain().getMainRenderPass(),
                          extent,
                          std::vector<vk::DescriptorSetLayout>{

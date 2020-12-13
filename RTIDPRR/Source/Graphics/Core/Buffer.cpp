@@ -24,7 +24,8 @@ Buffer::Buffer(const vk::DeviceSize& size, const vk::BufferUsageFlags& usage,
               memRequirements.memoryTypeBits, memoryProperties));
   mMemory = RTIDPRR_ASSERT_VK(
       device.getLogicalDeviceHandle().allocateMemory(memAllocInfo));
-  device.getLogicalDeviceHandle().bindBufferMemory(mBuffer, mMemory, 0);
+  RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().bindBufferMemory(mBuffer, mMemory, 0));
 }
 
 Buffer::Buffer(Buffer&& other)
@@ -35,11 +36,15 @@ Buffer::Buffer(Buffer&& other)
   other.mMemory = nullptr;
 }
 
-void Buffer::update(const void* value) {
+const vk::DeviceSize Buffer::sInvalidSize = static_cast<vk::DeviceSize>(-1);
+
+void Buffer::update(const void* value, const vk::DeviceSize& offset,
+                    const vk::DeviceSize& size) {
   const Device& device = Context::get().getDevice();
-  void* data = device.getLogicalDeviceHandle().mapMemory(mMemory, 0, mSize,
-                                                         vk::MemoryMapFlags{});
-  memcpy(data, value, mSize);
+  vk::DeviceSize effectiveSize = size == Buffer::sInvalidSize ? mSize : size;
+  void* data = RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().mapMemory(
+      mMemory, offset, effectiveSize, vk::MemoryMapFlags{}));
+  memcpy(data, value, effectiveSize);
   device.getLogicalDeviceHandle().unmapMemory(mMemory);
 }
 
@@ -60,18 +65,18 @@ void Buffer::copyInto(Buffer& other) {
   vk::CommandBufferBeginInfo commandBeginInfo =
       vk::CommandBufferBeginInfo().setFlags(
           vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-  commandBuffer.begin(commandBeginInfo);
+  RTIDPRR_ASSERT_VK(commandBuffer.begin(commandBeginInfo));
 
   vk::BufferCopy copyRegion =
       vk::BufferCopy().setSrcOffset(0).setDstOffset(0).setSize(mSize);
   commandBuffer.copyBuffer(mBuffer, other.mBuffer, copyRegion);
-  commandBuffer.end();
+  RTIDPRR_ASSERT_VK(commandBuffer.end());
 
   vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(commandBuffer);
 
   vk::FenceCreateInfo fenceCreateInfo = vk::FenceCreateInfo();
-  vk::Fence waitFence =
-      device.getLogicalDeviceHandle().createFence(fenceCreateInfo);
+  vk::Fence waitFence = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createFence(fenceCreateInfo));
   graphicsQueue.submit(submitInfo, waitFence);
   vk::Result copyRes = device.getLogicalDeviceHandle().waitForFences(
       waitFence, true, std::numeric_limits<uint64_t>::max());

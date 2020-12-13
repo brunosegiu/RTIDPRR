@@ -71,25 +71,25 @@ Swapchain::~Swapchain() {
 
 void Swapchain::createResources(const Device& device) {
   mCurrentImageIndex = 0;
-  const std::vector<vk::PresentModeKHR> presentModes =
+  const std::vector<vk::PresentModeKHR> presentModes = RTIDPRR_ASSERT_VK(
       device.getPhysicalDeviceHandle().getSurfacePresentModesKHR(
-          mWindowSurface);
+          mWindowSurface));
   const vk::PresentModeKHR presentMode =
       std::find(presentModes.begin(), presentModes.end(),
                 vk::PresentModeKHR::eFifo) != presentModes.end()
           ? vk::PresentModeKHR::eFifo
           : vk::PresentModeKHR::eMailbox;
-  const vk::SurfaceCapabilitiesKHR surfaceCapabilities =
+  const vk::SurfaceCapabilitiesKHR surfaceCapabilities = RTIDPRR_ASSERT_VK(
       device.getPhysicalDeviceHandle().getSurfaceCapabilitiesKHR(
-          mWindowSurface);
+          mWindowSurface));
 
   mSwapchainExtent = surfaceCapabilities.currentExtent;
   uint32_t imageCount = std::clamp<uint32_t>(
       surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount,
       surfaceCapabilities.maxImageCount);
 
-  const std::vector<vk::SurfaceFormatKHR> surfaceFormats =
-      device.getPhysicalDeviceHandle().getSurfaceFormatsKHR(mWindowSurface);
+  const std::vector<vk::SurfaceFormatKHR> surfaceFormats = RTIDPRR_ASSERT_VK(
+      device.getPhysicalDeviceHandle().getSurfaceFormatsKHR(mWindowSurface));
   const vk::Format surfaceFormat = vk::Format::eB8G8R8A8Srgb;
   const bool supportedFormat =
       std::find_if(
@@ -99,10 +99,8 @@ void Swapchain::createResources(const Device& device) {
           }) != surfaceFormats.end();
   RTIDPRR_ASSERT_MSG(supportedFormat,
                      "B8G8R8A8Srgb format not supported by platform");
-  RTIDPRR_ASSERT_MSG(
-      device.getPhysicalDeviceHandle().getSurfaceSupportKHR(
-          device.getGraphicsQueue().getFamilyIndex(), mWindowSurface),
-      "Cannot present using the graphics queue");
+  RTIDPRR_ASSERT_VK(device.getPhysicalDeviceHandle().getSurfaceSupportKHR(
+      device.getGraphicsQueue().getFamilyIndex(), mWindowSurface));
 
   // Initialize main render pass
   vk::AttachmentDescription colorAttachmentDescription =
@@ -129,8 +127,9 @@ void Swapchain::createResources(const Device& device) {
           .setSubpasses(subpass);
 
   mMainRenderPass = std::make_unique<RenderPass>(
-      device.getLogicalDeviceHandle().createRenderPass(renderPassCreateInfo), 1,
-      false);
+      RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().createRenderPass(
+          renderPassCreateInfo)),
+      1, false);
 
   vk::SwapchainCreateInfoKHR swapchainCreateInfo =
       vk::SwapchainCreateInfoKHR()
@@ -150,8 +149,8 @@ void Swapchain::createResources(const Device& device) {
 
   mSwapchainHandle = RTIDPRR_ASSERT_VK(
       device.getLogicalDeviceHandle().createSwapchainKHR(swapchainCreateInfo));
-  std::vector<vk::Image> images =
-      device.getLogicalDeviceHandle().getSwapchainImagesKHR(mSwapchainHandle);
+  std::vector<vk::Image> images = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().getSwapchainImagesKHR(mSwapchainHandle));
 
   mSwapchainResources.clear();
   mSwapchainResources.reserve(images.size());
@@ -168,8 +167,8 @@ void Swapchain::createResources(const Device& device) {
                     .setLevelCount(1)
                     .setLayerCount(1));
     vk::ImageView swapchainImageView =
-        device.getLogicalDeviceHandle().createImageView(
-            swapchainImageViewCreateInfo);
+        RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().createImageView(
+            swapchainImageViewCreateInfo));
     Framebuffer swapchainImageFramebuffer(
         device, mMainRenderPass->getHandle(), {swapchainImageView},
         mSwapchainExtent.width, mSwapchainExtent.height);
@@ -187,7 +186,8 @@ void Swapchain::createResources(const Device& device) {
 }
 
 void Swapchain::cleanupResources() {
-  Context::get().getDevice().getLogicalDeviceHandle().waitIdle();
+  RTIDPRR_ASSERT_VK(
+      Context::get().getDevice().getLogicalDeviceHandle().waitIdle());
   for (SwapchainResources& resource : mSwapchainResources) {
     mDevice.getLogicalDeviceHandle().destroyImageView(resource.mImageView);
     // Framebuffer destroyed by Framebuffer::~Framebuffer

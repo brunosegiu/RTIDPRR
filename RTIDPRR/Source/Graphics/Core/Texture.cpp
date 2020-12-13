@@ -34,7 +34,8 @@ Texture::Texture(const vk::Extent2D& extent, const vk::Format& format,
               vk::MemoryPropertyFlagBits::eDeviceLocal));
   mMemory = RTIDPRR_ASSERT_VK(
       device.getLogicalDeviceHandle().allocateMemory(memAllocInfo));
-  device.getLogicalDeviceHandle().bindImageMemory(mImage, mMemory, 0);
+  RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().bindImageMemory(mImage, mMemory, 0));
 
   vk::ImageSubresourceRange subsurfaceRange = vk::ImageSubresourceRange()
                                                   .setAspectMask(viewAspect)

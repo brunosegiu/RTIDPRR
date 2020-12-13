@@ -22,7 +22,7 @@ Queue::Queue(const uint32_t queueFamilyIndex, const uint32_t queueIndex,
 
 void Queue::submit(const vk::SubmitInfo& submitInfo,
                    const vk::Fence waitFence) const {
-  mHandle.submit(submitInfo, waitFence);
+  RTIDPRR_ASSERT_VK(mHandle.submit(submitInfo, waitFence));
 }
 
 vk::Result Queue::present(const vk::PresentInfoKHR& presentInfo) const {

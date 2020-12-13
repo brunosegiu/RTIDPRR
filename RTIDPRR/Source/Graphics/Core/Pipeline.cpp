@@ -1,5 +1,6 @@
 ﻿#include "Pipeline.h"
 
+#include "../../Misc/DebugUtils.h"
 #include "../Geometry/IndexedVertexBuffer.h"
 #include "Context.h"
 
@@ -14,13 +15,15 @@ Pipeline::Pipeline(
   const Device& device = Context::get().getDevice();
 
   // Setup geometry state
+  vk::VertexInputBindingDescription vertexBindingDesc =
+      geometryLayout.getBindingDescription();
+  vk::VertexInputAttributeDescription vertexAttrDesc =
+      geometryLayout.getAttributeDescription();
   vk::PipelineVertexInputStateCreateInfo vertexInputCreateInfo =
       geometryLayout != GeometryLayout::None
           ? vk::PipelineVertexInputStateCreateInfo()
-                .setVertexBindingDescriptions(
-                    geometryLayout.getBindingDescription(geometryLayout))
-                .setVertexAttributeDescriptions(
-                    geometryLayout.getAttributeDescription(geometryLayout))
+                .setVertexBindingDescriptions(vertexBindingDesc)
+                .setVertexAttributeDescriptions(vertexAttrDesc)
           : vk::PipelineVertexInputStateCreateInfo();
 
   // Setup topology
@@ -102,11 +105,12 @@ Pipeline::Pipeline(
   std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
   shaderStages.reserve(shaderPaths.size());
   for (const std::string& shaderPath : shaderPaths) {
+    static const char* entryPointName = "main";
     Shader* shader = mShaders.emplace_back(Shader::loadShader(shaderPath));
     shaderStages.emplace_back(vk::PipelineShaderStageCreateInfo()
                                   .setStage(shader->getStage())
                                   .setModule(shader->getModule())
-                                  .setPName("main"));
+                                  .setPName(entryPointName));
   }
 
   const std::vector<vk::DynamicState> dynamicStates{
@@ -130,9 +134,9 @@ Pipeline::Pipeline(
           .setRenderPass(renderPass.getHandle())
           .setSubpass(0);
 
-  mPipelineHandle = device.getLogicalDeviceHandle()
-                        .createGraphicsPipeline(nullptr, pipelineCreateInfo)
-                        .value;
+  mPipelineHandle =
+      RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().createGraphicsPipeline(
+          nullptr, pipelineCreateInfo));
 }
 
 Pipeline::~Pipeline() {

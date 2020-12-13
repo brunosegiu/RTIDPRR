@@ -12,8 +12,7 @@ Light::Light(Light&& other) noexcept : Component(std::move(other)) {}
 
 LightProxy Light::getProxy() const {
   Transform* transform = getObject()->getComponent<Transform>();
-  return {glm::vec4(transform->getAbsoluteTranslation(), 1.0f),
-          glm::vec4(transform->getDirection(), 1.0f), mIntensity};
+  return {glm::vec4(transform->getDirection(), 1.0f), mIntensity};
 }
 
 Light::~Light() {}

@@ -18,6 +18,10 @@ class Device {
   }
   const vk::Device& getLogicalDeviceHandle() const { return mLogicalHandle; }
 
+  const vk::PhysicalDeviceProperties& getDeviceProperties() const {
+    return mDeviceProperties;
+  }
+
   virtual ~Device();
 
  private:
@@ -31,6 +35,8 @@ class Device {
 
   vk::PhysicalDevice mPhysicalHandle;
   vk::Device mLogicalHandle;
+
+  vk::PhysicalDeviceProperties mDeviceProperties;
 
   std::unique_ptr<Queue> mGraphicsQueue;
   std::unique_ptr<Queue> mComputeQueue;

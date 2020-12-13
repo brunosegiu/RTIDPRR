@@ -40,16 +40,17 @@ class ShaderParameterGroup {
 using namespace RTIDPRR::Graphics;
 
 template <size_t Iterator = 0, class T, class... Rest>
-void initializeBindings(std::vector<vk::DescriptorSetLayoutBinding>& bindings,
+void initializeBindings(const std::tuple<T, Rest...>& parameters,
+                        std::vector<vk::DescriptorSetLayoutBinding>& bindings,
                         const vk::ShaderStageFlags stage) {
   vk::DescriptorSetLayoutBinding& layoutBinding = bindings[Iterator];
   layoutBinding.setBinding(Iterator)
-      .setDescriptorType(T::getDescriptorType())
-      .setDescriptorCount(1)
+      .setDescriptorType(std::get<Iterator>(parameters).getDescriptorType())
+      .setDescriptorCount(std::get<Iterator>(parameters).getDescriptorCount())
       .setStageFlags(stage);
 
-  if constexpr (sizeof...(Rest) > 0)
-    initializeBindings<Iterator + 1, Rest...>(bindings, stage);
+  if constexpr (Iterator < sizeof...(Rest))
+    initializeBindings<Iterator + 1>(parameters, bindings, stage);
 }
 
 template <size_t Iterator = 0, class T, class... Rest>
@@ -62,16 +63,18 @@ void bindAllParametersToGroup(std::tuple<T, Rest...>& parameters,
 
 template <size_t Iterator, vk::DescriptorType DescriptorType, class T,
           class... Rest>
-uint32_t getDescriptorCountForType() {
-  if constexpr (T::getDescriptorType() == DescriptorType) {
-    if constexpr (sizeof...(Rest) > 0)
-      return 1 +
-             getDescriptorCountForType<Iterator + 1, DescriptorType, Rest...>();
+uint32_t getDescriptorCountForType(const std::tuple<T, Rest...>& parameters) {
+  if (std::get<Iterator>(parameters).getDescriptorType() == DescriptorType) {
+    if constexpr (Iterator < sizeof...(Rest))
+      return std::get<Iterator>(parameters).getDescriptorCount() +
+             getDescriptorCountForType<Iterator + 1, DescriptorType, T,
+                                       Rest...>(parameters);
     else
-      return 1;
+      return std::get<Iterator>(parameters).getDescriptorCount();
   } else {
-    if constexpr (sizeof...(Rest) > 0)
-      return getDescriptorCountForType<Iterator + 1, DescriptorType, Rest...>();
+    if constexpr (Iterator < sizeof...(Rest))
+      return getDescriptorCountForType<Iterator + 1, DescriptorType, T,
+                                       Rest...>(parameters);
     else
       return 0;
   }
@@ -88,7 +91,7 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
 
   uint32_t uniformBufferCount =
       getDescriptorCountForType<0, vk::DescriptorType::eUniformBuffer,
-                                TShaderParameters...>();
+                                TShaderParameters...>(mParameters);
   if (uniformBufferCount > 0) {
     poolSizes.emplace_back(vk::DescriptorPoolSize()
                                .setDescriptorCount(uniformBufferCount)
@@ -96,7 +99,7 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
   }
   uint32_t combinedSamplerCount =
       getDescriptorCountForType<0, vk::DescriptorType::eCombinedImageSampler,
-                                TShaderParameters...>();
+                                TShaderParameters...>(mParameters);
   if (combinedSamplerCount > 0) {
     poolSizes.emplace_back(
         vk::DescriptorPoolSize()
@@ -110,7 +113,7 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
   mDescriptorPool = RTIDPRR_ASSERT_VK(
       device.getLogicalDeviceHandle().createDescriptorPool(poolCreateInfo));
   std::vector<vk::DescriptorSetLayoutBinding> bindingInfos(paramCount);
-  initializeBindings<0, TShaderParameters...>(bindingInfos, stage);
+  initializeBindings<0, TShaderParameters...>(mParameters, bindingInfos, stage);
 
   vk::DescriptorSetLayoutCreateInfo layoutCreateInfo =
       vk::DescriptorSetLayoutCreateInfo()

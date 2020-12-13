@@ -10,12 +10,14 @@ Device::Device(const Instance& instance)
     : mGraphicsQueue(nullptr), mComputeQueue(nullptr) {
   // Pick and initialize a physical device
   const std::vector<vk::PhysicalDevice> physicalDevices =
-      instance.getHandle().enumeratePhysicalDevices();
+      RTIDPRR_ASSERT_VK(instance.getHandle().enumeratePhysicalDevices());
   mPhysicalHandle = Device::findPhysicalDevice(physicalDevices);
 
   // Initialize the graphics and compute queues
   const std::vector<vk::QueueFamilyProperties> queueFamilies =
       mPhysicalHandle.getQueueFamilyProperties();
+
+  mDeviceProperties = mPhysicalHandle.getProperties();
 
   const uint32_t queueFamilyIndex = findQueueFamilyIndex(queueFamilies);
 

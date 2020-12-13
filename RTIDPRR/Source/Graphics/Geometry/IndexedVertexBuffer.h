@@ -14,7 +14,9 @@ class IndexedVertexBuffer {
   IndexedVertexBuffer(const std::vector<glm::vec3>& vertices,
                       const std::vector<uint16_t>& indices);
   IndexedVertexBuffer(IndexedVertexBuffer&& other);
-  IndexedVertexBuffer& operator=(IndexedVertexBuffer&& other) { return *this; }
+  IndexedVertexBuffer& operator=(IndexedVertexBuffer&& other) noexcept {
+    return *this;
+  }
 
   void draw(const vk::CommandBuffer& commandBuffer) const;
 
