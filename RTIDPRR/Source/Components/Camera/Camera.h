@@ -26,6 +26,8 @@ class Camera : public RTIDPRR::Core::Component,
   Camera(Camera&& other) noexcept;
 
   const glm::mat4& getViewProjection() { return mViewProjection; }
+  const glm::mat4& getView() { return mView; }
+  const glm::mat4& getProjection() { return mProjection; }
 
   void update();
 

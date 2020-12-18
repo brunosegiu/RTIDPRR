@@ -11,7 +11,8 @@ Pipeline::Pipeline(
     const GeometryLayout& geometryLayout,
     const std::vector<std::string>& shaderPaths,
     const std::vector<vk::DescriptorSetLayout>& descriptorLayouts,
-    const std::vector<vk::PushConstantRange>& pushConstants) {
+    const std::vector<vk::PushConstantRange>& pushConstants,
+    const PipelineCreateOptions& options) {
   const Device& device = Context::get().getDevice();
 
   // Setup geometry state
@@ -54,9 +55,9 @@ Pipeline::Pipeline(
           .setRasterizerDiscardEnable(false)
           .setPolygonMode(vk::PolygonMode::eFill)
           .setLineWidth(1.0f)
-          .setCullMode(vk::CullModeFlagBits::eBack)
+          .setCullMode(options.cullMode)
           .setFrontFace(vk::FrontFace::eCounterClockwise)
-          .setDepthBiasEnable(false);
+          .setDepthBiasEnable(options.enableDepthBias);
 
   // Multisampling state
   vk::PipelineMultisampleStateCreateInfo multisampleCreateInfo =

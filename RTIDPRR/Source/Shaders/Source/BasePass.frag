@@ -6,8 +6,10 @@ layout(location = 1) in vec3 inColor;
 
 layout(location = 0) out vec3 outColor;
 layout(location = 1) out vec3 outNormal;
+layout(location = 2) out vec3 outPosition;
 
 void main() {
     outColor = inColor;
     outNormal = normalize(cross(dFdx(inPosition), dFdy(inPosition)));
+    outPosition = inPosition;
 }

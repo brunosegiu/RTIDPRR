@@ -42,7 +42,7 @@ void Transform::translate(const glm::vec3& value) {
   mLocalTranslation += value;
 }
 
-void Transform::scale(const glm::vec3& value) { mLocalScale += value; }
+void Transform::scale(const glm::vec3& value) { mLocalScale *= value; }
 
 void Transform::setLocalRotation(const glm::quat& value) {
   mLocalRotation = value;
@@ -81,8 +81,8 @@ void Transform::update(const glm::mat4& parentAbsoluteMatrix,
                        const glm::vec3& parentAbsoluteScale,
                        const glm::quat& parentAbsoluteRotation) {
   mLocalTransform = glm::translate(glm::mat4(1.0f), mLocalTranslation);
-  mLocalTransform *= glm::scale(glm::mat4(1.0f), mLocalScale);
   mLocalTransform *= glm::toMat4(glm::normalize(mLocalRotation));
+  mLocalTransform *= glm::scale(glm::mat4(1.0f), mLocalScale);
 
   mAbsoluteTranslation = parentAbsoluteTranslation + mLocalTranslation;
   mAbsoluteScale = parentAbsoluteScale * mLocalScale;

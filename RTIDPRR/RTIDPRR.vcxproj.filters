@@ -240,5 +240,7 @@
     <CustomBuild Include="Source\Shaders\Source\BasePass.vert" />
     <CustomBuild Include="Source\Shaders\Source\LightPass.frag" />
     <CustomBuild Include="Source\Shaders\Source\LightPass.vert" />
+    <CustomBuild Include="Source\Shaders\Source\LightDepthPass.frag" />
+    <CustomBuild Include="Source\Shaders\Source\LightDepthPass.vert" />
   </ItemGroup>
 </Project>

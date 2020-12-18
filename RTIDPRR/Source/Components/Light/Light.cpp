@@ -12,7 +12,16 @@ Light::Light(Light&& other) noexcept : Component(std::move(other)) {}
 
 LightProxy Light::getProxy() const {
   Transform* transform = getObject()->getComponent<Transform>();
-  return {glm::vec4(transform->getDirection(), 1.0f), mIntensity};
+
+  glm::vec3 lightDir = transform->getDirection();
+  const float width = 10.0f;
+  glm::mat4 projection =
+      glm::ortho<float>(-width, width, -width, width, 0.01f, 20.0f);
+  glm::mat4 view = glm::lookAt(transform->getAbsoluteTranslation(),
+                               transform->getAbsoluteTranslation() + lightDir,
+                               glm::vec3(0.0f, 1.0f, 0.0f));
+  glm::mat4 lightMatrix = projection * view;
+  return {lightMatrix, glm::vec4(lightDir, 1.0f), mIntensity};
 }
 
 Light::~Light() {}

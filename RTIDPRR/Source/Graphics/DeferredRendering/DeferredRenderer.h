@@ -25,10 +25,27 @@ struct CameraMatrices {
   glm::mat4 mvp;
 };
 
+struct LightDepthPassCameraParams {
+  glm::mat4 mModel;
+  glm::mat4 mViewProjection;
+};
+
+struct LightDepthPassResources {
+  LightDepthPassResources();
+
+  Texture mDepthTex;
+  RenderPass mLightDepthRenderpass;
+  Framebuffer mLightDepthFramebuffer;
+
+  ShaderParameterInlineGroup<LightDepthPassCameraParams> mInlineParameters;
+
+  Pipeline mLightDepthPassPipeline;
+};
+
 struct BasePassResources {
   BasePassResources(const vk::Extent2D& extent);
 
-  Texture mAlbedoTex, mNormalTex, mDepthTex;
+  Texture mAlbedoTex, mNormalTex, mPositionTex, mDepthTex;
   RenderPass mBasePass;
   Framebuffer mGBuffer;
 
@@ -39,11 +56,14 @@ struct BasePassResources {
 
 struct LightPassResources {
   LightPassResources(const vk::Extent2D& extent, const Texture& albedoTex,
-                     const Texture& normalTex, const Texture& depthTex);
+                     const Texture& normalTex, const Texture& positionTex,
+                     const Texture& depthTex, const Texture& lightDepthTex);
   ShaderParameterGroup<ShaderParameterTexture, ShaderParameterTexture,
-                       ShaderParameterTexture,
-                       ShaderParameterArray<RTIDPRR::Component::LightProxy>>
+                       ShaderParameterTexture, ShaderParameterTexture,
+                       ShaderParameterArray<RTIDPRR::Component::LightProxy>,
+                       ShaderParameterTexture>
       mFragmentStageParameters;
+  ShaderParameterInlineGroup<CameraMatrices> mInlineParameters;
   LightPassPipeline mLightPassPipeline;
 };
 
@@ -58,9 +78,12 @@ class DeferredRenderer {
  private:
   vk::CommandBuffer mCommandBuffer;
 
+  LightDepthPassResources mLightDepthPassResources;
   BasePassResources mBasePassResources;
   LightPassResources mLightPassResources;
 
+  void renderLightDepthPass(Scene& scene);
+  void transitionDepthTexToReadOnly(Texture& texture);
   void renderBasePass(Scene& scene);
   void renderLightPass(Scene& scene);
 };

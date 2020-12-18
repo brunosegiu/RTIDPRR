@@ -44,7 +44,7 @@ Camera::Camera(Camera&& other) noexcept
       mSpeed(std::move(other.mSpeed)) {}
 
 void Camera::update() {
-  mProjection = glm::perspective(glm::radians(mFOV), 1.0f, mNear, mFar);
+  mProjection = glm::perspective(glm::radians(mFOV), 16.0f / 9.0f, mNear, mFar);
   mProjection[1][1] *= -1.0f;
   glm::vec3 eyePos = mTransform->getAbsoluteTranslation();
   mView = glm::lookAt(eyePos, eyePos + mTransform->getDirection(), mUp);

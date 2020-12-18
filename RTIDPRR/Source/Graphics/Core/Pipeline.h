@@ -9,13 +9,29 @@
 
 namespace RTIDPRR {
 namespace Graphics {
+struct PipelineCreateOptions {
+  vk::CullModeFlagBits cullMode = vk::CullModeFlagBits::eBack;
+  bool enableDepthBias = false;
+
+  PipelineCreateOptions& setCullMode(vk::CullModeFlagBits mode) {
+    cullMode = mode;
+    return *this;
+  }
+
+  PipelineCreateOptions& setEnableDepthBias(bool enable) {
+    enableDepthBias = enable;
+    return *this;
+  }
+};
+
 class Pipeline {
  public:
   Pipeline(const RenderPass& renderPass, const vk::Extent2D& extent,
            const GeometryLayout& geometryLayout,
            const std::vector<std::string>& shaderPaths,
            const std::vector<vk::DescriptorSetLayout>& descriptorLayouts,
-           const std::vector<vk::PushConstantRange>& pushConstants);
+           const std::vector<vk::PushConstantRange>& pushConstants,
+           const PipelineCreateOptions& options = PipelineCreateOptions());
 
   const vk::Pipeline& getPipelineHandle() const { return mPipelineHandle; }
   const vk::PipelineLayout& getPipelineLayout() const { return mLayoutHandle; }

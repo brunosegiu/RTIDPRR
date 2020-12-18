@@ -8,8 +8,9 @@
 namespace RTIDPRR {
 namespace Component {
 struct LightProxy {
-  alignas(16) glm::vec4 mDirection = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-  alignas(4) float mIntensity = 0.0f;
+  glm::mat4 mViewProjection;
+  glm::vec4 mDirection = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+  float mIntensity = 0.0f;
 };
 
 class Light : public RTIDPRR::Core::Component {
