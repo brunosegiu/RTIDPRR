@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "../../Misc/Window.h"
+#include "CommandPool.h"
 #include "Device.h"
 #include "Instance.h"
 #include "Swapchain.h"
@@ -22,6 +23,7 @@ class Context {
   const Device& getDevice() const { return mDevice; }
   const Swapchain& getSwapchain() const { return mSwapchain; };
   Swapchain& getSwapchain() { return mSwapchain; };
+  CommandPool& getCommandPool() { return mCommandPool; }
 
   virtual ~Context();
 
@@ -34,8 +36,7 @@ class Context {
   Instance mInstance;
   Device mDevice;
   Swapchain mSwapchain;
-
-  vk::CommandPool mDefaultCommandPool;
+  CommandPool mCommandPool;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

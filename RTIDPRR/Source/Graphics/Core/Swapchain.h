@@ -40,6 +40,7 @@ class Swapchain {
 
   vk::Semaphore mImageAvailableSemaphore;
   vk::Semaphore mPresentFinishedSemaphore;
+  vk::Fence mFrameCommandsDone;
 
   uint32_t mCurrentImageIndex;
 

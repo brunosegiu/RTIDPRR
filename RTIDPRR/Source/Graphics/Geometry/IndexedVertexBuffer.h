@@ -18,7 +18,9 @@ class IndexedVertexBuffer {
     return *this;
   }
 
-  void draw(const vk::CommandBuffer& commandBuffer) const;
+  const Buffer& getVertexBuffer() const { return mVertexBuffer; }
+  const Buffer& getIndexBuffer() const { return mIndexBuffer; }
+  const uint32_t getFaceCount() const { return mIndexCount; }
 
   virtual ~IndexedVertexBuffer() = default;
 

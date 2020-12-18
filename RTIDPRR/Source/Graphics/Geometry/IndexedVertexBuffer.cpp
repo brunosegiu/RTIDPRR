@@ -38,11 +38,3 @@ IndexedVertexBuffer::IndexedVertexBuffer(IndexedVertexBuffer&& other)
       mIndexBuffer(std::move(other.mIndexBuffer)),
       mIndexCount(other.mIndexCount),
       mVertexCount(other.mVertexCount) {}
-
-void IndexedVertexBuffer::draw(const vk::CommandBuffer& commandBuffer) const {
-  vk::DeviceSize offset{0};
-  commandBuffer.bindVertexBuffers(0, mVertexBuffer.getBufferHandle(), offset);
-  commandBuffer.bindIndexBuffer(mIndexBuffer.getBufferHandle(), offset,
-                                IndexedVertexBuffer::getIndexType());
-  commandBuffer.drawIndexed(mIndexCount, 1, 0, 0, 0);
-}

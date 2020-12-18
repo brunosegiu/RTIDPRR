@@ -22,11 +22,9 @@ void Swapchain::swapBuffers() {
   const Device& device = Context::get().getDevice();
 
   mCurrentImageIndex =
-      device.getLogicalDeviceHandle()
-          .acquireNextImageKHR(mSwapchainHandle,
-                               std::numeric_limits<uint64_t>::max(),
-                               mImageAvailableSemaphore, nullptr)
-          .value;
+      RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().acquireNextImageKHR(
+          mSwapchainHandle, std::numeric_limits<uint64_t>::max(),
+          mImageAvailableSemaphore, nullptr));
 }
 
 void Swapchain::submitCommand(const vk::CommandBuffer& commandBuffer) {
@@ -40,7 +38,7 @@ void Swapchain::submitCommand(const vk::CommandBuffer& commandBuffer) {
           .setCommandBuffers(commands)
           .setSignalSemaphores(mPresentFinishedSemaphore);
   const Queue& queue = Context::get().getDevice().getGraphicsQueue();
-  queue.submit(submitInfo);
+  queue.submit(submitInfo, mFrameCommandsDone);
 
   vk::PresentInfoKHR presentInfo =
       vk::PresentInfoKHR()
@@ -49,6 +47,11 @@ void Swapchain::submitCommand(const vk::CommandBuffer& commandBuffer) {
           .setImageIndices(mCurrentImageIndex);
 
   vk::Result presentResult = queue.present(presentInfo);
+
+  const Device& device = Context::get().getDevice();
+  RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().waitForFences(
+      mFrameCommandsDone, true, std::numeric_limits<uint64_t>::max()));
+  device.getLogicalDeviceHandle().resetFences(mFrameCommandsDone);
 
   if (presentResult == vk::Result::eErrorOutOfDateKHR ||
       presentResult == vk::Result::eSuboptimalKHR) {
@@ -66,6 +69,7 @@ Swapchain::~Swapchain() {
   }
   mDevice.getLogicalDeviceHandle().destroySemaphore(mImageAvailableSemaphore);
   mDevice.getLogicalDeviceHandle().destroySemaphore(mPresentFinishedSemaphore);
+  mDevice.getLogicalDeviceHandle().destroyFence(mFrameCommandsDone);
   mInstance.getHandle().destroySurfaceKHR(mWindowSurface);
 }
 
@@ -183,6 +187,10 @@ void Swapchain::createResources(const Device& device) {
       device.getLogicalDeviceHandle().createSemaphore(semaphoreCreateInfo));
   mPresentFinishedSemaphore = RTIDPRR_ASSERT_VK(
       device.getLogicalDeviceHandle().createSemaphore(semaphoreCreateInfo));
+
+  vk::FenceCreateInfo fenceCreateInfo = vk::FenceCreateInfo();
+  mFrameCommandsDone = RTIDPRR_ASSERT_VK(
+      device.getLogicalDeviceHandle().createFence(fenceCreateInfo));
 }
 
 void Swapchain::cleanupResources() {
@@ -195,4 +203,5 @@ void Swapchain::cleanupResources() {
   }
   mDevice.getLogicalDeviceHandle().destroySemaphore(mImageAvailableSemaphore);
   mDevice.getLogicalDeviceHandle().destroySemaphore(mPresentFinishedSemaphore);
+  mDevice.getLogicalDeviceHandle().destroyFence(mFrameCommandsDone);
 }

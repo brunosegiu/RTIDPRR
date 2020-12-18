@@ -16,16 +16,14 @@ DeferredRenderer::DeferredRenderer()
           mLightDepthPassResources.mDepthTex) {
   const Device& device = Context::get().getDevice();
   const Queue& graphicsQueue = device.getGraphicsQueue();
-  vk::CommandBufferAllocateInfo commandAllocInfo =
-      vk::CommandBufferAllocateInfo()
-          .setCommandPool(graphicsQueue.getCommandPool())
-          .setLevel(vk::CommandBufferLevel::ePrimary)
-          .setCommandBufferCount(1);
 
-  std::vector<vk::CommandBuffer> commandBuffers = RTIDPRR_ASSERT_VK(
-      device.getLogicalDeviceHandle().allocateCommandBuffers(commandAllocInfo));
+  CommandPool& commandPool = Context::get().getCommandPool();
 
-  mCommandBuffer = commandBuffers[0];
+  mLightDepthPassCommand = commandPool.allocateCommand();
+  mTransitionDepthCommand = commandPool.allocateCommand();
+  mTransitionDepthSceneCommand = commandPool.allocateCommand();
+  mBasePassCommand = commandPool.allocateCommand();
+  mLightPassCommand = commandPool.allocateCommand();
 }
 
 void DeferredRenderer::render(Scene& scene) {
@@ -37,30 +35,11 @@ void DeferredRenderer::render(Scene& scene) {
 
   renderLightDepthPass(scene);
 
-  // TODO: REMOVE
-  RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().waitIdle());
-
-  transitionDepthTexToReadOnly(mLightDepthPassResources.mDepthTex);
-
-  // TODO: REMOVE
-  RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().waitIdle());
-
   renderBasePass(scene);
-
-  // TODO: REMOVE
-  RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().waitIdle());
-
-  transitionDepthTexToReadOnly(mBasePassResources.mDepthTex);
-
-  // TODO: REMOVE
-  RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().waitIdle());
 
   renderLightPass(scene);
 
-  swapchain.submitCommand(mCommandBuffer);
-
-  // TODO: REMOVE
-  RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().waitIdle());
+  swapchain.submitCommand(*static_cast<vk::CommandBuffer*>(mLightPassCommand));
 }
 
 void RTIDPRR::Graphics::DeferredRenderer::renderLightDepthPass(Scene& scene) {
@@ -72,7 +51,7 @@ void RTIDPRR::Graphics::DeferredRenderer::renderLightDepthPass(Scene& scene) {
   const std::vector<vk::ClearValue> clearValues{depthClearColor};
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
-  RTIDPRR_ASSERT_VK(mCommandBuffer.begin(beginInfo));
+  RTIDPRR_ASSERT_VK(mLightDepthPassCommand->begin(beginInfo));
 
   vk::RenderPassBeginInfo renderPassBeginInfo =
       vk::RenderPassBeginInfo()
@@ -87,11 +66,10 @@ void RTIDPRR::Graphics::DeferredRenderer::renderLightDepthPass(Scene& scene) {
                    mLightDepthPassResources.mLightDepthFramebuffer
                        .getHeight()}})
           .setClearValues(clearValues);
-  mCommandBuffer.beginRenderPass(renderPassBeginInfo,
-                                 vk::SubpassContents::eInline);
-  mCommandBuffer.bindPipeline(
-      vk::PipelineBindPoint::eGraphics,
-      mLightDepthPassResources.mLightDepthPassPipeline.getPipelineHandle());
+  mLightDepthPassCommand->beginRenderPass(renderPassBeginInfo,
+                                          vk::SubpassContents::eInline);
+  mLightDepthPassCommand->bindPipeline(
+      mLightDepthPassResources.mLightDepthPassPipeline);
 
   const vk::Viewport viewport{
       0.0f,
@@ -102,8 +80,8 @@ void RTIDPRR::Graphics::DeferredRenderer::renderLightDepthPass(Scene& scene) {
           mLightDepthPassResources.mLightDepthFramebuffer.getHeight()),
       0.0f,
       1.0f};
-  mCommandBuffer.setViewport(0, viewport);
-  mCommandBuffer.setDepthBias(5.5f, 0.0f, 5.75f);
+  mLightDepthPassCommand->setViewport(0, viewport);
+  mLightDepthPassCommand->setDepthBias(5.5f, 0.0f, 5.75f);
 
   {
     using namespace RTIDPRR::Core;
@@ -126,46 +104,41 @@ void RTIDPRR::Graphics::DeferredRenderer::renderLightDepthPass(Scene& scene) {
           std::vector<LightDepthPassCameraParams> matrices{
               {modelViewProjection, modelViewProjection}};
 
-          mCommandBuffer.pushConstants<LightDepthPassCameraParams>(
+          mLightDepthPassCommand->pushConstants<LightDepthPassCameraParams>(
               mLightDepthPassResources.mLightDepthPassPipeline
                   .getPipelineLayout(),
               vk::ShaderStageFlagBits::eVertex, 0, matrices);
-          mesh.draw(mCommandBuffer);
+          mLightDepthPassCommand->bindMesh(mesh.getIndexedBuffer());
+          mLightDepthPassCommand->drawMesh(mesh.getIndexedBuffer());
         }
       }
     }
   }
-  mCommandBuffer.endRenderPass();
-  RTIDPRR_ASSERT_VK(mCommandBuffer.end());
-  vk::SubmitInfo submitInfo =
-      vk::SubmitInfo().setCommandBuffers(mCommandBuffer);
+  mLightDepthPassCommand->endRenderPass();
+  RTIDPRR_ASSERT_VK(mLightDepthPassCommand->end());
+  vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(
+      *static_cast<vk::CommandBuffer*>(mLightDepthPassCommand));
   graphicsQueue.submit(submitInfo);
 }
 
-void DeferredRenderer::transitionDepthTexToReadOnly(Texture& texture) {
-  const Device& device = Context::get().getDevice();
-  const Queue& graphicsQueue = device.getGraphicsQueue();
-
-  vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
-  RTIDPRR_ASSERT_VK(mCommandBuffer.begin(beginInfo));
-  vk::ImageMemoryBarrier imageBarrier =
-      vk::ImageMemoryBarrier()
-          .setOldLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
-          .setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
-          .setImage(texture.getImage())
-          .setSubresourceRange(
-              vk::ImageSubresourceRange()
-                  .setAspectMask(vk::ImageAspectFlagBits::eDepth)
-                  .setBaseMipLevel(0)
-                  .setLevelCount(1)
-                  .setLayerCount(1));
-  mCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eBottomOfPipe,
-                                 vk::PipelineStageFlagBits::eTopOfPipe, {},
-                                 nullptr, nullptr, imageBarrier);
-  RTIDPRR_ASSERT_VK(mCommandBuffer.end());
-  vk::SubmitInfo submitInfo =
-      vk::SubmitInfo().setCommandBuffers(mCommandBuffer);
-  graphicsQueue.submit(submitInfo);
+void DeferredRenderer::transitionDepthTexToReadOnly(
+    const std::vector<Texture*>& textures, Command* command) {
+  std::vector<vk::ImageMemoryBarrier> barriers(textures.size());
+  uint32_t currentIndex = 0;
+  for (vk::ImageMemoryBarrier& barrier : barriers) {
+    barrier.setOldLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+        .setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+        .setImage(textures[currentIndex]->getImage())
+        .setSubresourceRange(vk::ImageSubresourceRange()
+                                 .setAspectMask(vk::ImageAspectFlagBits::eDepth)
+                                 .setBaseMipLevel(0)
+                                 .setLevelCount(1)
+                                 .setLayerCount(1));
+    currentIndex++;
+  }
+  command->pipelineBarrier(vk::PipelineStageFlagBits::eLateFragmentTests,
+                           vk::PipelineStageFlagBits::eFragmentShader, {},
+                           nullptr, nullptr, barriers);
 }
 
 void DeferredRenderer::renderBasePass(Scene& scene) {
@@ -184,7 +157,7 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
       albedoClearColor, normalClearColor, positionClearColor, depthClearColor};
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
-  RTIDPRR_ASSERT_VK(mCommandBuffer.begin(beginInfo));
+  RTIDPRR_ASSERT_VK(mBasePassCommand->begin(beginInfo));
 
   vk::RenderPassBeginInfo renderPassBeginInfo =
       vk::RenderPassBeginInfo()
@@ -192,11 +165,9 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
           .setFramebuffer(mBasePassResources.mGBuffer.getHandle())
           .setRenderArea({vk::Offset2D{0, 0}, DEFERRED_RESOLUTION})
           .setClearValues(clearValues);
-  mCommandBuffer.beginRenderPass(renderPassBeginInfo,
-                                 vk::SubpassContents::eInline);
-  mCommandBuffer.bindPipeline(
-      vk::PipelineBindPoint::eGraphics,
-      mBasePassResources.mBasePassPipeline.getPipelineHandle());
+  mBasePassCommand->beginRenderPass(renderPassBeginInfo,
+                                    vk::SubpassContents::eInline);
+  mBasePassCommand->bindPipeline(mBasePassResources.mBasePassPipeline);
 
   const vk::Viewport viewport{
       0.0f,
@@ -205,7 +176,7 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
       static_cast<float>(mBasePassResources.mGBuffer.getHeight()),
       0.0f,
       1.0f};
-  mCommandBuffer.setViewport(0, viewport);
+  mBasePassCommand->setViewport(0, viewport);
   {
     using namespace RTIDPRR::Core;
     using namespace RTIDPRR::Component;
@@ -223,18 +194,19 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
           std::vector<CameraMatrices> matrices{
               {modelMatrix, modelViewProjection}};
 
-          mCommandBuffer.pushConstants<CameraMatrices>(
+          mBasePassCommand->pushConstants<CameraMatrices>(
               mBasePassResources.mBasePassPipeline.getPipelineLayout(),
               vk::ShaderStageFlagBits::eVertex, 0, matrices);
-          mesh.draw(mCommandBuffer);
+          mBasePassCommand->bindMesh(mesh.getIndexedBuffer());
+          mBasePassCommand->drawMesh(mesh.getIndexedBuffer());
         }
       }
     }
   }
-  mCommandBuffer.endRenderPass();
-  RTIDPRR_ASSERT_VK(mCommandBuffer.end());
-  vk::SubmitInfo submitInfo =
-      vk::SubmitInfo().setCommandBuffers(mCommandBuffer);
+  mBasePassCommand->endRenderPass();
+  RTIDPRR_ASSERT_VK(mBasePassCommand->end());
+  vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(
+      *static_cast<vk::CommandBuffer*>(mBasePassCommand));
   graphicsQueue.submit(submitInfo);
 }
 
@@ -242,7 +214,15 @@ void DeferredRenderer::renderLightPass(Scene& scene) {
   Swapchain& swapchain = Context::get().getSwapchain();
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
-  RTIDPRR_ASSERT_VK(mCommandBuffer.begin(beginInfo));
+  RTIDPRR_ASSERT_VK(mLightPassCommand->begin(beginInfo));
+
+  mLightPassCommand->pipelineBarrier(vk::PipelineStageFlagBits::eBottomOfPipe,
+                                     vk::PipelineStageFlagBits::eTopOfPipe, {},
+                                     nullptr, nullptr, nullptr);
+  transitionDepthTexToReadOnly(
+      std::vector<Texture*>{&mBasePassResources.mDepthTex,
+                            &mLightDepthPassResources.mDepthTex},
+      mLightPassCommand);
 
   const vk::ClearColorValue clearColor(
       std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
@@ -272,41 +252,35 @@ void DeferredRenderer::renderLightPass(Scene& scene) {
                                        currentFramebuffer.getHeight())})
           .setClearValues(clearValues);
 
-  mCommandBuffer.beginRenderPass(renderPassBeginInfo,
-                                 vk::SubpassContents::eInline);
+  mLightPassCommand->beginRenderPass(renderPassBeginInfo,
+                                     vk::SubpassContents::eInline);
 
-  mCommandBuffer.bindPipeline(
-      vk::PipelineBindPoint::eGraphics,
-      mLightPassResources.mLightPassPipeline.getPipelineHandle());
+  mLightPassCommand->bindPipeline(mLightPassResources.mLightPassPipeline);
 
   const vk::Viewport viewport(
       0.0f, 0.0f, static_cast<float>(currentFramebuffer.getWidth()),
       static_cast<float>(currentFramebuffer.getHeight()), 0.0f, 1.0f);
-  mCommandBuffer.setViewport(0, viewport);
+  mLightPassCommand->setViewport(0, viewport);
 
-  mCommandBuffer.bindDescriptorSets(
-      vk::PipelineBindPoint::eGraphics,
-      mLightPassResources.mLightPassPipeline.getPipelineLayout(), 0,
-      mLightPassResources.mFragmentStageParameters.getDescriptorSet(), nullptr);
+  mLightPassCommand->bindShaderParameterGroup(
+      0, mLightPassResources.mLightPassPipeline,
+      mLightPassResources.mFragmentStageParameters);
+
   std::vector<CameraMatrices> matrices{
       {glm::inverse(scene.getCamera().getProjection()),
        glm::inverse(scene.getCamera().getView())}};
 
-  mCommandBuffer.pushConstants<CameraMatrices>(
+  mLightPassCommand->pushConstants<CameraMatrices>(
       mLightPassResources.mLightPassPipeline.getPipelineLayout(),
       vk::ShaderStageFlagBits::eFragment, 0, matrices);
 
-  mCommandBuffer.draw(3, 1, 0, 0);
+  mLightPassCommand->draw(3, 1, 0, 0);
 
-  mCommandBuffer.endRenderPass();
-  RTIDPRR_ASSERT_VK(mCommandBuffer.end());
+  mLightPassCommand->endRenderPass();
+  RTIDPRR_ASSERT_VK(mLightPassCommand->end());
 }
 
-DeferredRenderer::~DeferredRenderer() {
-  const Device& device = Context::get().getDevice();
-  device.getLogicalDeviceHandle().freeCommandBuffers(
-      device.getGraphicsQueue().getCommandPool(), mCommandBuffer);
-}
+DeferredRenderer::~DeferredRenderer() {}
 
 static const vk::Format albedoFormat = vk::Format::eR8G8B8A8Unorm;
 static const vk::Format normalFormat = vk::Format::eR16G16B16A16Sfloat;

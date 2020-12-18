@@ -1,5 +1,6 @@
 ﻿#include "Buffer.h"
 
+#include "Command.h"
 #include "Context.h"
 #include "DeviceMemory.h"
 
@@ -53,26 +54,21 @@ void Buffer::copyInto(Buffer& other) {
 
   const Queue& graphicsQueue = device.getGraphicsQueue();
 
-  vk::CommandBufferAllocateInfo commandAllocInfo =
-      vk::CommandBufferAllocateInfo()
-          .setLevel(vk::CommandBufferLevel::ePrimary)
-          .setCommandPool(graphicsQueue.getCommandPool())
-          .setCommandBufferCount(1);
-  vk::CommandBuffer commandBuffer =
-      RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().allocateCommandBuffers(
-          commandAllocInfo))[0];
+  Command* command = Context::get().getCommandPool().allocateCommand();
+
   // Copy
   vk::CommandBufferBeginInfo commandBeginInfo =
       vk::CommandBufferBeginInfo().setFlags(
           vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-  RTIDPRR_ASSERT_VK(commandBuffer.begin(commandBeginInfo));
+  RTIDPRR_ASSERT_VK(command->begin(commandBeginInfo));
 
   vk::BufferCopy copyRegion =
       vk::BufferCopy().setSrcOffset(0).setDstOffset(0).setSize(mSize);
-  commandBuffer.copyBuffer(mBuffer, other.mBuffer, copyRegion);
-  RTIDPRR_ASSERT_VK(commandBuffer.end());
+  command->copyBuffer(mBuffer, other.mBuffer, copyRegion);
+  RTIDPRR_ASSERT_VK(command->end());
 
-  vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(commandBuffer);
+  vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(
+      *static_cast<vk::CommandBuffer*>(command));
 
   vk::FenceCreateInfo fenceCreateInfo = vk::FenceCreateInfo();
   vk::Fence waitFence = RTIDPRR_ASSERT_VK(
@@ -81,8 +77,6 @@ void Buffer::copyInto(Buffer& other) {
   vk::Result copyRes = device.getLogicalDeviceHandle().waitForFences(
       waitFence, true, std::numeric_limits<uint64_t>::max());
   RTIDPRR_ASSERT(copyRes == vk::Result::eSuccess);
-  device.getLogicalDeviceHandle().freeCommandBuffers(
-      graphicsQueue.getCommandPool(), commandBuffer);
   device.getLogicalDeviceHandle().destroyFence(waitFence);
 }
 

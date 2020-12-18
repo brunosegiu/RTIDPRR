@@ -24,6 +24,8 @@ Context& Context::get() {
 Context::Context(const Window& window)
     : mInstance(window),
       mDevice(mInstance),
-      mSwapchain(window, mInstance, mDevice) {}
+      mSwapchain(window, mInstance, mDevice),
+      mCommandPool(mDevice.getLogicalDeviceHandle(),
+                   mDevice.getGraphicsQueue().getFamilyIndex()) {}
 
 Context::~Context() {}

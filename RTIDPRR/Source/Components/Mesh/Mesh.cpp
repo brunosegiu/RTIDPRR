@@ -18,10 +18,4 @@ Mesh::Mesh(Mesh&& other) noexcept
   other.mIndexedBuffer = nullptr;
 }
 
-void Mesh::draw(vk::CommandBuffer& commandBuffer) {
-  if (mIndexedBuffer) {
-    mIndexedBuffer->draw(commandBuffer);
-  }
-}
-
 Mesh::~Mesh() {}

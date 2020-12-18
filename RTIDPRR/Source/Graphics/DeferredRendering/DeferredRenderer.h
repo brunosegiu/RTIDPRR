@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "../../Core/Scene.h"
+#include "../Core/Command.h"
 #include "../Core/Context.h"
 #include "../Core/Pipeline.h"
 #include "../Core/RenderPass.h"
@@ -76,14 +77,16 @@ class DeferredRenderer {
   virtual ~DeferredRenderer();
 
  private:
-  vk::CommandBuffer mCommandBuffer;
+  Command *mLightDepthPassCommand, *mTransitionDepthCommand,
+      *mTransitionDepthSceneCommand, *mBasePassCommand, *mLightPassCommand;
 
   LightDepthPassResources mLightDepthPassResources;
   BasePassResources mBasePassResources;
   LightPassResources mLightPassResources;
 
   void renderLightDepthPass(Scene& scene);
-  void transitionDepthTexToReadOnly(Texture& texture);
+  void transitionDepthTexToReadOnly(const std::vector<Texture*>& texture,
+                                    Command* command);
   void renderBasePass(Scene& scene);
   void renderLightPass(Scene& scene);
 };

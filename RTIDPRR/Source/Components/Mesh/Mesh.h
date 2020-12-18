@@ -17,7 +17,9 @@ class Mesh : public RTIDPRR::Core::Component {
   Mesh(RTIDPRR::Core::Object* object, const std::string& filePath);
   Mesh(Mesh&& other) noexcept;
 
-  void draw(vk::CommandBuffer& commandBuffer);
+  const RTIDPRR::Graphics::IndexedVertexBuffer& getIndexedBuffer() {
+    return *mIndexedBuffer;
+  }
 
   ~Mesh();
 
