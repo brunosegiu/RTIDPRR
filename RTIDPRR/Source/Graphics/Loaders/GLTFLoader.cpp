@@ -55,8 +55,8 @@ GLTFLoader::GeometryData processPrimitive(
     indices = std::vector<uint16_t>(pIndexData, pIndexData + indexCount);
   }
   GLTFLoader::GeometryData geometryData{};
-  geometryData.mVertices = std::move(positions);
-  geometryData.mIndices = std::move(indices);
+  geometryData.vertices = std::move(positions);
+  geometryData.indices = std::move(indices);
   return geometryData;
 }
 

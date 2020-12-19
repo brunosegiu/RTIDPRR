@@ -4,18 +4,25 @@
 
 #include "../../Core/Component.h"
 #include "../../Core/System.h"
+#include "../../Misc/Frustum.h"
+
+namespace RTIDPRR {
+namespace Component {
+class LightSystem;
+}
+}  // namespace RTIDPRR
 
 namespace RTIDPRR {
 namespace Component {
 struct LightProxy {
-  glm::mat4 mViewProjection;
-  glm::vec4 mDirection = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-  float mIntensity = 0.0f;
+  glm::mat4 viewProjection;
+  glm::vec4 direction = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+  float intensity = 0.0f;
 };
 
 class Light : public RTIDPRR::Core::Component {
  public:
-  using SystemType = RTIDPRR::Core::System<Light>;
+  using SystemType = LightSystem;
 
   Light(RTIDPRR::Core::Object* object);
   Light(Light&& other) noexcept;
@@ -23,12 +30,18 @@ class Light : public RTIDPRR::Core::Component {
   float getIntensity() const { return mIntensity; }
   void setIntensity(float intensity) { mIntensity = intensity; }
 
-  LightProxy getProxy() const;
+  void update();
+
+  LightProxy getProxy() const { return mProxy; }
+  Frustum getFrustum() const { return mFrustum; }
 
   ~Light();
 
  private:
   float mIntensity;
+
+  LightProxy mProxy;
+  Frustum mFrustum;
 };
 
 }  // namespace Component

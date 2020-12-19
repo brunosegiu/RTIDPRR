@@ -7,6 +7,7 @@
 #include "../../Core/Component.h"
 #include "../../Core/System.h"
 #include "../../Graphics/Geometry/IndexedVertexBuffer.h"
+#include "../../Misc/AxisAlignedBoundingBox.h"
 
 namespace RTIDPRR {
 namespace Component {
@@ -20,11 +21,13 @@ class Mesh : public RTIDPRR::Core::Component {
   const RTIDPRR::Graphics::IndexedVertexBuffer& getIndexedBuffer() {
     return *mIndexedBuffer;
   }
+  const AxisAlignedBoundingBox& getAABB() const { return mAABB; }
 
   ~Mesh();
 
  private:
   std::unique_ptr<RTIDPRR::Graphics::IndexedVertexBuffer> mIndexedBuffer;
+  AxisAlignedBoundingBox mAABB;
 };
 
 }  // namespace Component

@@ -6,6 +6,7 @@
 #include "../../Core/Component.h"
 #include "../../Core/System.h"
 #include "../../Input/InputEventListener.h"
+#include "../../Misc/Frustum.h"
 #include "../Transform/Transform.h"
 
 namespace RTIDPRR {
@@ -28,6 +29,7 @@ class Camera : public RTIDPRR::Core::Component,
   const glm::mat4& getViewProjection() { return mViewProjection; }
   const glm::mat4& getView() { return mView; }
   const glm::mat4& getProjection() { return mProjection; }
+  const Frustum& getFrustum() const { return mFrustum; }
 
   void update();
 
@@ -55,6 +57,8 @@ class Camera : public RTIDPRR::Core::Component,
 
   float mSpeed;
   bool mIsEnabled;
+
+  RTIDPRR::Frustum mFrustum;
 
   bool isEnabled() { return mIsEnabled; }
 };

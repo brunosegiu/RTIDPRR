@@ -86,7 +86,7 @@ void RTIDPRR::Graphics::DeferredRenderer::renderLightDepthPass(Scene& scene) {
   {
     using namespace RTIDPRR::Core;
     using namespace RTIDPRR::Component;
-    System<Light>& lightSystem = scene.getSystem<System<Light>>();
+    LightSystem& lightSystem = scene.getSystem<LightSystem>();
 
     const Light& shadedLight = lightSystem.getComponents()[0];
     LightProxy lightProxy = shadedLight.getProxy();
@@ -99,17 +99,20 @@ void RTIDPRR::Graphics::DeferredRenderer::renderLightDepthPass(Scene& scene) {
         if (transform) {
           const glm::mat4 modelMatrix = transform->getAbsoluteTransform();
           glm::mat4 modelViewProjection =
-              lightProxy.mViewProjection * modelMatrix;
+              lightProxy.viewProjection * modelMatrix;
 
           std::vector<LightDepthPassCameraParams> matrices{
-              {modelViewProjection, modelViewProjection}};
+              {modelMatrix, modelViewProjection}};
 
-          mLightDepthPassCommand->pushConstants<LightDepthPassCameraParams>(
-              mLightDepthPassResources.mLightDepthPassPipeline
-                  .getPipelineLayout(),
-              vk::ShaderStageFlagBits::eVertex, 0, matrices);
-          mLightDepthPassCommand->bindMesh(mesh.getIndexedBuffer());
-          mLightDepthPassCommand->drawMesh(mesh.getIndexedBuffer());
+          if (shadedLight.getFrustum().intersects(modelMatrix,
+                                                  mesh.getAABB())) {
+            mLightDepthPassCommand->pushConstants<LightDepthPassCameraParams>(
+                mLightDepthPassResources.mLightDepthPassPipeline
+                    .getPipelineLayout(),
+                vk::ShaderStageFlagBits::eVertex, 0, matrices);
+            mLightDepthPassCommand->bindMesh(mesh.getIndexedBuffer());
+            mLightDepthPassCommand->drawMesh(mesh.getIndexedBuffer());
+          }
         }
       }
     }
@@ -183,7 +186,6 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
     System<Mesh>& meshSystem = scene.getSystem<System<Mesh>>();
 
     glm::mat4 viewProjection = scene.getCamera().getViewProjection();
-
     for (Mesh& mesh : meshSystem.getComponents()) {
       if (Object* obj = mesh.getObject()) {
         Transform* transform = obj->getComponent<Transform>();
@@ -194,15 +196,20 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
           std::vector<CameraMatrices> matrices{
               {modelMatrix, modelViewProjection}};
 
-          mBasePassCommand->pushConstants<CameraMatrices>(
-              mBasePassResources.mBasePassPipeline.getPipelineLayout(),
-              vk::ShaderStageFlagBits::eVertex, 0, matrices);
-          mBasePassCommand->bindMesh(mesh.getIndexedBuffer());
-          mBasePassCommand->drawMesh(mesh.getIndexedBuffer());
+          const Frustum& cameraFrustum = scene.getCamera().getFrustum();
+
+          if (cameraFrustum.intersects(modelMatrix, mesh.getAABB())) {
+            mBasePassCommand->pushConstants<CameraMatrices>(
+                mBasePassResources.mBasePassPipeline.getPipelineLayout(),
+                vk::ShaderStageFlagBits::eVertex, 0, matrices);
+            mBasePassCommand->bindMesh(mesh.getIndexedBuffer());
+            mBasePassCommand->drawMesh(mesh.getIndexedBuffer());
+          }
         }
       }
     }
   }
+
   mBasePassCommand->endRenderPass();
   RTIDPRR_ASSERT_VK(mBasePassCommand->end());
   vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(
@@ -233,7 +240,7 @@ void DeferredRenderer::renderLightPass(Scene& scene) {
   using namespace RTIDPRR::Component;
 
   const std::vector<Light>& lights =
-      scene.getSystem<System<Light>>().getComponents();
+      scene.getSystem<LightSystem>().getComponents();
   for (uint32_t index = 0; index < lights.size(); ++index) {
     const Light& light = lights[index];
     std::get<4>(

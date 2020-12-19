@@ -37,7 +37,7 @@ float textureProj(vec4 shadowCoord, vec2 off) {
 	if ( shadowCoord.z > -1.0 && shadowCoord.z < 1.0 ) {
 		float dist = texture( lightDepthSampler, vec2(shadowCoord.s, 1 - shadowCoord.t) + off ).r;
 		if ( shadowCoord.w > 0.0 && dist  > shadowCoord.z) {
-			shadow = ambientTerm;
+			shadow = 0.0f;
 		}
 	}
 	return shadow;
@@ -64,6 +64,22 @@ float filterPCF(vec4 sc) {
 	return shadowFactor / count;
 }
 
+vec2 poissonDisk[4] = vec2[](
+  vec2( -0.94201624, -0.39906216 ),
+  vec2( 0.94558609, -0.76890725 ),
+  vec2( -0.094184101, -0.92938870 ),
+  vec2( 0.34495938, 0.29387760 )
+);
+float filterPoisson(vec4 sc) {
+	float visibility = 0.0f;
+	for (int i=0;i<4;i++) {
+		vec2 offset = poissonDisk[i]/1000.0;
+		visibility += 0.2f * textureProj(sc, offset);
+	}
+	return visibility;
+}
+
+
 void main() {
     vec3 albedo = texture(albedoSampler, uv).rgb;
     vec3 normal = texture(normalSampler, uv).xyz;
@@ -75,7 +91,7 @@ void main() {
 
     vec4 inShadowCoord =  (biasMat * lightData[0].matrix) * vec4(position,1.0f);
 	inShadowCoord = inShadowCoord / inShadowCoord.w;
-	float shadowTerm = filterPCF(inShadowCoord);
+	float shadowTerm = filterPoisson(inShadowCoord);
 
     for (int index = 0; index < MAX_LIGHTS; ++index) {
         float NdotL = clamp(dot(normal, -lightData[index].direction.xyz), 0.0f, 1.0f);

@@ -21,7 +21,8 @@ Camera::Camera(RTIDPRR::Core::Object* object, float nearPlane, float farPlane,
       mFar(farPlane),
       mFOV(fov),
       mIsEnabled(false),
-      mSpeed(0.00001f) {
+      mSpeed(0.00001f),
+      mFrustum(mViewProjection) {
   mProjection = glm::perspective(glm::radians(mFOV), 1.0f, mNear, mFar);
   // Account for Vulkan flipped y
   mProjection[1][1] *= -1.0f;
@@ -41,7 +42,8 @@ Camera::Camera(Camera&& other) noexcept
       mFar(std::move(other.mFar)),
       mFOV(std::move(other.mFOV)),
       mIsEnabled(std::move(other.mIsEnabled)),
-      mSpeed(std::move(other.mSpeed)) {}
+      mSpeed(std::move(other.mSpeed)),
+      mFrustum(std::move(other.mFrustum)) {}
 
 void Camera::update() {
   mProjection = glm::perspective(glm::radians(mFOV), 16.0f / 9.0f, mNear, mFar);
@@ -49,6 +51,7 @@ void Camera::update() {
   glm::vec3 eyePos = mTransform->getAbsoluteTranslation();
   mView = glm::lookAt(eyePos, eyePos + mTransform->getDirection(), mUp);
   mViewProjection = mProjection * mView;
+  mFrustum = Frustum(mViewProjection);
 }
 
 void Camera::onKeyPress(const float timeDelta, const SDL_Scancode key) {

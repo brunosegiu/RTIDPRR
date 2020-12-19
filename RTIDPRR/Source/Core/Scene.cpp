@@ -41,13 +41,14 @@ RTIDPRR::Component::CameraSystem& Scene::getSystem() {
 }
 
 template <>
-RTIDPRR::Core::System<RTIDPRR::Component::Light>& Scene::getSystem() {
+RTIDPRR::Component::LightSystem& Scene::getSystem() {
   return mLightSystem;
 }
 
 void Scene::updateSystems(float deltaTime) {
   mTransformSystem.update(deltaTime);
   mCameraSystem.update(deltaTime);
+  mLightSystem.update(deltaTime);
 }
 
 Scene::~Scene() {}

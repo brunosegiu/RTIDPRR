@@ -9,8 +9,8 @@ namespace Graphics {
 class GLTFLoader {
  public:
   struct GeometryData {
-    std::vector<glm::vec3> mVertices;
-    std::vector<uint16_t> mIndices;
+    std::vector<glm::vec3> vertices;
+    std::vector<uint16_t> indices;
   };
 
   GLTFLoader() = default;

@@ -232,6 +232,8 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Components\Light\LightSystem.cpp" />
+    <ClCompile Include="Source\Misc\AxisAlignedBoundingBox.cpp" />
     <ClCompile Include="Source\Graphics\Core\CommandPool.cpp" />
     <ClCompile Include="Source\Components\Camera\CameraSystem.cpp" />
     <ClCompile Include="Source\Components\Camera\Camera.cpp" />
@@ -240,6 +242,7 @@
     <ClCompile Include="Source\Components\Mesh\Mesh.cpp" />
     <ClCompile Include="Source\Core\Object.cpp" />
     <ClCompile Include="Source\Core\Scene.cpp" />
+    <ClCompile Include="Source\Misc\Frustum.cpp" />
     <ClCompile Include="Source\Graphics\Geometry\GeometryLayout.cpp" />
     <ClCompile Include="Source\Input\InputController.cpp" />
     <ClCompile Include="Source\Graphics\Core\RenderPass.cpp" />
@@ -267,6 +270,8 @@
     <ClCompile Include="Source\Components\Transform\TransformSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Components\Light\LightSystem.h" />
+    <ClInclude Include="Source\Misc\AxisAlignedBoundingBox.h" />
     <ClInclude Include="Source\Graphics\Core\CommandPool.h" />
     <ClInclude Include="Source\Graphics\Core\Command.h" />
     <ClInclude Include="Source\Components\Camera\CameraSystem.h" />
@@ -279,6 +284,7 @@
     <ClInclude Include="Source\Core\System.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterArray.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterInlineGroup.h" />
+    <ClInclude Include="Source\Misc\Frustum.h" />
     <ClInclude Include="Source\Input\InputEventListener.h" />
     <ClInclude Include="Source\Input\InputController.h" />
     <ClInclude Include="Source\Graphics\Core\RenderPass.h" />

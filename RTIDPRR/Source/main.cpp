@@ -36,15 +36,13 @@ int main() {
   Object& newObject2 = scene.addObject();
   newObject2.addComponent<Mesh>("Assets/Models/cube.glb");
   newObject2.getComponent<Transform>()->translate(glm::vec3(15, 0, 0));
-  newObject2.getComponent<Transform>()->scale(glm::vec3(30, 0.3, 30));
+  newObject2.getComponent<Transform>()->scale(glm::vec3(10, 0.3, 10));
   newObject2.getComponent<Transform>()->rotate(
       glm::vec3(glm::radians(0.0f), glm::radians(0.0f), glm::radians(-90.0f)));
 
   Object& light = scene.addObject();
   light.addComponent<Light>();
   light.getComponent<Light>()->setIntensity(0.2f);
-  // light.getComponent<Transform>()->rotate(
-  //   glm::vec3(glm::radians(0.0f), glm::radians(0.0f), glm::radians(90.0f)));
   light.getComponent<Transform>()->translate(glm::vec3(-5.0f, 0.0f, 0.0f));
 
   Object& light2 = scene.addObject();
@@ -63,8 +61,8 @@ int main() {
     // Update test object
     // light.getComponent<Transform>()->rotate((deltaTime * 0.00001f) *
     //                                        glm::vec3(0, 1, 0));
-    light3.getComponent<Transform>()->rotate((deltaTime * 0.000001f) *
-                                             glm::vec3(0, 0, 1));
+    newObject1.getComponent<Transform>()->rotate((deltaTime * 0.000001f) *
+                                                 glm::vec3(0, 1, 0));
     light2.getComponent<Transform>()->rotate((deltaTime * 0.000001f) *
                                              glm::vec3(0, 1, 0));
     // newObject.getComponent<Transform>()->translate(
