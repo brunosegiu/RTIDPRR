@@ -12,6 +12,7 @@ Pipeline::Pipeline(
     const std::vector<std::string>& shaderPaths,
     const std::vector<vk::DescriptorSetLayout>& descriptorLayouts,
     const std::vector<vk::PushConstantRange>& pushConstants,
+    const SpecializationMap& specializationConstants,
     const PipelineCreateOptions& options) {
   const Device& device = Context::get().getDevice();
 
@@ -105,13 +106,32 @@ Pipeline::Pipeline(
   mShaders.reserve(shaderPaths.size());
   std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
   shaderStages.reserve(shaderPaths.size());
+  std::vector<vk::SpecializationInfo> specializationInfos(shaderPaths.size());
+
+  uint32_t shaderIndex = 0;
   for (const std::string& shaderPath : shaderPaths) {
     static const char* entryPointName = "main";
     Shader* shader = mShaders.emplace_back(Shader::loadShader(shaderPath));
-    shaderStages.emplace_back(vk::PipelineShaderStageCreateInfo()
-                                  .setStage(shader->getStage())
-                                  .setModule(shader->getModule())
-                                  .setPName(entryPointName));
+    const auto& constantInfo = specializationConstants.find(shader->getStage());
+    bool hasSpecializationConstants =
+        constantInfo != specializationConstants.end();
+    if (hasSpecializationConstants) {
+      const SpecializationInfo& info = constantInfo->second;
+      specializationInfos[shaderIndex]
+          .setPData(info.data)
+          .setDataSize(info.size)
+          .setMapEntries(info.entries);
+    }
+
+    shaderStages.emplace_back(
+        vk::PipelineShaderStageCreateInfo()
+            .setStage(shader->getStage())
+            .setModule(shader->getModule())
+            .setPName(entryPointName)
+            .setPSpecializationInfo(hasSpecializationConstants
+                                        ? &specializationInfos[shaderIndex]
+                                        : nullptr));
+    shaderIndex++;
   }
 
   const std::vector<vk::DynamicState> dynamicStates{

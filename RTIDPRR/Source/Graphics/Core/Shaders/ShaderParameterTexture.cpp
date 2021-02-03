@@ -5,22 +5,23 @@
 
 using namespace RTIDPRR::Graphics;
 
-ShaderParameterTexture::ShaderParameterTexture(const Texture& texture)
-    : mTexture(texture) {
+ShaderParameterTexture::ShaderParameterTexture(
+    const SamplerOptions& samplerOptions)
+    : mTexture(samplerOptions.texture) {
   const Device& device = Context::get().getDevice();
   vk::SamplerCreateInfo samplerCreateInfo =
       vk::SamplerCreateInfo()
-          .setMagFilter(vk::Filter::eNearest)
-          .setMinFilter(vk::Filter::eNearest)
+          .setMagFilter(samplerOptions.filter)
+          .setMinFilter(samplerOptions.filter)
           .setMipmapMode(vk::SamplerMipmapMode::eLinear)
-          .setAddressModeU(vk::SamplerAddressMode::eClampToEdge)
-          .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
-          .setAddressModeW(vk::SamplerAddressMode::eClampToEdge)
+          .setAddressModeU(samplerOptions.clampMode)
+          .setAddressModeV(samplerOptions.clampMode)
+          .setAddressModeW(samplerOptions.clampMode)
           .setMipLodBias(0.0f)
           .setMaxAnisotropy(1.0f)
           .setMinLod(0.0f)
           .setMaxLod(1.0f)
-          .setBorderColor(vk::BorderColor::eFloatOpaqueWhite);
+          .setBorderColor(samplerOptions.borderColor);
   mSampler = RTIDPRR_ASSERT_VK(
       device.getLogicalDeviceHandle().createSampler(samplerCreateInfo));
 }
@@ -35,7 +36,7 @@ void ShaderParameterTexture::bindToGroup(const vk::DescriptorSet& descriptorSet,
   vk::DescriptorImageInfo descriptorImageInfo =
       vk::DescriptorImageInfo()
           .setSampler(mSampler)
-          .setImageView(mTexture.getImageView())
+          .setImageView(mTexture->getImageView())
           .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
   vk::WriteDescriptorSet descriptorWrite =

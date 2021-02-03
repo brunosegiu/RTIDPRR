@@ -5,6 +5,7 @@
 #include "../Geometry/GeometryLayout.h"
 #include "RenderPass.h"
 #include "Shaders/Shader.h"
+#include "Shaders/ShaderParameterConstantGroup.h"
 #include "Shaders/ShaderParameterGroup.h"
 
 namespace RTIDPRR {
@@ -31,7 +32,16 @@ class Pipeline {
            const std::vector<std::string>& shaderPaths,
            const std::vector<vk::DescriptorSetLayout>& descriptorLayouts,
            const std::vector<vk::PushConstantRange>& pushConstants,
+           const SpecializationMap& specializationConstants,
            const PipelineCreateOptions& options = PipelineCreateOptions());
+
+  Pipeline(Pipeline&& other)
+      : mPipelineHandle(std::move(other.mPipelineHandle)),
+        mLayoutHandle(std::move(other.mLayoutHandle)),
+        mShaders(std::move(other.mShaders)) {
+    other.mPipelineHandle = nullptr;
+    other.mLayoutHandle = nullptr;
+  }
 
   const vk::Pipeline& getPipelineHandle() const { return mPipelineHandle; }
   const vk::PipelineLayout& getPipelineLayout() const { return mLayoutHandle; }

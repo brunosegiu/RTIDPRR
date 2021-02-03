@@ -233,6 +233,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Components\Light\LightSystem.cpp" />
+    <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.cpp" />
     <ClCompile Include="Source\Misc\AxisAlignedBoundingBox.cpp" />
     <ClCompile Include="Source\Graphics\Core\CommandPool.cpp" />
     <ClCompile Include="Source\Components\Camera\CameraSystem.cpp" />
@@ -271,6 +272,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Components\Light\LightSystem.h" />
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterConstantGroup.h" />
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.h" />
     <ClInclude Include="Source\Misc\AxisAlignedBoundingBox.h" />
     <ClInclude Include="Source\Graphics\Core\CommandPool.h" />
     <ClInclude Include="Source\Graphics\Core\Command.h" />

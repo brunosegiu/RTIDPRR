@@ -42,14 +42,13 @@ int main() {
 
   Object& light = scene.addObject();
   light.addComponent<Light>();
-  light.getComponent<Light>()->setIntensity(0.2f);
+  light.getComponent<Light>()->setIntensity(0.1f);
   light.getComponent<Transform>()->translate(glm::vec3(-5.0f, 0.0f, 0.0f));
 
   Object& light2 = scene.addObject();
-  light2.addComponent<Light>()->setIntensity(0.0f);
-
-  Object& light3 = scene.addObject();
-  light3.addComponent<Light>()->setIntensity(0.0f);
+  light2.addComponent<Light>()->setIntensity(0.1f);
+  light2.getComponent<Transform>()->rotate(0.2f * glm::vec3(0, 1, 0));
+  light2.getComponent<Transform>()->translate(glm::vec3(-5.2f, 0.0f, 0.05f));
 
   bool open = true;
   RTIDPRR::Time::Timer timer;
@@ -59,15 +58,8 @@ int main() {
     open = !window.processInput(deltaTime);
 
     // Update test object
-    // light.getComponent<Transform>()->rotate((deltaTime * 0.00001f) *
-    //                                        glm::vec3(0, 1, 0));
     newObject1.getComponent<Transform>()->rotate((deltaTime * 0.000001f) *
                                                  glm::vec3(0, 1, 0));
-    light2.getComponent<Transform>()->rotate((deltaTime * 0.000001f) *
-                                             glm::vec3(0, 1, 0));
-    // newObject.getComponent<Transform>()->translate(
-    //    glm::vec3(0, -deltaTime * 0.000001f, 0.0f));
-
     // Update scene, systems and render
     scene.update(deltaTime);
     renderer.render(scene);

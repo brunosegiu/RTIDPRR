@@ -10,9 +10,11 @@
 #include "../Core/RenderPass.h"
 #include "../Core/Shaders/ShaderParameter.h"
 #include "../Core/Shaders/ShaderParameterArray.h"
+#include "../Core/Shaders/ShaderParameterConstantGroup.h"
 #include "../Core/Shaders/ShaderParameterGroup.h"
 #include "../Core/Shaders/ShaderParameterInlineGroup.h"
 #include "../Core/Shaders/ShaderParameterTexture.h"
+#include "../Core/Shaders/ShaderParameterTextureArray.h"
 #include "../Core/Texture.h"
 #include "../Geometry/IndexedVertexBuffer.h"
 #include "BasePassPipeline.h"
@@ -33,6 +35,12 @@ struct LightDepthPassCameraParams {
 
 struct LightDepthPassResources {
   LightDepthPassResources();
+  LightDepthPassResources(LightDepthPassResources&& other)
+      : mDepthTex(std::move(other.mDepthTex)),
+        mLightDepthRenderpass(std::move(other.mLightDepthRenderpass)),
+        mLightDepthFramebuffer(std::move(other.mLightDepthFramebuffer)),
+        mInlineParameters(std::move(other.mInlineParameters)),
+        mLightDepthPassPipeline(std::move(other.mLightDepthPassPipeline)) {}
 
   Texture mDepthTex;
   RenderPass mLightDepthRenderpass;
@@ -41,6 +49,10 @@ struct LightDepthPassResources {
   ShaderParameterInlineGroup<LightDepthPassCameraParams> mInlineParameters;
 
   Pipeline mLightDepthPassPipeline;
+
+ private:
+  LightDepthPassResources(const LightDepthPassResources&) = delete;
+  LightDepthPassResources& operator=(const LightDepthPassResources&) = delete;
 };
 
 struct BasePassResources {
@@ -58,11 +70,13 @@ struct BasePassResources {
 struct LightPassResources {
   LightPassResources(const vk::Extent2D& extent, const Texture& albedoTex,
                      const Texture& normalTex, const Texture& positionTex,
-                     const Texture& depthTex, const Texture& lightDepthTex);
+                     const Texture& depthTex,
+                     const std::vector<SamplerOptions>& depthParamOptions);
+  ShaderParameterConstantGroup<uint32_t> mConstants;
   ShaderParameterGroup<ShaderParameterTexture, ShaderParameterTexture,
                        ShaderParameterTexture, ShaderParameterTexture,
                        ShaderParameterArray<RTIDPRR::Component::LightProxy>,
-                       ShaderParameterTexture>
+                       ShaderParameterTextureArray>
       mFragmentStageParameters;
   ShaderParameterInlineGroup<CameraMatrices> mInlineParameters;
   LightPassPipeline mLightPassPipeline;
@@ -72,6 +86,8 @@ class DeferredRenderer {
  public:
   DeferredRenderer();
 
+  static uint32_t sMaxLightsToRender;
+
   void render(Scene& scene);
 
   virtual ~DeferredRenderer();
@@ -80,12 +96,12 @@ class DeferredRenderer {
   Command *mLightDepthPassCommand, *mTransitionDepthCommand,
       *mTransitionDepthSceneCommand, *mBasePassCommand, *mLightPassCommand;
 
-  LightDepthPassResources mLightDepthPassResources;
+  std::vector<LightDepthPassResources> mLightDepthPassResources;
   BasePassResources mBasePassResources;
   LightPassResources mLightPassResources;
 
   void renderLightDepthPass(Scene& scene);
-  void transitionDepthTexToReadOnly(const std::vector<Texture*>& texture,
+  void transitionDepthTexToReadOnly(const std::vector<Texture const*>& texture,
                                     Command* command);
   void renderBasePass(Scene& scene);
   void renderLightPass(Scene& scene);

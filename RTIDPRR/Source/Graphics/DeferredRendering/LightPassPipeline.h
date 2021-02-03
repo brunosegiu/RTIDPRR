@@ -12,7 +12,8 @@ class LightPassPipeline : public Pipeline {
   LightPassPipeline(
       const RenderPass& renderPass, const vk::Extent2D& extent,
       const std::vector<vk::DescriptorSetLayout>& descriptorLayouts,
-      const std::vector<vk::PushConstantRange>& pushConstants);
+      const std::vector<vk::PushConstantRange>& pushConstants,
+      const SpecializationMap& specializationConstants);
 
   virtual ~LightPassPipeline() = default;
 };

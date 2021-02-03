@@ -11,4 +11,4 @@ BasePassPipeline::BasePassPipeline(
     : Pipeline(renderPass, extent, GeometryLayout::PositionOnly,
                {"Source/Shaders/Build/BasePass.vert",
                 "Source/Shaders/Build/BasePass.frag"},
-               descriptorLayouts, pushConstants){};
+               descriptorLayouts, pushConstants, {}){};

@@ -124,6 +124,9 @@
     <ClCompile Include="Source\Components\Light\LightSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Graphics\Core\Context.h">
@@ -256,6 +259,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Components\Light\LightSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterConstantGroup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
