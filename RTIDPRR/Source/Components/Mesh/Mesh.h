@@ -15,7 +15,8 @@ class Mesh : public RTIDPRR::Core::Component {
  public:
   using SystemType = RTIDPRR::Core::System<Mesh>;
 
-  Mesh(RTIDPRR::Core::Object* object, const std::string& filePath);
+  Mesh(RTIDPRR::Core::Object* object, const std::vector<glm::vec3>& vertices,
+       const std::vector<uint16_t>& indices);
   Mesh(Mesh&& other) noexcept;
 
   const RTIDPRR::Graphics::IndexedVertexBuffer& getIndexedBuffer() {

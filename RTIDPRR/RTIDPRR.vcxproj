@@ -234,6 +234,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Components\Light\LightSystem.cpp" />
     <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.cpp" />
+    <ClCompile Include="Source\Loaders\GLTFLoader.cpp" />
     <ClCompile Include="Source\Misc\AxisAlignedBoundingBox.cpp" />
     <ClCompile Include="Source\Graphics\Core\CommandPool.cpp" />
     <ClCompile Include="Source\Components\Camera\CameraSystem.cpp" />
@@ -260,7 +261,6 @@
     <ClCompile Include="Source\Graphics\Core\Instance.cpp" />
     <ClCompile Include="Source\Graphics\Core\Context.cpp" />
     <ClCompile Include="Source\Graphics\Core\Swapchain.cpp" />
-    <ClCompile Include="Source\Graphics\Loaders\GLTFLoader.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Misc\Window.cpp" />
     <ClCompile Include="Source\Graphics\Core\Texture.cpp" />
@@ -274,6 +274,7 @@
     <ClInclude Include="Source\Components\Light\LightSystem.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterConstantGroup.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.h" />
+    <ClInclude Include="Source\Loaders\GLTFLoader.h" />
     <ClInclude Include="Source\Misc\AxisAlignedBoundingBox.h" />
     <ClInclude Include="Source\Graphics\Core\CommandPool.h" />
     <ClInclude Include="Source\Graphics\Core\Command.h" />
@@ -309,7 +310,6 @@
     <ClInclude Include="Source\Graphics\Core\Instance.h" />
     <ClInclude Include="Source\Graphics\Core\Context.h" />
     <ClInclude Include="Source\Graphics\Core\Swapchain.h" />
-    <ClInclude Include="Source\Graphics\Loaders\GLTFLoader.h" />
     <ClInclude Include="Source\Misc\Window.h" />
     <ClInclude Include="Source\Graphics\Core\Texture.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTexture.h" />

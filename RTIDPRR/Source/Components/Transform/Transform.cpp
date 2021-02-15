@@ -1,7 +1,6 @@
 ﻿#include "Transform.h"
 
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 using namespace RTIDPRR::Component;
 
@@ -28,6 +27,9 @@ Transform::Transform(Transform&& other) noexcept
       mLocalRotation(other.mLocalRotation),
       mLocalScale(other.mLocalScale),
       mLocalTranslation(other.mLocalTranslation),
+      mAbsoluteRotation(other.mAbsoluteRotation),
+      mAbsoluteScale(other.mAbsoluteScale),
+      mAbsoluteTranslation(other.mAbsoluteTranslation),
       mChildren(std::move(other.mChildren)) {
   other.mParent = nullptr;
 }
@@ -56,7 +58,8 @@ void Transform::setLocalScale(const glm::vec3& value) { mLocalScale = value; }
 
 glm::vec3 Transform::getDirection() {
   const glm::quat& rotation = getAbsoluteRotation();
-  const glm::vec4 lookDir = glm::toMat4(rotation) * glm::vec4(sForward, 1.0f);
+  const glm::vec4 lookDir =
+      glm::mat4_cast(rotation) * glm::vec4(sForward, 1.0f);
   return glm::normalize(glm::vec3(lookDir.x, lookDir.y, lookDir.z));
 }
 
@@ -81,7 +84,7 @@ void Transform::update(const glm::mat4& parentAbsoluteMatrix,
                        const glm::vec3& parentAbsoluteScale,
                        const glm::quat& parentAbsoluteRotation) {
   mLocalTransform = glm::translate(glm::mat4(1.0f), mLocalTranslation);
-  mLocalTransform *= glm::toMat4(glm::normalize(mLocalRotation));
+  mLocalTransform *= glm::mat4_cast(mLocalRotation);
   mLocalTransform *= glm::scale(glm::mat4(1.0f), mLocalScale);
 
   mAbsoluteTranslation = parentAbsoluteTranslation + mLocalTranslation;

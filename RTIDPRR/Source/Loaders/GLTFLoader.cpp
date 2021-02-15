@@ -8,11 +8,16 @@
 #include "nlohmann/json.hpp"
 #include "tiny_gltf.h"
 
-using namespace RTIDPRR::Graphics;
+using namespace RTIDPRR;
 
-GLTFLoader::GeometryData processPrimitive(
-    const tinygltf::Model& model, const tinygltf::Mesh& mesh,
-    const tinygltf::Primitive& primitive) {
+struct GeometryData {
+  std::vector<glm::vec3> vertices;
+  std::vector<uint16_t> indices;
+};
+
+GeometryData processPrimitive(const tinygltf::Model& model,
+                              const tinygltf::Mesh& mesh,
+                              const tinygltf::Primitive& primitive) {
   const std::string positionName = "POSITION";
   const tinygltf::Accessor& positionAccessor =
       model.accessors[primitive.attributes.at(positionName)];
@@ -54,27 +59,45 @@ GLTFLoader::GeometryData processPrimitive(
         reinterpret_cast<const uint16_t*>(&indexBuffer.data[indexOffset]);
     indices = std::vector<uint16_t>(pIndexData, pIndexData + indexCount);
   }
-  GLTFLoader::GeometryData geometryData{};
+  GeometryData geometryData{};
   geometryData.vertices = std::move(positions);
   geometryData.indices = std::move(indices);
   return geometryData;
 }
 
-std::vector<GLTFLoader::GeometryData> GLTFLoader::load(std::string path) {
+void GLTFLoader::load(Scene& scene, std::string path) {
   tinygltf::Model model;
   tinygltf::TinyGLTF loader;
   std::string err;
   std::string warn;
 
-  std::vector<GLTFLoader::GeometryData> entities;
-  entities.reserve(model.meshes.size());
-
   if (loader.LoadBinaryFromFile(&model, &err, &warn, path)) {
-    for (const auto& mesh : model.meshes) {
-      for (const auto& primitive : mesh.primitives) {
-        entities.emplace_back(processPrimitive(model, mesh, primitive));
+    for (const auto& node : model.nodes) {
+      Object& object = scene.addObject();
+      // Load transforms
+      RTIDPRR::Component::Transform& transform =
+          *object.getComponent<RTIDPRR::Component::Transform>();
+      if (node.translation.size() > 0) {
+        transform.setLocalTranslation(glm::vec3(
+            node.translation[0], node.translation[1], node.translation[2]));
+      }
+      if (node.rotation.size() > 0) {
+        transform.setLocalRotation(glm::quat(node.rotation[3], node.rotation[0],
+                                             node.rotation[1],
+                                             node.rotation[2]));
+      }
+      if (node.scale.size() > 0) {
+        transform.setLocalScale(
+            glm::vec3(node.scale[0], node.scale[1], node.scale[2]));
+      }
+      // Load mesh
+      const int meshIndex = node.mesh;
+      if (meshIndex != -1) {
+        const tinygltf::Mesh& mesh = model.meshes[meshIndex];
+        GeometryData data = processPrimitive(model, mesh, mesh.primitives[0]);
+        object.addComponent<RTIDPRR::Component::Mesh>(data.vertices,
+                                                      data.indices);
       }
     }
   }
-  return entities;
 }

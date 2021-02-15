@@ -8,7 +8,7 @@ using namespace RTIDPRR::Graphics;
 
 static const vk::Extent2D DEFERRED_RESOLUTION = vk::Extent2D(1920, 1080);
 
-uint32_t DeferredRenderer::sMaxLightsToRender = 2;
+uint32_t DeferredRenderer::sMaxLightsToRender = 1;
 
 std::vector<LightDepthPassResources> createLightDepthPassResources() {
   std::vector<LightDepthPassResources> resources;
@@ -117,7 +117,6 @@ void RTIDPRR::Graphics::DeferredRenderer::renderLightDepthPass(Scene& scene) {
         1.0f};
     mLightDepthPassCommand->setViewport(0, viewport);
     mLightDepthPassCommand->setDepthBias(5.5f, 0.0f, 5.75f);
-
     {
       for (Mesh& mesh : meshSystem.getComponents()) {
         if (Object* obj = mesh.getObject()) {

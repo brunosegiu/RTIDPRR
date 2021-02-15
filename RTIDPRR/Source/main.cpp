@@ -11,6 +11,7 @@
 #include "Core/Scene.h"
 #include "Graphics/Core/Context.h"
 #include "Graphics/DeferredRendering/DeferredRenderer.h"
+#include "Loaders/GLTFLoader.h"
 #include "Misc/Time/Timer.h"
 #include "Misc/Window.h"
 
@@ -25,30 +26,13 @@ int main() {
   DeferredRenderer renderer;
   Scene scene;
 
-  // Testing
-  Object& newObject = scene.addObject();
-  newObject.addComponent<Mesh>("Assets/Models/sphere.glb");
-
-  Object& newObject1 = scene.addObject();
-  newObject1.addComponent<Mesh>("Assets/Models/monkey.glb");
-  newObject1.getComponent<Transform>()->translate(glm::vec3(10, 0, 5));
-
-  Object& newObject2 = scene.addObject();
-  newObject2.addComponent<Mesh>("Assets/Models/cube.glb");
-  newObject2.getComponent<Transform>()->translate(glm::vec3(15, 0, 0));
-  newObject2.getComponent<Transform>()->scale(glm::vec3(10, 0.3, 10));
-  newObject2.getComponent<Transform>()->rotate(
-      glm::vec3(glm::radians(0.0f), glm::radians(0.0f), glm::radians(-90.0f)));
-
   Object& light = scene.addObject();
   light.addComponent<Light>();
   light.getComponent<Light>()->setIntensity(0.1f);
-  light.getComponent<Transform>()->translate(glm::vec3(-5.0f, 0.0f, 0.0f));
+  light.getComponent<Transform>()->translate(glm::vec3(-45.0f, 0.0f, 10.0f));
 
-  Object& light2 = scene.addObject();
-  light2.addComponent<Light>()->setIntensity(0.1f);
-  light2.getComponent<Transform>()->rotate(0.2f * glm::vec3(0, 1, 0));
-  light2.getComponent<Transform>()->translate(glm::vec3(-5.2f, 0.0f, 0.05f));
+  RTIDPRR::GLTFLoader loader;
+  loader.load(scene, "Assets/Models/scene.glb");
 
   bool open = true;
   RTIDPRR::Time::Timer timer;
@@ -56,10 +40,6 @@ int main() {
   do {
     timer.restart();
     open = !window.processInput(deltaTime);
-
-    // Update test object
-    newObject1.getComponent<Transform>()->rotate((deltaTime * 0.000001f) *
-                                                 glm::vec3(0, 1, 0));
     // Update scene, systems and render
     scene.update(deltaTime);
     renderer.render(scene);

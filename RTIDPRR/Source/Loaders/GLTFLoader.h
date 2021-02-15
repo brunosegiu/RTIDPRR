@@ -4,20 +4,16 @@
 #include <string>
 #include <vector>
 
+#include "../Core/Object.h"
+#include "../Core/Scene.h"
+
 namespace RTIDPRR {
-namespace Graphics {
 class GLTFLoader {
  public:
-  struct GeometryData {
-    std::vector<glm::vec3> vertices;
-    std::vector<uint16_t> indices;
-  };
-
   GLTFLoader() = default;
 
-  std::vector<GeometryData> load(std::string path);
+  void load(Scene& scene, std::string path);
 
   virtual ~GLTFLoader() = default;
 };
-}  // namespace Graphics
 }  // namespace RTIDPRR
