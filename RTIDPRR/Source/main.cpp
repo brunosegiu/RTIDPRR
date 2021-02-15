@@ -31,6 +31,13 @@ int main() {
   light.getComponent<Light>()->setIntensity(0.1f);
   light.getComponent<Transform>()->translate(glm::vec3(-45.0f, 0.0f, 10.0f));
 
+  Object& light2 = scene.addObject();
+  light2.addComponent<Light>();
+  light2.getComponent<Light>()->setIntensity(0.1f);
+  light2.getComponent<Transform>()->translate(glm::vec3(10.0f, 0.0f, 40.0f));
+  light2.getComponent<Transform>()->rotate(
+      glm::vec3(0, glm::radians(90.0f), 0.0f));
+
   RTIDPRR::GLTFLoader loader;
   loader.load(scene, "Assets/Models/scene.glb");
 

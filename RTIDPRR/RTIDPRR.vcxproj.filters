@@ -127,6 +127,9 @@
     <ClCompile Include="Source\Loaders\GLTFLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\ShadowRendering\ShadowRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Graphics\Core\Context.h">
@@ -265,6 +268,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Loaders\GLTFLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\ShadowRendering\ShadowRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

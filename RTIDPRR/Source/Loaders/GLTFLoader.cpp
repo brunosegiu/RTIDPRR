@@ -82,9 +82,11 @@ void GLTFLoader::load(Scene& scene, std::string path) {
             node.translation[0], node.translation[1], node.translation[2]));
       }
       if (node.rotation.size() > 0) {
-        transform.setLocalRotation(glm::quat(node.rotation[3], node.rotation[0],
-                                             node.rotation[1],
-                                             node.rotation[2]));
+        transform.setLocalRotation(
+            glm::quat(static_cast<float>(node.rotation[3]),
+                      static_cast<float>(node.rotation[0]),
+                      static_cast<float>(node.rotation[1]),
+                      static_cast<float>(node.rotation[2])));
       }
       if (node.scale.size() > 0) {
         transform.setLocalScale(

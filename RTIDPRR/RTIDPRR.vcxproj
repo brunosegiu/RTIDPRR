@@ -234,6 +234,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Components\Light\LightSystem.cpp" />
     <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.cpp" />
+    <ClCompile Include="Source\Graphics\ShadowRendering\ShadowRenderer.cpp" />
     <ClCompile Include="Source\Loaders\GLTFLoader.cpp" />
     <ClCompile Include="Source\Misc\AxisAlignedBoundingBox.cpp" />
     <ClCompile Include="Source\Graphics\Core\CommandPool.cpp" />
@@ -274,6 +275,7 @@
     <ClInclude Include="Source\Components\Light\LightSystem.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterConstantGroup.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.h" />
+    <ClInclude Include="Source\Graphics\ShadowRendering\ShadowRenderer.h" />
     <ClInclude Include="Source\Loaders\GLTFLoader.h" />
     <ClInclude Include="Source\Misc\AxisAlignedBoundingBox.h" />
     <ClInclude Include="Source\Graphics\Core\CommandPool.h" />
