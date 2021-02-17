@@ -23,8 +23,8 @@ class Transform : public RTIDPRR::Core::Component {
   Transform(RTIDPRR::Core::Object* object);
   Transform::Transform(Transform&& other) noexcept;
 
-  glm::mat4& getAbsoluteTransform() { return mAbsoluteTransform; }
-  glm::mat4& getLocalTransform() { return mLocalTransform; }
+  const glm::mat4& getAbsoluteTransform() const { return mAbsoluteTransform; }
+  const glm::mat4& getLocalTransform() const { return mLocalTransform; }
 
   Transform* getParent() { return mParent; }
 
@@ -37,9 +37,11 @@ class Transform : public RTIDPRR::Core::Component {
   void setLocalTranslation(const glm::vec3& value);
   void setLocalScale(const glm::vec3& value);
 
-  const glm::vec3& getAbsoluteTranslation() { return mAbsoluteTranslation; }
-  const glm::vec3& getAbsoluteScale() { return mAbsoluteScale; }
-  const glm::quat& getAbsoluteRotation() { return mAbsoluteRotation; }
+  const glm::vec3& getAbsoluteTranslation() const {
+    return mAbsoluteTranslation;
+  }
+  const glm::vec3& getAbsoluteScale() const { return mAbsoluteScale; }
+  const glm::quat& getAbsoluteRotation() const { return mAbsoluteRotation; }
 
   glm::vec3 getDirection();
 

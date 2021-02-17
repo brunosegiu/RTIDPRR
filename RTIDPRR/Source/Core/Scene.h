@@ -16,6 +16,7 @@ class Scene {
 
   const RTIDPRR::Component::Camera& getCamera() const { return *mCamera; }
   RTIDPRR::Component::Camera& getCamera() { return *mCamera; }
+  const std::list<Object>& getObjects() { return mObjects; };
 
   template <class TSystem>
   TSystem& getSystem();

@@ -30,6 +30,9 @@ class Light : public RTIDPRR::Core::Component {
   float getIntensity() const { return mIntensity; }
   void setIntensity(float intensity) { mIntensity = intensity; }
 
+  virtual void renderGizmos(
+      RTIDPRR::Graphics::GizmoRenderer* renderer) const override;
+
   void update();
 
   LightProxy getProxy() const { return mProxy; }

@@ -234,6 +234,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Components\Light\LightSystem.cpp" />
     <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.cpp" />
+    <ClCompile Include="Source\Graphics\GizmoRendering\GizmoRenderer.cpp" />
     <ClCompile Include="Source\Graphics\ShadowRendering\ShadowRenderer.cpp" />
     <ClCompile Include="Source\Loaders\GLTFLoader.cpp" />
     <ClCompile Include="Source\Misc\AxisAlignedBoundingBox.cpp" />
@@ -275,6 +276,7 @@
     <ClInclude Include="Source\Components\Light\LightSystem.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterConstantGroup.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.h" />
+    <ClInclude Include="Source\Graphics\GizmoRendering\GizmoRenderer.h" />
     <ClInclude Include="Source\Graphics\ShadowRendering\ShadowRenderer.h" />
     <ClInclude Include="Source\Loaders\GLTFLoader.h" />
     <ClInclude Include="Source\Misc\AxisAlignedBoundingBox.h" />
@@ -363,6 +365,16 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="Source\Shaders\Source\Line.frag">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="Source\Shaders\Source\Line.vert">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

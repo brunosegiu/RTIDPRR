@@ -22,12 +22,14 @@ struct ShadowDepthPassResources {
   ShadowDepthPassResources();
   ShadowDepthPassResources(ShadowDepthPassResources&& other)
       : mDepthTex(std::move(other.mDepthTex)),
+        mAlbedoTex(std::move(other.mAlbedoTex)),
         mLightDepthRenderpass(std::move(other.mLightDepthRenderpass)),
         mLightDepthFramebuffer(std::move(other.mLightDepthFramebuffer)),
         mInlineParameters(std::move(other.mInlineParameters)),
         mLightDepthPassPipeline(std::move(other.mLightDepthPassPipeline)) {}
 
   Texture mDepthTex;
+  Texture mAlbedoTex;
   RenderPass mLightDepthRenderpass;
   Framebuffer mLightDepthFramebuffer;
 

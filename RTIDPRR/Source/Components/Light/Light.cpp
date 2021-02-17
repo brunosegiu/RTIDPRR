@@ -1,12 +1,26 @@
 ﻿#include "Light.h"
 
 #include "../../Core/Object.h"
+#include "../../Graphics/GizmoRendering/GizmoRenderer.h"
 #include "../Transform/Transform.h"
 
 using namespace RTIDPRR::Component;
 
+static const float frustumWidth = 30.0f;
+static const float lightFar = 100.0f;
+static const float lightNear = 0.5f;
+
 Light::Light(RTIDPRR::Core::Object* object)
     : Component(object), mIntensity(1.0f), mFrustum(glm::mat4(1.0f)) {}
+
+void Light::renderGizmos(GizmoRenderer* renderer) const {
+  const Transform* transform = getObject()->getComponent<Transform>();
+  Scene* scene = getObject()->getScene();
+
+  glm::mat4 modelMat = transform->getAbsoluteTransform() *
+                       glm::scale(glm::mat4(1.0f), glm::vec3(frustumWidth));
+  renderer->renderBox(scene->getCamera().getViewProjection(), modelMat);
+}
 
 Light::Light(Light&& other) noexcept
     : Component(std::move(other)),
@@ -17,9 +31,9 @@ void Light::update() {
   Transform* transform = getObject()->getComponent<Transform>();
 
   glm::vec3 lightDir = transform->getDirection();
-  const float width = 30.0f;
   glm::mat4 projection =
-      glm::ortho<float>(-width, width, -width, width, 0.1f, 100.0f);
+      glm::ortho<float>(-frustumWidth, frustumWidth, -frustumWidth,
+                        frustumWidth, lightNear, lightFar);
   glm::mat4 view = glm::lookAt(transform->getAbsoluteTranslation(),
                                transform->getAbsoluteTranslation() + lightDir,
                                glm::vec3(0.0f, 1.0f, 0.0f));

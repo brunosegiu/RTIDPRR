@@ -23,6 +23,7 @@ class System {
   TComponent* addComponent(Object* object, TArgs&&... args);
 
   TComponent* getComponent(const uint32_t id);
+  const TComponent* getComponent(const uint32_t id) const;
 
   std::vector<TComponent>& getComponents() { return mComponents; }
 
@@ -56,6 +57,17 @@ TComponent* RTIDPRR::Core::System<TComponent>::addComponent(Object* object,
 
 template <class TComponent>
 TComponent* RTIDPRR::Core::System<TComponent>::getComponent(const uint32_t id) {
+  auto it = mObjectIdToComponent.find(id);
+  if (it != mObjectIdToComponent.end()) {
+    return &mComponents[it->second];
+  } else {
+    return nullptr;
+  }
+}
+
+template <class TComponent>
+const TComponent* RTIDPRR::Core::System<TComponent>::getComponent(
+    const uint32_t id) const {
   auto it = mObjectIdToComponent.find(id);
   if (it != mObjectIdToComponent.end()) {
     return &mComponents[it->second];

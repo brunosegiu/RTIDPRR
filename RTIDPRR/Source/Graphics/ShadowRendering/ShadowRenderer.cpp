@@ -29,25 +29,35 @@ ShadowRenderer::ShadowRenderer()
 }
 
 static const vk::Format depthFormat = vk::Format::eD32Sfloat;
+static const vk::Format albedoFormat = vk::Format::eR8G8B8A8Unorm;
+static const uint32_t shadowTextureSize = 2048;
 
 ShadowDepthPassResources::ShadowDepthPassResources()
-    : mDepthTex(vk::Extent2D{2048, 2048}, depthFormat,
+    : mDepthTex(vk::Extent2D{shadowTextureSize, shadowTextureSize}, depthFormat,
                 vk::ImageUsageFlagBits::eDepthStencilAttachment |
                     vk::ImageUsageFlagBits::eSampled,
                 vk::ImageAspectFlagBits::eDepth),
-      mLightDepthRenderpass({&mDepthTex}, true),
-      mLightDepthFramebuffer(Context::get().getDevice(),
-                             mLightDepthRenderpass.getHandle(),
-                             {mDepthTex.getImageView()}, 2048, 2048),
+      mAlbedoTex(vk::Extent2D{shadowTextureSize, shadowTextureSize},
+                 albedoFormat,
+                 vk::ImageUsageFlagBits::eColorAttachment |
+                     vk::ImageUsageFlagBits::eSampled,
+                 vk::ImageAspectFlagBits::eColor),
+      mLightDepthRenderpass({&mAlbedoTex, &mDepthTex}, true),
+      mLightDepthFramebuffer(
+          Context::get().getDevice(), mLightDepthRenderpass.getHandle(),
+          {mAlbedoTex.getImageView(), mDepthTex.getImageView()},
+          shadowTextureSize, shadowTextureSize),
       mInlineParameters({vk::ShaderStageFlagBits::eVertex}),
-      mLightDepthPassPipeline(mLightDepthRenderpass, vk::Extent2D{2048, 2048},
-                              GeometryLayout::PositionOnly,
-                              {"Source/Shaders/Build/LightDepthPass.vert",
-                               "Source/Shaders/Build/LightDepthPass.frag"},
-                              {}, mInlineParameters.getPushConstantRanges(), {},
-                              PipelineCreateOptions()
-                                  .setCullMode(vk::CullModeFlagBits::eFront)
-                                  .setEnableDepthBias(true)) {}
+      mLightDepthPassPipeline(
+          mLightDepthRenderpass,
+          vk::Extent2D{shadowTextureSize, shadowTextureSize},
+          GeometryLayout::PositionOnly,
+          {"Source/Shaders/Build/LightDepthPass.vert",
+           "Source/Shaders/Build/LightDepthPass.frag"},
+          {}, mInlineParameters.getPushConstantRanges(), {},
+          PipelineCreateOptions()
+              .setCullMode(vk::CullModeFlagBits::eFront)
+              .setEnableDepthBias(true)) {}
 
 std::vector<SamplerOptions> ShadowRenderer::getSamplerOptionsFromResources() {
   std::vector<SamplerOptions> options;
@@ -66,7 +76,12 @@ void ShadowRenderer::render(Scene& scene) {
 
   const vk::ClearDepthStencilValue depthClearColor =
       vk::ClearDepthStencilValue(1.0f, 1u);
-  const std::vector<vk::ClearValue> clearValues{depthClearColor};
+  const vk::ClearColorValue albedoClearColor(
+      std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
+
+  const std::vector<vk::ClearValue> clearValues{albedoClearColor,
+                                                depthClearColor};
+
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
   RTIDPRR_ASSERT_VK(mShadowDepthPassCommand->begin(beginInfo));
 

@@ -35,7 +35,7 @@ class Pipeline {
            const SpecializationMap& specializationConstants,
            const PipelineCreateOptions& options = PipelineCreateOptions());
 
-  Pipeline(Pipeline&& other)
+  Pipeline(Pipeline&& other) noexcept
       : mPipelineHandle(std::move(other.mPipelineHandle)),
         mLayoutHandle(std::move(other.mLayoutHandle)),
         mShaders(std::move(other.mShaders)) {
