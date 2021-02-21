@@ -18,8 +18,6 @@
 #include "../Core/Texture.h"
 #include "../Geometry/IndexedVertexBuffer.h"
 #include "../ShadowRendering/ShadowRenderer.h"
-#include "BasePassPipeline.h"
-#include "LightPassPipeline.h"
 
 namespace RTIDPRR {
 namespace Graphics {
@@ -38,7 +36,7 @@ struct BasePassResources {
 
   ShaderParameterInlineGroup<CameraMatrices> mInlineParameters;
 
-  BasePassPipeline mBasePassPipeline;
+  Pipeline mBasePassPipeline;
 };
 
 struct LightPassResources {
@@ -53,7 +51,7 @@ struct LightPassResources {
                        ShaderParameterTextureArray>
       mFragmentStageParameters;
   ShaderParameterInlineGroup<CameraMatrices> mInlineParameters;
-  LightPassPipeline mLightPassPipeline;
+  Pipeline mLightPassPipeline;
 };
 
 class DeferredRenderer {

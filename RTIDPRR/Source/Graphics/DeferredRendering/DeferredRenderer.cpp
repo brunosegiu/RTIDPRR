@@ -230,8 +230,10 @@ BasePassResources::BasePassResources(const vk::Extent2D& extent)
                 mPositionTex.getImageView(), mDepthTex.getImageView()},
                extent.width, extent.height),
       mInlineParameters({vk::ShaderStageFlagBits::eVertex}),
-      mBasePassPipeline(mBasePass, extent, {},
-                        mInlineParameters.getPushConstantRanges()) {}
+      mBasePassPipeline(mBasePass, extent, GeometryLayout::PositionOnly,
+                        {"Source/Shaders/Build/BasePass.vert",
+                         "Source/Shaders/Build/BasePass.frag"},
+                        {}, mInlineParameters.getPushConstantRanges(), {}) {}
 
 LightPassResources::LightPassResources(
     const vk::Extent2D& extent, const Texture& albedoTex,
@@ -251,7 +253,9 @@ LightPassResources::LightPassResources(
           ShaderParameterTextureArray(depthParamOptions)),
       mInlineParameters({vk::ShaderStageFlagBits::eFragment}),
       mLightPassPipeline(Context::get().getSwapchain().getMainRenderPass(),
-                         extent,
+                         extent, GeometryLayout::None,
+                         {"Source/Shaders/Build/LightPass.vert",
+                          "Source/Shaders/Build/LightPass.frag"},
                          std::vector<vk::DescriptorSetLayout>{
                              mFragmentStageParameters.getLayout()},
                          mInlineParameters.getPushConstantRanges(),
