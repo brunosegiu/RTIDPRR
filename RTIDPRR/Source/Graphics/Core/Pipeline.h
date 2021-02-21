@@ -13,6 +13,9 @@ namespace Graphics {
 struct PipelineCreateOptions {
   vk::CullModeFlagBits cullMode = vk::CullModeFlagBits::eBack;
   bool enableDepthBias = false;
+  float depthBiasConstant = 0.0f;
+  float depthBiasSlope = 0.0f;
+  vk::PrimitiveTopology topology = vk::PrimitiveTopology::eTriangleList;
 
   PipelineCreateOptions& setCullMode(vk::CullModeFlagBits mode) {
     cullMode = mode;
@@ -21,6 +24,21 @@ struct PipelineCreateOptions {
 
   PipelineCreateOptions& setEnableDepthBias(bool enable) {
     enableDepthBias = enable;
+    return *this;
+  }
+
+  PipelineCreateOptions& setDepthBiasConstant(float factor) {
+    depthBiasConstant = factor;
+    return *this;
+  }
+
+  PipelineCreateOptions& setDepthBiasSlope(float factor) {
+    depthBiasSlope = factor;
+    return *this;
+  }
+
+  PipelineCreateOptions& setTopology(vk::PrimitiveTopology topology) {
+    this->topology = topology;
     return *this;
   }
 };

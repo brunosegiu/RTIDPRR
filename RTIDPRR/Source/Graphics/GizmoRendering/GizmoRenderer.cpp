@@ -21,23 +21,24 @@ GizmoRenderer::GizmoRenderer()
           Context::get().getSwapchain().getExtent(),
           GeometryLayout::PositionOnly,
           {"Source/Shaders/Build/Line.vert", "Source/Shaders/Build/Line.frag"},
-          {}, mInlineParameters.getPushConstantRanges(), {}),
+          {}, mInlineParameters.getPushConstantRanges(), {},
+          PipelineCreateOptions().setTopology(
+              vk::PrimitiveTopology::eLineList)),
       mBoxGeometry(boxVertices, boxIndices) {
-  const Device& device = Context::get().getDevice();
   CommandPool& commandPool = Context::get().getCommandPool();
   mCommand = commandPool.allocateCommand();
 }
 
-void GizmoRenderer::render(Scene& scene) {
+void GizmoRenderer::render(Scene& scene, Command* command) {
+  mCommand = command;
   Swapchain& swapchain = Context::get().getSwapchain();
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
-  RTIDPRR_ASSERT_VK(mCommand->begin(beginInfo));
+  // RTIDPRR_ASSERT_VK(mCommand->begin(beginInfo));
 
-  mCommand->pipelineBarrier(vk::PipelineStageFlagBits::eBottomOfPipe,
+  /* command->pipelineBarrier(vk::PipelineStageFlagBits::eBottomOfPipe,
                             vk::PipelineStageFlagBits::eTopOfPipe, {}, nullptr,
-                            nullptr, nullptr);
-
+                            nullptr, nullptr);*/
   const vk::ClearColorValue clearColor(
       std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f});
 
@@ -57,14 +58,15 @@ void GizmoRenderer::render(Scene& scene) {
                                        currentFramebuffer.getHeight())})
           .setClearValues(clearValues);
 
-  mCommand->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
+  // mCommand->beginRenderPass(renderPassBeginInfo,
+  // vk::SubpassContents::eInline);
 
-  mCommand->bindPipeline(mLinePipeline);
+  command->bindPipeline(mLinePipeline);
 
   const vk::Viewport viewport(
       0.0f, 0.0f, static_cast<float>(currentFramebuffer.getWidth()),
       static_cast<float>(currentFramebuffer.getHeight()), 0.0f, 1.0f);
-  mCommand->setViewport(0, viewport);
+  command->setViewport(0, viewport);
 
   using namespace RTIDPRR::Core;
   using namespace RTIDPRR::Component;
@@ -75,19 +77,28 @@ void GizmoRenderer::render(Scene& scene) {
       object.renderGizmos(this);
     }
   }
+  glm::mat4 modelViewProjection = scene.getCamera().getViewProjection();
+  std::vector<CameraMatrices> matrices{
+      {modelViewProjection, modelViewProjection}};
+  command->pushConstants<CameraMatrices>(mLinePipeline.getPipelineLayout(),
+                                         vk::ShaderStageFlagBits::eVertex, 0,
+                                         matrices);
+  command->bindMesh(mBoxGeometry);
+  command->drawMesh(mBoxGeometry);
 
-  mCommand->endRenderPass();
-  RTIDPRR_ASSERT_VK(mCommand->end());
-  swapchain.submitCommand(*static_cast<vk::CommandBuffer*>(mCommand));
+  command->endRenderPass();
+  RTIDPRR_ASSERT_VK(command->end());
+  swapchain.present(*static_cast<vk::CommandBuffer*>(command));
 }
 
-void GizmoRenderer::renderBox(const glm::mat4& modelMatrix,
-                              const glm::mat4& viewMatrix) {
-  glm::mat4 modelViewProjection = viewMatrix * modelMatrix;
+void GizmoRenderer::renderBox(const glm::mat4& viewProjectionMatrix,
+                              const glm::mat4& modelMatrix) {
+  glm::mat4 modelViewProjection = viewProjectionMatrix * modelMatrix;
   std::vector<CameraMatrices> matrices{{modelMatrix, modelViewProjection}};
   mCommand->pushConstants<CameraMatrices>(mLinePipeline.getPipelineLayout(),
                                           vk::ShaderStageFlagBits::eVertex, 0,
                                           matrices);
+  mCommand->bindMesh(mBoxGeometry);
   mCommand->drawMesh(mBoxGeometry);
 }
 

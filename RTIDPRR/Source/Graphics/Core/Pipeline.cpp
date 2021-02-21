@@ -31,7 +31,7 @@ Pipeline::Pipeline(
   // Setup topology
   vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo =
       vk::PipelineInputAssemblyStateCreateInfo()
-          .setTopology(vk::PrimitiveTopology::eTriangleList)
+          .setTopology(options.topology)
           .setPrimitiveRestartEnable(false);
 
   // Setup viewport
@@ -58,7 +58,9 @@ Pipeline::Pipeline(
           .setLineWidth(1.0f)
           .setCullMode(options.cullMode)
           .setFrontFace(vk::FrontFace::eCounterClockwise)
-          .setDepthBiasEnable(options.enableDepthBias);
+          .setDepthBiasEnable(options.enableDepthBias)
+          .setDepthBiasConstantFactor(options.depthBiasConstant)
+          .setDepthBiasSlopeFactor(options.depthBiasSlope);
 
   // Multisampling state
   vk::PipelineMultisampleStateCreateInfo multisampleCreateInfo =
@@ -158,13 +160,14 @@ Pipeline::Pipeline(
   mPipelineHandle =
       RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().createGraphicsPipeline(
           nullptr, pipelineCreateInfo));
+  for (Shader* shader : mShaders) {
+    delete shader;
+  }
+  mShaders.clear();
 }
 
 Pipeline::~Pipeline() {
   const Device& device = Context::get().getDevice();
   device.getLogicalDeviceHandle().destroyPipelineLayout(mLayoutHandle);
   device.getLogicalDeviceHandle().destroyPipeline(mPipelineHandle);
-  for (Shader* shader : mShaders) {
-    delete shader;
-  }
 }

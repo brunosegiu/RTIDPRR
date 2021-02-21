@@ -21,7 +21,7 @@ class Transform : public RTIDPRR::Core::Component {
   static const glm::vec3 sForward;
 
   Transform(RTIDPRR::Core::Object* object);
-  Transform::Transform(Transform&& other) noexcept;
+  Transform(Transform&& other) noexcept;
 
   const glm::mat4& getAbsoluteTransform() const { return mAbsoluteTransform; }
   const glm::mat4& getLocalTransform() const { return mLocalTransform; }

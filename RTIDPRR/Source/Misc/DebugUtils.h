@@ -41,7 +41,8 @@
 #define RTIDPRR_ASSERT(condition) RTIDPRR_ASSERT_MSG(condition, "")
 
 template <typename ResultValue>
-inline auto RTIDPRR_ASSERT_VK(ResultValue& resultValue) {
+inline auto RTIDPRR_ASSERT_VK(ResultValue resultValue)
+    -> decltype(resultValue.value) {
   RTIDPRR_ASSERT(resultValue.result == vk::Result::eSuccess);
   return resultValue.value;
 }

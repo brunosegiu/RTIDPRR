@@ -63,7 +63,8 @@ using namespace RTIDPRR::Core;
 template <class TComponent, typename... TArgs>
 TComponent* Object::addComponent(TArgs&&... args) {
   Scene& scene = *mScene;
-  TComponent::SystemType& system = scene.getSystem<TComponent::SystemType>();
+  typename TComponent::SystemType& system =
+      scene.getSystem<typename TComponent::SystemType>();
   TComponent* component =
       system.addComponent(this, std::forward<TArgs>(args)...);
   mComponents.push_back(component);
@@ -73,13 +74,15 @@ TComponent* Object::addComponent(TArgs&&... args) {
 template <class TComponent>
 TComponent* Object::getComponent() {
   Scene& scene = *mScene;
-  TComponent::SystemType& system = scene.getSystem<TComponent::SystemType>();
+  typename TComponent::SystemType& system =
+      scene.getSystem<typename TComponent::SystemType>();
   return system.getComponent(mId);
 }
 
 template <class TComponent>
 const TComponent* Object::getComponent() const {
   Scene& scene = *mScene;
-  TComponent::SystemType& system = scene.getSystem<TComponent::SystemType>();
+  typename TComponent::SystemType& system =
+      scene.getSystem<typename TComponent::SystemType>();
   return system.getComponent(mId);
 }

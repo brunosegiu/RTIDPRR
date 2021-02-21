@@ -4,7 +4,6 @@
 
 using namespace RTIDPRR::Graphics;
 
-#pragma optimize("", off)
 vk::VertexInputBindingDescription GeometryLayout::getBindingDescription()
     const {
   switch (mLayout) {
@@ -24,7 +23,6 @@ vk::VertexInputBindingDescription GeometryLayout::getBindingDescription()
     } break;
   }
 }
-#pragma optimize("", on)
 
 vk::VertexInputAttributeDescription GeometryLayout::getAttributeDescription()
     const {

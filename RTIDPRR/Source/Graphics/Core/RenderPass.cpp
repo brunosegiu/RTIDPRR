@@ -76,8 +76,8 @@ RenderPass::RenderPass(const std::vector<const Texture*>& renderTargets,
 RenderPass::RenderPass(vk::RenderPass renderPass, uint32_t colorAttachmentCount,
                        bool depthTestEnabled)
     : mHandle(renderPass),
-      mColorAttachmentCount(colorAttachmentCount),
-      mDepthTestEnabled(depthTestEnabled) {}
+      mDepthTestEnabled(depthTestEnabled),
+      mColorAttachmentCount(colorAttachmentCount) {}
 
 RenderPass::~RenderPass() {
   const Device& device = Context::get().getDevice();

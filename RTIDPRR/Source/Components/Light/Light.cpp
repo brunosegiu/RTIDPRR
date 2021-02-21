@@ -17,9 +17,17 @@ void Light::renderGizmos(GizmoRenderer* renderer) const {
   const Transform* transform = getObject()->getComponent<Transform>();
   Scene* scene = getObject()->getScene();
 
-  glm::mat4 modelMat = transform->getAbsoluteTransform() *
-                       glm::scale(glm::mat4(1.0f), glm::vec3(frustumWidth));
+  glm::mat4 modelMat =
+      glm::translate(glm::mat4(1.0f), transform->getAbsoluteTranslation() +
+                                          glm::vec3(lightFar, 0.0f, 0.0f));
+  modelMat *= glm::mat4_cast(transform->getAbsoluteRotation());
+  modelMat =
+      glm::scale(modelMat, glm::vec3(lightFar, frustumWidth, frustumWidth));
+
   renderer->renderBox(scene->getCamera().getViewProjection(), modelMat);
+  renderer->renderBox(
+      scene->getCamera().getViewProjection(),
+      glm::translate(glm::mat4(1.0f), transform->getAbsoluteTranslation()));
 }
 
 Light::Light(Light&& other) noexcept

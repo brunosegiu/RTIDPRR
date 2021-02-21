@@ -12,7 +12,7 @@ Object::Object(Scene* scene)
   addComponent<RTIDPRR::Component::Transform>();
 }
 
-Object::Object(Object&& other) noexcept : mId(other.mId), mScene(other.mScene) {
+Object::Object(Object&& other) noexcept : mScene(other.mScene), mId(other.mId) {
   other.mScene = nullptr;
 }
 

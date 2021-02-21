@@ -5,6 +5,7 @@
 #include <limits>
 
 #include "../../Misc/DebugUtils.h"
+#include "Command.h"
 #include "Context.h"
 
 using namespace RTIDPRR::Graphics;
@@ -27,7 +28,7 @@ void Swapchain::swapBuffers() {
           mImageAvailableSemaphore, nullptr));
 }
 
-void Swapchain::submitCommand(const vk::CommandBuffer& commandBuffer) {
+void Swapchain::present(const Command& commandBuffer) {
   const std::vector<vk::PipelineStageFlags> waitStages{
       vk::PipelineStageFlagBits::eColorAttachmentOutput};
   const std::vector<vk::CommandBuffer> commands{commandBuffer};

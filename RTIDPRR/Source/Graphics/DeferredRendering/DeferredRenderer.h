@@ -17,13 +17,17 @@
 #include "../Core/Shaders/ShaderParameterTextureArray.h"
 #include "../Core/Texture.h"
 #include "../Geometry/IndexedVertexBuffer.h"
-#include "../GizmoRendering/GizmoRenderer.h"
 #include "../ShadowRendering/ShadowRenderer.h"
 #include "BasePassPipeline.h"
 #include "LightPassPipeline.h"
 
 namespace RTIDPRR {
 namespace Graphics {
+
+struct CameraMatrices {
+  glm::mat4 mModel;
+  glm::mat4 mvp;
+};
 
 struct BasePassResources {
   BasePassResources(const vk::Extent2D& extent);
@@ -66,7 +70,6 @@ class DeferredRenderer {
   ShadowRenderer mShadowRenderer;
   BasePassResources mBasePassResources;
   LightPassResources mLightPassResources;
-  GizmoRenderer mGizmoRenderer;
 
   void renderBasePass(Scene& scene);
   void renderLightPass(Scene& scene);

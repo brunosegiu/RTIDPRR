@@ -7,7 +7,7 @@ using namespace RTIDPRR::Graphics;
 
 ShaderParameterTextureArray::ShaderParameterTextureArray(
     const std::vector<SamplerOptions>& samplerOptions)
-    : mTextures(samplerOptions.size()), mSamplers(samplerOptions.size()) {
+    : mSamplers(samplerOptions.size()), mTextures(samplerOptions.size()) {
   const Device& device = Context::get().getDevice();
   for (uint32_t index = 0; index < samplerOptions.size(); ++index) {
     const SamplerOptions& options = samplerOptions[index];

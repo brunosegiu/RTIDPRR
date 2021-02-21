@@ -6,7 +6,7 @@
 
 using namespace RTIDPRR::Graphics;
 
-uint32_t ShadowRenderer::sMaxLightsToRender = 2;
+uint32_t ShadowRenderer::sMaxLightsToRender = 1;
 
 std::vector<ShadowDepthPassResources> createLightDepthPassResources() {
   std::vector<ShadowDepthPassResources> resources;
@@ -19,9 +19,8 @@ std::vector<ShadowDepthPassResources> createLightDepthPassResources() {
 }
 
 ShadowRenderer::ShadowRenderer()
-    : mShadowDepthPassResources(std::move(createLightDepthPassResources())) {
+    : mShadowDepthPassResources(createLightDepthPassResources()) {
   const Device& device = Context::get().getDevice();
-  const Queue& graphicsQueue = device.getGraphicsQueue();
 
   CommandPool& commandPool = Context::get().getCommandPool();
 
@@ -57,7 +56,9 @@ ShadowDepthPassResources::ShadowDepthPassResources()
           {}, mInlineParameters.getPushConstantRanges(), {},
           PipelineCreateOptions()
               .setCullMode(vk::CullModeFlagBits::eFront)
-              .setEnableDepthBias(true)) {}
+              .setEnableDepthBias(true)
+              .setDepthBiasConstant(1.25f * 1.0f)
+              .setDepthBiasSlope(1.75f * 1.0f)) {}
 
 std::vector<SamplerOptions> ShadowRenderer::getSamplerOptionsFromResources() {
   std::vector<SamplerOptions> options;
@@ -123,7 +124,6 @@ void ShadowRenderer::render(Scene& scene) {
         0.0f,
         1.0f};
     mShadowDepthPassCommand->setViewport(0, viewport);
-    mShadowDepthPassCommand->setDepthBias(1.25f * 5.0f, 0.0f, 1.75f * 7.0f);
     {
       for (Mesh& mesh : meshSystem.getComponents()) {
         if (Object* obj = mesh.getObject()) {

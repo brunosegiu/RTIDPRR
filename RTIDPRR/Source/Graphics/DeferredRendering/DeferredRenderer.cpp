@@ -15,10 +15,8 @@ DeferredRenderer::DeferredRenderer()
           Context::get().getSwapchain().getExtent(),
           mBasePassResources.mAlbedoTex, mBasePassResources.mNormalTex,
           mBasePassResources.mPositionTex, mBasePassResources.mDepthTex,
-          mShadowRenderer.getSamplerOptionsFromResources()),
-      mGizmoRenderer() {
+          mShadowRenderer.getSamplerOptionsFromResources()) {
   const Device& device = Context::get().getDevice();
-  const Queue& graphicsQueue = device.getGraphicsQueue();
 
   CommandPool& commandPool = Context::get().getCommandPool();
 
@@ -39,10 +37,6 @@ void DeferredRenderer::render(Scene& scene) {
   renderBasePass(scene);
 
   renderLightPass(scene);
-
-  // mGizmoRenderer.render(scene);
-
-  swapchain.submitCommand(*static_cast<vk::CommandBuffer*>(mLightPassCommand));
 }
 
 void DeferredRenderer::renderBasePass(Scene& scene) {
@@ -201,14 +195,9 @@ void DeferredRenderer::renderLightPass(Scene& scene) {
       vk::ShaderStageFlagBits::eFragment, 0, matrices);
 
   mLightPassCommand->draw(3, 1, 0, 0);
-
   mLightPassCommand->endRenderPass();
   RTIDPRR_ASSERT_VK(mLightPassCommand->end());
-  /*const Device& device = Context::get().getDevice();
-  const Queue& graphicsQueue = device.getGraphicsQueue();
-  vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(
-      *static_cast<vk::CommandBuffer*>(mLightPassCommand));
-  graphicsQueue.submit(submitInfo);*/
+  swapchain.present(*mLightPassCommand);
 }
 
 DeferredRenderer::~DeferredRenderer() {}

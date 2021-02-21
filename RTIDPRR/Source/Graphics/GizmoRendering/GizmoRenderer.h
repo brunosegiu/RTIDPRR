@@ -23,7 +23,7 @@ class GizmoRenderer {
  public:
   GizmoRenderer();
 
-  void render(Scene& scene);
+  void render(Scene& scene, Command* command);
 
   void renderBox(const glm::mat4& viewProjectionMatrix,
                  const glm::mat4& modelMatrix);
@@ -34,7 +34,6 @@ class GizmoRenderer {
   Command* mCommand;
   ShaderParameterInlineGroup<CameraMatrices> mInlineParameters;
   Pipeline mLinePipeline;
-
   IndexedVertexBuffer mBoxGeometry;
 };
 

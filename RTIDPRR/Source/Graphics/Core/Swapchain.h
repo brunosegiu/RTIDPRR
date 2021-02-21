@@ -10,6 +10,8 @@
 namespace RTIDPRR {
 namespace Graphics {
 
+class Command;
+
 struct SwapchainResources {
   vk::Image mImage;
   vk::ImageView mImageView;
@@ -28,7 +30,7 @@ class Swapchain {
   const vk::Extent2D& getExtent() const { return mSwapchainExtent; };
 
   void swapBuffers();
-  void submitCommand(const vk::CommandBuffer& commandBuffer);
+  void present(const Command& commandBuffer);
 
   virtual ~Swapchain();
 
