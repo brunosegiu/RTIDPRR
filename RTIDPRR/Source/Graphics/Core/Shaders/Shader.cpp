@@ -14,7 +14,7 @@ Shader::Shader(const std::vector<char>& code,
   vk::ShaderModuleCreateInfo shaderCreateInfo =
       vk::ShaderModuleCreateInfo()
           .setCodeSize(code.size() * sizeof(char))
-          .setPCode(reinterpret_cast<const unsigned int*>(code.data()));
+          .setPCode(reinterpret_cast<const uint32_t*>(code.data()));
   const Device& device = Context::get().getDevice();
   mShaderHandle = RTIDPRR_ASSERT_VK(
       device.getLogicalDeviceHandle().createShaderModule(shaderCreateInfo));

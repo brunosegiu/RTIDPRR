@@ -29,6 +29,7 @@ ShadowRenderer::ShadowRenderer()
 
 static const vk::Format depthFormat = vk::Format::eD32Sfloat;
 static const vk::Format albedoFormat = vk::Format::eR8G8B8A8Unorm;
+static const vk::Format patchIdFormat = vk::Format::eR32Uint;
 static const uint32_t shadowTextureSize = 2048;
 
 ShadowDepthPassResources::ShadowDepthPassResources()
@@ -41,10 +42,16 @@ ShadowDepthPassResources::ShadowDepthPassResources()
                  vk::ImageUsageFlagBits::eColorAttachment |
                      vk::ImageUsageFlagBits::eSampled,
                  vk::ImageAspectFlagBits::eColor),
-      mLightDepthRenderpass({&mAlbedoTex, &mDepthTex}, true),
+      mPatchIdTex(vk::Extent2D{shadowTextureSize, shadowTextureSize},
+                  patchIdFormat,
+                  vk::ImageUsageFlagBits::eColorAttachment |
+                      vk::ImageUsageFlagBits::eSampled,
+                  vk::ImageAspectFlagBits::eColor),
+      mLightDepthRenderpass({&mAlbedoTex, &mPatchIdTex, &mDepthTex}, true),
       mLightDepthFramebuffer(
           Context::get().getDevice(), mLightDepthRenderpass.getHandle(),
-          {mAlbedoTex.getImageView(), mDepthTex.getImageView()},
+          {mAlbedoTex.getImageView(), mPatchIdTex.getImageView(),
+           mDepthTex.getImageView()},
           shadowTextureSize, shadowTextureSize),
       mInlineParameters({vk::ShaderStageFlagBits::eVertex}),
       mLightDepthPassPipeline(
@@ -79,9 +86,11 @@ void ShadowRenderer::render(Scene& scene) {
       vk::ClearDepthStencilValue(1.0f, 1u);
   const vk::ClearColorValue albedoClearColor(
       std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
+  const vk::ClearColorValue patchIdClearColor(
+      std::array<uint32_t, 4>{0, 0, 0, 0});
 
-  const std::vector<vk::ClearValue> clearValues{albedoClearColor,
-                                                depthClearColor};
+  const std::vector<vk::ClearValue> clearValues{
+      albedoClearColor, patchIdClearColor, depthClearColor};
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
   RTIDPRR_ASSERT_VK(mShadowDepthPassCommand->begin(beginInfo));
@@ -134,7 +143,7 @@ void ShadowRenderer::render(Scene& scene) {
                 lightProxy.viewProjection * modelMatrix;
 
             std::vector<LightDepthPassCameraParams> matrices{
-                {modelMatrix, modelViewProjection}};
+                {modelMatrix, modelViewProjection, mesh.getStartingIndex()}};
 
             if (light.getFrustum().intersects(modelMatrix, mesh.getAABB())) {
               mShadowDepthPassCommand

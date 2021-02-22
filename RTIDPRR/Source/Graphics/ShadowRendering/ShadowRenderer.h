@@ -16,13 +16,15 @@ namespace Graphics {
 struct LightDepthPassCameraParams {
   glm::mat4 mModel;
   glm::mat4 mViewProjection;
+  uint32_t mPrimitiveOffset;
 };
 
 struct ShadowDepthPassResources {
   ShadowDepthPassResources();
-  ShadowDepthPassResources(ShadowDepthPassResources&& other)
+  ShadowDepthPassResources(ShadowDepthPassResources&& other) noexcept
       : mDepthTex(std::move(other.mDepthTex)),
         mAlbedoTex(std::move(other.mAlbedoTex)),
+        mPatchIdTex(std::move(other.mPatchIdTex)),
         mLightDepthRenderpass(std::move(other.mLightDepthRenderpass)),
         mLightDepthFramebuffer(std::move(other.mLightDepthFramebuffer)),
         mInlineParameters(std::move(other.mInlineParameters)),
@@ -30,6 +32,8 @@ struct ShadowDepthPassResources {
 
   Texture mDepthTex;
   Texture mAlbedoTex;
+  Texture mPatchIdTex;
+
   RenderPass mLightDepthRenderpass;
   Framebuffer mLightDepthFramebuffer;
 

@@ -49,10 +49,13 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
       std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
   const vk::ClearColorValue positionClearColor(
       std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f});
+  const vk::ClearColorValue patchIdClearColor(
+      std::array<uint32_t, 4>{0, 0, 0, 0});
   const vk::ClearDepthStencilValue depthClearColor =
       vk::ClearDepthStencilValue(1.0f, 1u);
   const std::vector<vk::ClearValue> clearValues{
-      albedoClearColor, normalClearColor, positionClearColor, depthClearColor};
+      albedoClearColor, normalClearColor, positionClearColor, patchIdClearColor,
+      depthClearColor};
 
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
   RTIDPRR_ASSERT_VK(mBasePassCommand->begin(beginInfo));
@@ -88,13 +91,13 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
           const glm::mat4 modelMatrix = transform->getAbsoluteTransform();
           glm::mat4 modelViewProjection = viewProjection * modelMatrix;
 
-          std::vector<CameraMatrices> matrices{
-              {modelMatrix, modelViewProjection}};
+          std::vector<BasePassPushParams> matrices{
+              {modelMatrix, modelViewProjection, mesh.getStartingIndex()}};
 
           const Frustum& cameraFrustum = scene.getCamera().getFrustum();
 
           if (cameraFrustum.intersects(modelMatrix, mesh.getAABB())) {
-            mBasePassCommand->pushConstants<CameraMatrices>(
+            mBasePassCommand->pushConstants<BasePassPushParams>(
                 mBasePassResources.mBasePassPipeline.getPipelineLayout(),
                 vk::ShaderStageFlagBits::eVertex, 0, matrices);
             mBasePassCommand->bindMesh(mesh.getIndexedBuffer());
@@ -205,6 +208,7 @@ DeferredRenderer::~DeferredRenderer() {}
 static const vk::Format albedoFormat = vk::Format::eR8G8B8A8Unorm;
 static const vk::Format normalFormat = vk::Format::eR16G16B16A16Sfloat;
 static const vk::Format positionFormat = vk::Format::eR16G16B16A16Sfloat;
+static const vk::Format patchIdFormat = vk::Format::eR32Uint;
 static const vk::Format depthFormat = vk::Format::eD32Sfloat;
 
 BasePassResources::BasePassResources(const vk::Extent2D& extent)
@@ -220,14 +224,25 @@ BasePassResources::BasePassResources(const vk::Extent2D& extent)
                    vk::ImageUsageFlagBits::eColorAttachment |
                        vk::ImageUsageFlagBits::eSampled,
                    vk::ImageAspectFlagBits::eColor),
+      mPatchIdTex(extent, patchIdFormat,
+                  vk::ImageUsageFlagBits::eColorAttachment |
+                      vk::ImageUsageFlagBits::eSampled,
+                  vk::ImageAspectFlagBits::eColor),
       mDepthTex(extent, depthFormat,
                 vk::ImageUsageFlagBits::eDepthStencilAttachment |
                     vk::ImageUsageFlagBits::eSampled,
                 vk::ImageAspectFlagBits::eDepth),
-      mBasePass({&mAlbedoTex, &mNormalTex, &mPositionTex, &mDepthTex}, true),
+      mBasePass(
+          {&mAlbedoTex, &mNormalTex, &mPositionTex, &mPatchIdTex, &mDepthTex},
+          true),
       mGBuffer(Context::get().getDevice(), mBasePass.getHandle(),
-               {mAlbedoTex.getImageView(), mNormalTex.getImageView(),
-                mPositionTex.getImageView(), mDepthTex.getImageView()},
+               {
+                   mAlbedoTex.getImageView(),
+                   mNormalTex.getImageView(),
+                   mPositionTex.getImageView(),
+                   mPatchIdTex.getImageView(),
+                   mDepthTex.getImageView(),
+               },
                extent.width, extent.height),
       mInlineParameters({vk::ShaderStageFlagBits::eVertex}),
       mBasePassPipeline(mBasePass, extent, GeometryLayout::PositionOnly,

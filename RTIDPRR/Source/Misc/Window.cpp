@@ -43,7 +43,7 @@ vk::SurfaceKHR Window::createSurface(const vk::Instance& instance) const {
 }
 
 std::vector<const char*> Window::getRequiredVkExtensions() const {
-  unsigned int requiredExtensionsCount = 0;
+  uint32_t requiredExtensionsCount = 0;
   RTIDPRR_ASSERT(SDL_Vulkan_GetInstanceExtensions(
       const_cast<SDL_Window*>(mWindow), &requiredExtensionsCount, NULL));
   std::vector<const char*> extensions(requiredExtensionsCount);

@@ -27,14 +27,20 @@ struct CameraMatrices {
   glm::mat4 mvp;
 };
 
+struct BasePassPushParams {
+  glm::mat4 mModel;
+  glm::mat4 mvp;
+  uint32_t mStartingIndex;
+};
+
 struct BasePassResources {
   BasePassResources(const vk::Extent2D& extent);
 
-  Texture mAlbedoTex, mNormalTex, mPositionTex, mDepthTex;
+  Texture mAlbedoTex, mNormalTex, mPositionTex, mPatchIdTex, mDepthTex;
   RenderPass mBasePass;
   Framebuffer mGBuffer;
 
-  ShaderParameterInlineGroup<CameraMatrices> mInlineParameters;
+  ShaderParameterInlineGroup<BasePassPushParams> mInlineParameters;
 
   Pipeline mBasePassPipeline;
 };

@@ -23,12 +23,16 @@ class Mesh : public RTIDPRR::Core::Component {
     return *mIndexedBuffer;
   }
   const AxisAlignedBoundingBox& getAABB() const { return mAABB; }
+  const uint32_t getStartingIndex() const { return mStartingIndex; }
 
   ~Mesh();
 
  private:
   std::unique_ptr<RTIDPRR::Graphics::IndexedVertexBuffer> mIndexedBuffer;
   AxisAlignedBoundingBox mAABB;
+
+  static uint32_t sLastIndex;
+  uint32_t mStartingIndex;
 };
 
 }  // namespace Component

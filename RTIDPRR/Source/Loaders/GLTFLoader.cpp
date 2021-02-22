@@ -34,9 +34,9 @@ GeometryData processPrimitive(const tinygltf::Model& model,
     const unsigned char* positionData =
         &positionBuffer.data[positionBufferOffset];
 
-    const unsigned int positionCount =
-        static_cast<unsigned int>(positionAccessor.count);
-    for (unsigned int positionIndex = 0; positionIndex < positionCount;
+    const uint32_t positionCount =
+        static_cast<uint32_t>(positionAccessor.count);
+    for (uint32_t positionIndex = 0; positionIndex < positionCount;
          ++positionIndex) {
       const float* positionDataFloat = reinterpret_cast<const float*>(
           &positionData[vetexStride * positionIndex]);
@@ -48,8 +48,7 @@ GeometryData processPrimitive(const tinygltf::Model& model,
   const tinygltf::Accessor& indexAccessor = model.accessors[primitive.indices];
   std::vector<uint16_t> indices;
   {
-    const unsigned int indexCount =
-        static_cast<unsigned int>(indexAccessor.count);
+    const uint32_t indexCount = static_cast<uint32_t>(indexAccessor.count);
     const tinygltf::BufferView& indexBufferView =
         model.bufferViews[indexAccessor.bufferView];
     const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];
