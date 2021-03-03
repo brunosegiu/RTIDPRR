@@ -27,6 +27,7 @@ Buffer::Buffer(const vk::DeviceSize& size, const vk::BufferUsageFlags& usage,
       device.getLogicalDeviceHandle().allocateMemory(memAllocInfo));
   RTIDPRR_ASSERT_VK(
       device.getLogicalDeviceHandle().bindBufferMemory(mBuffer, mMemory, 0));
+  mPMapped = nullptr;
 }
 
 Buffer::Buffer(Buffer&& other)
@@ -49,12 +50,27 @@ void Buffer::update(const void* value, const vk::DeviceSize& offset,
   device.getLogicalDeviceHandle().unmapMemory(mMemory);
 }
 
+void* Buffer::map() {
+  if (!mPMapped) {
+    const Device& device = Context::get().getDevice();
+    mPMapped = RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().mapMemory(
+        mMemory, 0, mSize, vk::MemoryMapFlags{}));
+  }
+  return mPMapped;
+}
+
+void Buffer::unmap() {
+  const Device& device = Context::get().getDevice();
+  device.getLogicalDeviceHandle().unmapMemory(mMemory);
+  mPMapped = nullptr;
+}
+
 void Buffer::copyInto(Buffer& other) {
   const Device& device = Context::get().getDevice();
 
   const Queue& graphicsQueue = device.getGraphicsQueue();
 
-  Command* command = Context::get().getCommandPool().allocateCommand();
+  Command* command = Context::get().getCommandPool().allocateGraphicsCommand();
 
   // Copy
   vk::CommandBufferBeginInfo commandBeginInfo =

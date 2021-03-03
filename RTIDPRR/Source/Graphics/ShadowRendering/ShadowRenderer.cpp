@@ -24,7 +24,7 @@ ShadowRenderer::ShadowRenderer()
 
   CommandPool& commandPool = Context::get().getCommandPool();
 
-  mShadowDepthPassCommand = commandPool.allocateCommand();
+  mShadowDepthPassCommand = commandPool.allocateGraphicsCommand();
 }
 
 static const vk::Format depthFormat = vk::Format::eD32Sfloat;

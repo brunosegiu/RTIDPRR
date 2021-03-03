@@ -1,0 +1,27 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_EXT_shader_atomic_float : enable
+
+layout(std430, binding = 0) buffer SSBO {
+	uint row[];
+};
+
+layout(r32ui, set = 1, binding = 0) readonly uniform uimage2D patchIdTex;
+
+uint reverseBytes(uint value)
+{
+     return (value & 0x000000FFU) << 24 | (value & 0x0000FF00U) << 8 |
+         (value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
+}
+
+uint getFaceId(ivec2 coord) {
+	return imageLoad(patchIdTex, ivec2(coord)).r;
+}
+
+void main() {
+	ivec2 imageCoords = ivec2(gl_WorkGroupID.xy);
+	uint patchId = getFaceId(imageCoords);
+	if (patchId > 0) {
+		atomicAdd(row[patchId], 1);
+	}
+}

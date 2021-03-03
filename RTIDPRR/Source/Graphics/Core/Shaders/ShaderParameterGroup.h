@@ -107,6 +107,15 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
             .setType(vk::DescriptorType::eCombinedImageSampler));
   }
 
+  uint32_t storageImageCount =
+      getDescriptorCountForType<0, vk::DescriptorType::eStorageImage,
+                                TShaderParameters...>(mParameters);
+  if (storageImageCount > 0) {
+    poolSizes.emplace_back(vk::DescriptorPoolSize()
+                               .setDescriptorCount(storageImageCount)
+                               .setType(vk::DescriptorType::eStorageImage));
+  }
+
   vk::DescriptorPoolCreateInfo poolCreateInfo =
       vk::DescriptorPoolCreateInfo().setPoolSizes(poolSizes).setMaxSets(
           sShaderParameterCount);

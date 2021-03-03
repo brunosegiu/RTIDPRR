@@ -26,6 +26,7 @@ Context::Context(const Window& window)
       mDevice(mInstance),
       mSwapchain(window, mInstance, mDevice),
       mCommandPool(mDevice.getLogicalDeviceHandle(),
-                   mDevice.getGraphicsQueue().getFamilyIndex()) {}
+                   {mDevice.getGraphicsQueue().getFamilyIndex(),
+                    mDevice.getComputeQueue().getFamilyIndex()}) {}
 
 Context::~Context() {}

@@ -24,6 +24,7 @@ class Texture {
   const vk::Image& getImage() const { return mImage; }
   const vk::ImageView& getImageView() const { return mImageView; }
   const vk::Format& getFormat() const { return mFormat; }
+  const vk::Extent2D& getExtent() const { return mExtent; }
 
   virtual ~Texture();
 
@@ -32,6 +33,7 @@ class Texture {
   vk::ImageView mImageView;
   vk::Format mFormat;
   vk::DeviceMemory mMemory;
+  vk::Extent2D mExtent;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

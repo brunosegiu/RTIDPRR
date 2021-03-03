@@ -15,14 +15,19 @@ DeferredRenderer::DeferredRenderer()
           Context::get().getSwapchain().getExtent(),
           mBasePassResources.mAlbedoTex, mBasePassResources.mNormalTex,
           mBasePassResources.mPositionTex, mBasePassResources.mDepthTex,
-          mShadowRenderer.getSamplerOptionsFromResources()) {
+          mShadowRenderer.getSamplerOptionsFromResources()),
+      mPatchCounter(100, &mBasePassResources.mPatchIdTex) {
   const Device& device = Context::get().getDevice();
 
   CommandPool& commandPool = Context::get().getCommandPool();
 
-  mTransitionDepthSceneCommand = commandPool.allocateCommand();
-  mBasePassCommand = commandPool.allocateCommand();
-  mLightPassCommand = commandPool.allocateCommand();
+  mTransitionDepthSceneCommand = commandPool.allocateGraphicsCommand();
+  mBasePassCommand = commandPool.allocateGraphicsCommand();
+  mLightPassCommand = commandPool.allocateGraphicsCommand();
+
+  mCounterWaitSemaphore =
+      RTIDPRR_ASSERT_VK(device.getLogicalDeviceHandle().createSemaphore(
+          vk::SemaphoreCreateInfo()));
 }
 
 void DeferredRenderer::render(Scene& scene) {
@@ -36,7 +41,11 @@ void DeferredRenderer::render(Scene& scene) {
 
   renderBasePass(scene);
 
+  mPatchCounter.count({&mBasePassResources.mPatchIdTex}, mCounterWaitSemaphore);
+
   renderLightPass(scene);
+
+  swapchain.present(*mLightPassCommand);
 }
 
 void DeferredRenderer::renderBasePass(Scene& scene) {
@@ -109,9 +118,33 @@ void DeferredRenderer::renderBasePass(Scene& scene) {
   }
 
   mBasePassCommand->endRenderPass();
+
+  {
+    vk::ImageMemoryBarrier barrier;
+    barrier.setOldLayout(vk::ImageLayout::eUndefined)
+        .setNewLayout(vk::ImageLayout::eGeneral)
+        .setImage(mBasePassResources.mPatchIdTex.getImage())
+        .setSrcQueueFamilyIndex(
+            Context::get().getDevice().getGraphicsQueue().getFamilyIndex())
+        .setDstQueueFamilyIndex(
+            Context::get().getDevice().getComputeQueue().getFamilyIndex())
+        .setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)
+        .setSubresourceRange(vk::ImageSubresourceRange()
+                                 .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                 .setBaseMipLevel(0)
+                                 .setLevelCount(1)
+                                 .setLayerCount(1));
+    mBasePassCommand->pipelineBarrier(
+        vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        vk::PipelineStageFlagBits::eBottomOfPipe, {}, nullptr, nullptr,
+        barrier);
+  }
+
   RTIDPRR_ASSERT_VK(mBasePassCommand->end());
-  vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(
-      *static_cast<vk::CommandBuffer*>(mBasePassCommand));
+  vk::SubmitInfo submitInfo =
+      vk::SubmitInfo()
+          .setCommandBuffers(*static_cast<vk::CommandBuffer*>(mBasePassCommand))
+          .setSignalSemaphores(mCounterWaitSemaphore);
   graphicsQueue.submit(submitInfo);
 }
 
@@ -200,7 +233,6 @@ void DeferredRenderer::renderLightPass(Scene& scene) {
   mLightPassCommand->draw(3, 1, 0, 0);
   mLightPassCommand->endRenderPass();
   RTIDPRR_ASSERT_VK(mLightPassCommand->end());
-  swapchain.present(*mLightPassCommand);
 }
 
 DeferredRenderer::~DeferredRenderer() {}
@@ -226,7 +258,8 @@ BasePassResources::BasePassResources(const vk::Extent2D& extent)
                    vk::ImageAspectFlagBits::eColor),
       mPatchIdTex(extent, patchIdFormat,
                   vk::ImageUsageFlagBits::eColorAttachment |
-                      vk::ImageUsageFlagBits::eSampled,
+                      vk::ImageUsageFlagBits::eSampled |
+                      vk::ImageUsageFlagBits::eStorage,
                   vk::ImageAspectFlagBits::eColor),
       mDepthTex(extent, depthFormat,
                 vk::ImageUsageFlagBits::eDepthStencilAttachment |

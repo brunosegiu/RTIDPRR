@@ -26,7 +26,7 @@ GizmoRenderer::GizmoRenderer()
               vk::PrimitiveTopology::eLineList)),
       mBoxGeometry(boxVertices, boxIndices) {
   CommandPool& commandPool = Context::get().getCommandPool();
-  mCommand = commandPool.allocateCommand();
+  mCommand = commandPool.allocateGraphicsCommand();
 }
 
 void GizmoRenderer::render(Scene& scene, Command* command) {

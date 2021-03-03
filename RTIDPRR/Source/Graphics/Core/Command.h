@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "../Geometry/IndexedVertexBuffer.h"
+#include "ComputePipeline.h"
 #include "Pipeline.h"
 #include "Shaders/ShaderParameterGroup.h"
 
@@ -18,6 +19,11 @@ class Command : public vk::CommandBuffer {
                                     pipeline.getPipelineHandle());
   }
 
+  void bindPipeline(const ComputePipeline& pipeline) {
+    vk::CommandBuffer::bindPipeline(vk::PipelineBindPoint::eCompute,
+                                    pipeline.getPipelineHandle());
+  }
+
   void bindInlineShaderParameters() {}
 
   template <typename... T>
@@ -25,6 +31,23 @@ class Command : public vk::CommandBuffer {
       uint32_t slot, const Pipeline& pipeline,
       const ShaderParameterGroup<T...>& shaderParameterGroup) {
     bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+                       pipeline.getPipelineLayout(), slot,
+                       shaderParameterGroup.getDescriptorSet(), nullptr);
+  }
+
+  template <typename ShaderParameter>
+  void bindShaderParameterGroup(uint32_t slot, const ComputePipeline& pipeline,
+                                const ShaderParameter& shaderParameter) {
+    bindDescriptorSets(vk::PipelineBindPoint::eCompute,
+                       pipeline.getPipelineLayout(), slot,
+                       shaderParameter.getDescriptorSet(), nullptr);
+  }
+
+  template <typename... T>
+  void bindShaderParameterGroup(
+      uint32_t slot, const ComputePipeline& pipeline,
+      const ShaderParameterGroup<T...>& shaderParameterGroup) {
+    bindDescriptorSets(vk::PipelineBindPoint::eCompute,
                        pipeline.getPipelineLayout(), slot,
                        shaderParameterGroup.getDescriptorSet(), nullptr);
   }

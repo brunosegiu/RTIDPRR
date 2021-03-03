@@ -15,6 +15,8 @@ class Buffer {
 
   void update(const void* value, const vk::DeviceSize& offset = 0,
               const vk::DeviceSize& size = Buffer::sInvalidSize);
+  void* map();
+  void unmap();
   void copyInto(Buffer& other);
 
   virtual ~Buffer();
@@ -25,6 +27,7 @@ class Buffer {
   vk::Buffer mBuffer;
   vk::DeviceMemory mMemory;
   vk::DeviceSize mSize;
+  void* mPMapped;
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

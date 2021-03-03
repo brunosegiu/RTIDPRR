@@ -48,9 +48,9 @@ class Pipeline {
   Pipeline(const RenderPass& renderPass, const vk::Extent2D& extent,
            const GeometryLayout& geometryLayout,
            const std::vector<std::string>& shaderPaths,
-           const std::vector<vk::DescriptorSetLayout>& descriptorLayouts,
-           const std::vector<vk::PushConstantRange>& pushConstants,
-           const SpecializationMap& specializationConstants,
+           const std::vector<vk::DescriptorSetLayout>& descriptorLayouts = {},
+           const std::vector<vk::PushConstantRange>& pushConstants = {},
+           const SpecializationMap& specializationConstants = {},
            const PipelineCreateOptions& options = PipelineCreateOptions());
 
   Pipeline(Pipeline&& other) noexcept

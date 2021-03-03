@@ -127,6 +127,15 @@
     <ClCompile Include="Source\Graphics\GizmoRendering\GizmoRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\CountPatches\PatchCounter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Core\ComputePipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterImage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Graphics\Core\Context.h">
@@ -267,6 +276,18 @@
     <ClInclude Include="Source\Graphics\GizmoRendering\GizmoRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\CountPatches\PatchCounter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\ComputePipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -280,5 +301,6 @@
     <CustomBuild Include="Source\Shaders\Source\LightDepthPass.vert" />
     <CustomBuild Include="Source\Shaders\Source\Line.frag" />
     <CustomBuild Include="Source\Shaders\Source\Line.vert" />
+    <CustomBuild Include="Source\Shaders\Source\CountPatches.comp" />
   </ItemGroup>
 </Project>

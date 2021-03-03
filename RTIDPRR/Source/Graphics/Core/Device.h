@@ -12,6 +12,7 @@ class Device {
   Device(const Instance& instance);
 
   const Queue& getGraphicsQueue() const { return *mGraphicsQueue; };
+  const Queue& getComputeQueue() const { return *mComputeQueue; };
 
   const vk::PhysicalDevice& getPhysicalDeviceHandle() const {
     return mPhysicalHandle;
@@ -30,7 +31,7 @@ class Device {
 
   static const vk::PhysicalDevice findPhysicalDevice(
       const std::vector<vk::PhysicalDevice>& devices);
-  static const uint32_t findQueueFamilyIndex(
+  static const Queue::QueueIndices findQueueFamilyIndex(
       const std::vector<vk::QueueFamilyProperties>& queueFamilyProperties);
 
   vk::PhysicalDevice mPhysicalHandle;

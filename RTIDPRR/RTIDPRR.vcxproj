@@ -232,6 +232,9 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Graphics\Core\ComputePipeline.cpp" />
+    <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterImage.cpp" />
+    <ClCompile Include="Source\Graphics\CountPatches\PatchCounter.cpp" />
     <ClCompile Include="Source\Components\Light\LightSystem.cpp" />
     <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.cpp" />
     <ClCompile Include="Source\Graphics\GizmoRendering\GizmoRenderer.cpp" />
@@ -271,6 +274,10 @@
     <ClCompile Include="Source\Components\Transform\TransformSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterBuffer.h" />
+    <ClInclude Include="Source\Graphics\Core\ComputePipeline.h" />
+    <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterImage.h" />
+    <ClInclude Include="Source\Graphics\CountPatches\PatchCounter.h" />
     <ClInclude Include="Source\Components\Light\LightSystem.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterConstantGroup.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.h" />
@@ -371,6 +378,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="Source\Shaders\Source\CountPatches.comp">
+      <FileType>Document</FileType>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

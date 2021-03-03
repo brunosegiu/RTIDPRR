@@ -9,7 +9,7 @@ Texture::Texture(const vk::Extent2D& extent, const vk::Format& format,
                  const vk::ImageUsageFlags& usage,
                  const vk::ImageAspectFlags& viewAspect,
                  const vk::ImageTiling tiling)
-    : mFormat(format) {
+    : mFormat(format), mExtent(extent) {
   const Device& device = Context::get().getDevice();
   vk::ImageCreateInfo imageCreateInfo =
       vk::ImageCreateInfo()

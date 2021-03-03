@@ -6,6 +6,11 @@ namespace RTIDPRR {
 namespace Graphics {
 class Queue {
  public:
+  struct QueueIndices {
+    uint32_t graphicsQueueIndex;
+    uint32_t computeQueueIndex;
+  };
+
   Queue(const uint32_t queueFamilyIndex, const uint32_t queueIndex,
         const vk::Device& logicalDevice);
 

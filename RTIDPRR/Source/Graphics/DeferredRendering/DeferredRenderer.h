@@ -16,6 +16,7 @@
 #include "../Core/Shaders/ShaderParameterTexture.h"
 #include "../Core/Shaders/ShaderParameterTextureArray.h"
 #include "../Core/Texture.h"
+#include "../CountPatches/PatchCounter.h"
 #include "../Geometry/IndexedVertexBuffer.h"
 #include "../ShadowRendering/ShadowRenderer.h"
 
@@ -74,6 +75,8 @@ class DeferredRenderer {
   ShadowRenderer mShadowRenderer;
   BasePassResources mBasePassResources;
   LightPassResources mLightPassResources;
+  PatchCounter mPatchCounter;
+  vk::Semaphore mCounterWaitSemaphore;
 
   void renderBasePass(Scene& scene);
   void renderLightPass(Scene& scene);

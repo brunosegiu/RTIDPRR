@@ -19,18 +19,18 @@ Device::Device(const Instance& instance)
 
   mDeviceProperties = mPhysicalHandle.getProperties();
 
-  const uint32_t queueFamilyIndex = findQueueFamilyIndex(queueFamilies);
+  const Queue::QueueIndices queueFamilyIndices =
+      findQueueFamilyIndex(queueFamilies);
 
-  std::vector<float> queuePriorities{
-      1.0f,  // Graphics queue
-      0.5f   // Compute queue
-  };
+  std::vector<float> queuePriorities{1.0f, 0.5f};
 
-  vk::DeviceQueueCreateInfo graphicsQueueCreateInfo =
+  std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos{
       vk::DeviceQueueCreateInfo()
-          .setQueueFamilyIndex(queueFamilyIndex)
-          .setQueueCount(static_cast<uint32_t>(queuePriorities.size()))
-          .setPQueuePriorities(queuePriorities.data());
+          .setQueueFamilyIndex(queueFamilyIndices.graphicsQueueIndex)
+          .setQueuePriorities(queuePriorities),
+      vk::DeviceQueueCreateInfo()
+          .setQueueFamilyIndex(queueFamilyIndices.computeQueueIndex)
+          .setQueuePriorities(queuePriorities)};
 
   // Initialize the logical device
   std::vector<const char*> enabledExtensionNames{
@@ -38,14 +38,16 @@ Device::Device(const Instance& instance)
 
   vk::DeviceCreateInfo deviceCreateInfo =
       vk::DeviceCreateInfo()
-          .setQueueCreateInfos(graphicsQueueCreateInfo)
+          .setQueueCreateInfos(queueCreateInfos)
           .setPEnabledExtensionNames(enabledExtensionNames);
 
   mLogicalHandle =
       RTIDPRR_ASSERT_VK(mPhysicalHandle.createDevice(deviceCreateInfo));
 
-  mGraphicsQueue = std::make_unique<Queue>(queueFamilyIndex, 0, mLogicalHandle);
-  mComputeQueue = std::make_unique<Queue>(queueFamilyIndex, 1, mLogicalHandle);
+  mGraphicsQueue = std::make_unique<Queue>(
+      queueFamilyIndices.graphicsQueueIndex, 0, mLogicalHandle);
+  mComputeQueue = std::make_unique<Queue>(queueFamilyIndices.computeQueueIndex,
+                                          0, mLogicalHandle);
 }
 
 const vk::PhysicalDevice Device::findPhysicalDevice(
@@ -63,17 +65,31 @@ const vk::PhysicalDevice Device::findPhysicalDevice(
   return nullptr;
 }
 
-const uint32_t Device::findQueueFamilyIndex(
+const Queue::QueueIndices Device::findQueueFamilyIndex(
     const std::vector<vk::QueueFamilyProperties>& queueFamilyProperties) {
+  Queue::QueueIndices indices{-1, -1};
   for (uint32_t index = 0; index < queueFamilyProperties.size(); ++index) {
     const vk::QueueFamilyProperties& queueFamilyProperty =
         queueFamilyProperties[index];
     if (queueFamilyProperty.queueFlags & vk::QueueFlagBits::eGraphics &&
-        queueFamilyProperty.queueFlags & vk::QueueFlagBits::eCompute)
-      return index;
+        queueFamilyProperty.queueFlags & vk::QueueFlagBits::eCompute) {
+      indices.graphicsQueueIndex = indices.computeQueueIndex = index;
+      break;
+    }
   }
-  RTIDPRR_ASSERT_MSG(false, "Couldn't find graphics/compute queue");
-  return 0;
+  RTIDPRR_ASSERT_MSG(indices.graphicsQueueIndex != -1,
+                     "Couldn't find graphics/compute queue");
+
+  for (uint32_t index = 0; index < queueFamilyProperties.size(); ++index) {
+    const vk::QueueFamilyProperties& queueFamilyProperty =
+        queueFamilyProperties[index];
+    if (index != indices.graphicsQueueIndex &&
+        queueFamilyProperty.queueFlags & vk::QueueFlagBits::eCompute) {
+      indices.computeQueueIndex = index;
+    }
+  }
+
+  return indices;
 }
 
 Device::~Device() {
