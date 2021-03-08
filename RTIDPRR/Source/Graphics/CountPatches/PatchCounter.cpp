@@ -6,70 +6,50 @@
 
 using namespace RTIDPRR::Graphics;
 
-PatchCounter::PatchCounter(uint32_t patchCount, Texture* texture)
-    : mBuffer(patchCount * sizeof(uint32_t),
-              vk::BufferUsageFlagBits::eStorageBuffer,
-              vk::MemoryPropertyFlagBits::eHostVisible |
-                  vk::MemoryPropertyFlagBits::eHostCoherent),
-      mImageParam(vk::ShaderStageFlagBits::eCompute,
-                  ShaderParameterImage(texture)),
-      mBufferParam(mBuffer, patchCount),
-      mComputePipeline("Source/Shaders/Build/CountPatches.comp",
-                       {mBufferParam.getLayout(), mImageParam.getLayout()}) {
+PatchCounter::PatchCounter() {
   CommandPool& commandPool = Context::get().getCommandPool();
   mCommand = commandPool.allocateComputeCommand();
 }
 
-void PatchCounter::count(const std::vector<Texture*>& patchIdTex,
-                         vk::Semaphore& basePassDoneSemaphore) {
+void PatchCounter::initResources(const std::vector<const Texture*>& patchIdTexs,
+                                 const uint32_t patchCount) {
+  mResources = std::make_unique<CounterResources>(patchIdTexs, patchCount);
+}
+
+void PatchCounter::count(Scene& scene, BasePassRenderer& basePassRenderer) {
+  using namespace RTIDPRR::Component;
+  uint32_t patchCount = Mesh::getTotalPatchCount();
+
+  std::vector<const Texture*> patchIdTextures{
+      &basePassRenderer.getResources().mPatchIdTex};
+
+  initResources(patchIdTextures, patchCount);
+
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
   RTIDPRR_ASSERT_VK(mCommand->begin(beginInfo));
 
-  {
-    vk::ImageMemoryBarrier barrier;
-    barrier.setOldLayout(vk::ImageLayout::eUndefined)
-        .setNewLayout(vk::ImageLayout::eGeneral)
-        .setImage(patchIdTex[0]->getImage())
-        .setSrcQueueFamilyIndex(
-            Context::get().getDevice().getGraphicsQueue().getFamilyIndex())
-        .setDstQueueFamilyIndex(
-            Context::get().getDevice().getComputeQueue().getFamilyIndex())
-        .setDstAccessMask(vk::AccessFlagBits::eShaderRead)
-        .setSubresourceRange(vk::ImageSubresourceRange()
-                                 .setAspectMask(vk::ImageAspectFlagBits::eColor)
-                                 .setBaseMipLevel(0)
-                                 .setLevelCount(1)
-                                 .setLayerCount(1));
-    mCommand->pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe,
-                              vk::PipelineStageFlagBits::eComputeShader, {},
-                              nullptr, nullptr, barrier);
-  }
+  mCommand->transitionTextures(
+      ResourceTransition::GraphicsToCompute,
+      vk::PipelineStageFlagBits::eTopOfPipe,
+      vk::PipelineStageFlagBits::eComputeShader, vk::ImageLayout::eUndefined,
+      vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderRead,
+      patchIdTextures);
 
-  mCommand->bindPipeline(mComputePipeline);
+  mCommand->bindPipeline(*mResources->mClearPipeline);
+  mCommand->bindShaderParameterGroup(0, *mResources->mClearPipeline,
+                                     mResources->mPatchCountBufferParam);
+  mCommand->dispatch(patchCount, 1, 1);
 
-  mCommand->bindShaderParameterGroup(0, mComputePipeline, mBufferParam);
-  mCommand->bindShaderParameterGroup(1, mComputePipeline, mImageParam);
+  mCommand->bindPipeline(*mResources->mCountPipeline);
 
-  mCommand->dispatch(patchIdTex[0]->getExtent().width,
-                     patchIdTex[0]->getExtent().height, 1);
+  mCommand->bindShaderParameterGroup(0, *mResources->mCountPipeline,
+                                     mResources->mPatchCountBufferParam);
+  for (size_t index = 0; index < mResources->mPatchIdImages.size(); ++index) {
+    mCommand->bindShaderParameterGroup(1, *(mResources->mCountPipeline),
+                                       mResources->mPatchIdImages[index]);
 
-  {
-    vk::ImageMemoryBarrier barrier;
-    barrier.setOldLayout(vk::ImageLayout::eGeneral)
-        .setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
-        .setImage(patchIdTex[0]->getImage())
-        .setSrcQueueFamilyIndex(
-            Context::get().getDevice().getComputeQueue().getFamilyIndex())
-        .setDstQueueFamilyIndex(
-            Context::get().getDevice().getGraphicsQueue().getFamilyIndex())
-        .setSubresourceRange(vk::ImageSubresourceRange()
-                                 .setAspectMask(vk::ImageAspectFlagBits::eColor)
-                                 .setBaseMipLevel(0)
-                                 .setLevelCount(1)
-                                 .setLayerCount(1));
-    mCommand->pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader,
-                              vk::PipelineStageFlagBits::eTopOfPipe, {},
-                              nullptr, nullptr, barrier);
+    mCommand->dispatch(patchIdTextures[index]->getExtent().width,
+                       patchIdTextures[index]->getExtent().height, 1);
   }
 
   RTIDPRR_ASSERT_VK(mCommand->end());
@@ -80,13 +60,15 @@ void PatchCounter::count(const std::vector<Texture*>& patchIdTex,
   vk::SubmitInfo submitInfo =
       vk::SubmitInfo()
           .setCommandBuffers(*static_cast<vk::CommandBuffer*>(mCommand))
-          .setWaitSemaphores(basePassDoneSemaphore)
+          .setWaitSemaphores(basePassRenderer.getDoneSemaphore())
           .setWaitDstStageMask(waitForStages);
+
   Context::get().getDevice().getComputeQueue().submit(submitInfo);
-  Context::get().getDevice().getLogicalDeviceHandle().waitIdle();
-  void* map = mBuffer.map();
+  RTIDPRR_ASSERT_VK(
+      Context::get().getDevice().getLogicalDeviceHandle().waitIdle());
+  void* map = mResources->mPatchCountBuffer.map();
   std::vector<uint32_t> buf(static_cast<uint32_t*>(map),
-                            static_cast<uint32_t*>(map) + 100);
+                            static_cast<uint32_t*>(map) + patchCount);
 }
 
 PatchCounter::~PatchCounter() {}

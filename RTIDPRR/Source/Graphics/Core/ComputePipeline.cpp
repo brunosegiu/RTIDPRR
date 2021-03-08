@@ -25,7 +25,6 @@ ComputePipeline::ComputePipeline(
   // Load and bind shaders
   vk::SpecializationInfo specializationInfo;
 
-  uint32_t shaderIndex = 0;
   static const char* entryPointName = "main";
   mShader = Shader::loadShader(shaderPath);
   const auto& constantInfo =

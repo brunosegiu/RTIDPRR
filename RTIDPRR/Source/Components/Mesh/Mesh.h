@@ -24,6 +24,7 @@ class Mesh : public RTIDPRR::Core::Component {
   }
   const AxisAlignedBoundingBox& getAABB() const { return mAABB; }
   const uint32_t getStartingIndex() const { return mStartingIndex; }
+  static const uint32_t getTotalPatchCount() { return sLastIndex; }
 
   ~Mesh();
 

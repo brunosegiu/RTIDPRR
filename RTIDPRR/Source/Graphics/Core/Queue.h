@@ -9,6 +9,8 @@ class Queue {
   struct QueueIndices {
     uint32_t graphicsQueueIndex;
     uint32_t computeQueueIndex;
+
+    static constexpr uint32_t sInvalidIndex = static_cast<uint32_t>(-1);
   };
 
   Queue(const uint32_t queueFamilyIndex, const uint32_t queueIndex,

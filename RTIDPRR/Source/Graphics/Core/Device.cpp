@@ -67,7 +67,8 @@ const vk::PhysicalDevice Device::findPhysicalDevice(
 
 const Queue::QueueIndices Device::findQueueFamilyIndex(
     const std::vector<vk::QueueFamilyProperties>& queueFamilyProperties) {
-  Queue::QueueIndices indices{-1, -1};
+  Queue::QueueIndices indices{Queue::QueueIndices::sInvalidIndex,
+                              Queue::QueueIndices::sInvalidIndex};
   for (uint32_t index = 0; index < queueFamilyProperties.size(); ++index) {
     const vk::QueueFamilyProperties& queueFamilyProperty =
         queueFamilyProperties[index];

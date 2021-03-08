@@ -9,6 +9,14 @@
 
 namespace RTIDPRR {
 namespace Graphics {
+
+enum class ResourceTransition {
+  GraphicsToGraphics,
+  ComputeToCompute,
+  ComputeToGraphics,
+  GraphicsToCompute
+};
+
 class Command : public vk::CommandBuffer {
  public:
   Command() = default;
@@ -61,6 +69,59 @@ class Command : public vk::CommandBuffer {
 
   void drawMesh(const IndexedVertexBuffer& mesh) {
     drawIndexed(mesh.getFaceCount(), 1, 0, 0, 0);
+  }
+
+  void transitionTextures(ResourceTransition transitionType,
+                          vk::PipelineStageFlags srcStage,
+                          vk::PipelineStageFlags dstStage,
+                          vk::ImageLayout prevLayout, vk::ImageLayout newLayout,
+                          vk::AccessFlags newAccess,
+                          const std::vector<const Texture*>& textures) {
+    uint32_t srcFamilyIndex =
+        transitionType == ResourceTransition::ComputeToGraphics
+            ? Context::get().getDevice().getComputeQueue().getFamilyIndex()
+            : Context::get().getDevice().getGraphicsQueue().getFamilyIndex();
+
+    uint32_t dstFamilyIndex =
+        transitionType == ResourceTransition::ComputeToGraphics
+            ? Context::get().getDevice().getGraphicsQueue().getFamilyIndex()
+            : Context::get().getDevice().getComputeQueue().getFamilyIndex();
+
+    std::vector<vk::ImageMemoryBarrier> barriers(textures.size());
+    for (size_t index = 0; index < barriers.size(); ++index) {
+      vk::ImageMemoryBarrier& barrier = barriers[index];
+      const Texture* texture = textures[index];
+      barrier.setOldLayout(prevLayout)
+          .setNewLayout(newLayout)
+          .setImage(texture->getImage())
+          .setDstAccessMask(newAccess)
+          .setSubresourceRange(
+              vk::ImageSubresourceRange()
+                  .setAspectMask(
+                      texture->getUsage() &
+                              vk::ImageUsageFlagBits::eDepthStencilAttachment
+                          ? vk::ImageAspectFlagBits::eDepth
+                          : vk::ImageAspectFlagBits::eColor)
+                  .setBaseMipLevel(0)
+                  .setLevelCount(1)
+                  .setLayerCount(1));
+      if (transitionType != ResourceTransition::GraphicsToGraphics &&
+          transitionType != ResourceTransition::ComputeToCompute) {
+        barrier.setSrcQueueFamilyIndex(srcFamilyIndex)
+            .setDstQueueFamilyIndex(dstFamilyIndex);
+      }
+    }
+
+    pipelineBarrier(srcStage, dstStage, {}, nullptr, nullptr, barriers);
+  }
+
+  void transitionTexture(ResourceTransition transitionType,
+                         vk::PipelineStageFlags srcStage,
+                         vk::PipelineStageFlags dstStage,
+                         vk::ImageLayout prevLayout, vk::ImageLayout newLayout,
+                         vk::AccessFlags newAccess, const Texture* texture) {
+    transitionTextures(transitionType, srcStage, dstStage, prevLayout,
+                       newLayout, newAccess, {texture});
   }
 };
 }  // namespace Graphics

@@ -14,6 +14,8 @@ class ShaderParameterGroup {
   ShaderParameterGroup(const vk::ShaderStageFlags stage,
                        TShaderParameters... values);
 
+  ShaderParameterGroup(ShaderParameterGroup&& other) noexcept;
+
   static constexpr uint32_t sShaderParameterCount =
       std::tuple_size<std::tuple<TShaderParameters...>>::value;
 
@@ -143,7 +145,19 @@ ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
           descriptorAllocInfo))[0];
 
   bindAllParametersToGroup(mParameters, mDescriptorSet);
-};
+}
+
+template <class... TShaderParameters>
+ShaderParameterGroup<TShaderParameters...>::ShaderParameterGroup(
+    ShaderParameterGroup&& other) noexcept
+    : mParameters(std::move(other.mParameters)),
+      mDescriptorPool(std::move(other.mDescriptorPool)),
+      mDescriptorSet(std::move(other.mDescriptorSet)),
+      mLayout(std::move(other.mLayout)) {
+  other.mDescriptorPool = nullptr;
+  other.mDescriptorSet = nullptr;
+  other.mLayout = nullptr;
+}
 
 template <class... TShaderParameters>
 ShaderParameterGroup<TShaderParameters...>::~ShaderParameterGroup() {

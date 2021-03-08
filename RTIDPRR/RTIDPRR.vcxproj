@@ -237,6 +237,9 @@
     <ClCompile Include="Source\Graphics\CountPatches\PatchCounter.cpp" />
     <ClCompile Include="Source\Components\Light\LightSystem.cpp" />
     <ClCompile Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.cpp" />
+    <ClCompile Include="Source\Graphics\DeferredRendering\BasePassRenderer.cpp" />
+    <ClCompile Include="Source\Graphics\DeferredRendering\LightingPassRenderer.cpp" />
+    <ClCompile Include="Source\Graphics\DeferredRendering\MainRenderer.cpp" />
     <ClCompile Include="Source\Graphics\GizmoRendering\GizmoRenderer.cpp" />
     <ClCompile Include="Source\Graphics\ShadowRendering\ShadowRenderer.cpp" />
     <ClCompile Include="Source\Loaders\GLTFLoader.cpp" />
@@ -255,7 +258,6 @@
     <ClCompile Include="Source\Graphics\Core\RenderPass.cpp" />
     <ClCompile Include="Source\Graphics\Geometry\IndexedVertexBuffer.cpp" />
     <ClCompile Include="Source\Graphics\Core\Buffer.cpp" />
-    <ClCompile Include="Source\Graphics\DeferredRendering\DeferredRenderer.cpp" />
     <ClCompile Include="Source\Graphics\Core\Framebuffer.cpp" />
     <ClCompile Include="Source\Graphics\Core\Pipeline.cpp" />
     <ClCompile Include="Source\Graphics\Core\Shaders\Shader.cpp" />
@@ -281,6 +283,9 @@
     <ClInclude Include="Source\Components\Light\LightSystem.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterConstantGroup.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterTextureArray.h" />
+    <ClInclude Include="Source\Graphics\DeferredRendering\BasePassRenderer.h" />
+    <ClInclude Include="Source\Graphics\DeferredRendering\LightingPassRenderer.h" />
+    <ClInclude Include="Source\Graphics\DeferredRendering\MainRenderer.h" />
     <ClInclude Include="Source\Graphics\GizmoRendering\GizmoRenderer.h" />
     <ClInclude Include="Source\Graphics\ShadowRendering\ShadowRenderer.h" />
     <ClInclude Include="Source\Loaders\GLTFLoader.h" />
@@ -308,7 +313,6 @@
     <ClInclude Include="Source\Graphics\Core\Buffer.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameterGroup.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\ShaderParameter.h" />
-    <ClInclude Include="Source\Graphics\DeferredRendering\DeferredRenderer.h" />
     <ClInclude Include="Source\Graphics\Core\Framebuffer.h" />
     <ClInclude Include="Source\Graphics\Core\Pipeline.h" />
     <ClInclude Include="Source\Graphics\Core\Shaders\Shader.h" />
@@ -381,6 +385,11 @@
     </CustomBuild>
     <CustomBuild Include="Source\Shaders\Source\CountPatches.comp">
       <FileType>Document</FileType>
+    </CustomBuild>
+    <CustomBuild Include="Source\Shaders\Source\CleanBuffer.comp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

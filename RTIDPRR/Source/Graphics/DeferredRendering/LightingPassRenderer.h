@@ -19,31 +19,14 @@
 #include "../CountPatches/PatchCounter.h"
 #include "../Geometry/IndexedVertexBuffer.h"
 #include "../ShadowRendering/ShadowRenderer.h"
+#include "BasePassRenderer.h"
 
 namespace RTIDPRR {
 namespace Graphics {
 
-struct CameraMatrices {
+struct LightPassPushParams {
   glm::mat4 mModel;
   glm::mat4 mvp;
-};
-
-struct BasePassPushParams {
-  glm::mat4 mModel;
-  glm::mat4 mvp;
-  uint32_t mStartingIndex;
-};
-
-struct BasePassResources {
-  BasePassResources(const vk::Extent2D& extent);
-
-  Texture mAlbedoTex, mNormalTex, mPositionTex, mPatchIdTex, mDepthTex;
-  RenderPass mBasePass;
-  Framebuffer mGBuffer;
-
-  ShaderParameterInlineGroup<BasePassPushParams> mInlineParameters;
-
-  Pipeline mBasePassPipeline;
 };
 
 struct LightPassResources {
@@ -57,29 +40,26 @@ struct LightPassResources {
                        ShaderParameterArray<RTIDPRR::Component::LightProxy>,
                        ShaderParameterTextureArray>
       mFragmentStageParameters;
-  ShaderParameterInlineGroup<CameraMatrices> mInlineParameters;
+  ShaderParameterInlineGroup<LightPassPushParams> mInlineParameters;
   Pipeline mLightPassPipeline;
 };
 
-class DeferredRenderer {
+class LightingPassRenderer {
  public:
-  DeferredRenderer();
+  LightingPassRenderer(ShadowRenderer& shadowRenderer,
+                       BasePassRenderer& basePassRenderer);
 
-  void render(Scene& scene);
+  void render(Scene& scene, ShadowRenderer& shadowRenderer,
+              BasePassRenderer& basePassRenderer);
 
-  virtual ~DeferredRenderer();
+  void present();
+
+  virtual ~LightingPassRenderer();
 
  private:
-  Command *mTransitionDepthSceneCommand, *mBasePassCommand, *mLightPassCommand;
+  Command* mCommand;
 
-  ShadowRenderer mShadowRenderer;
-  BasePassResources mBasePassResources;
   LightPassResources mLightPassResources;
-  PatchCounter mPatchCounter;
-  vk::Semaphore mCounterWaitSemaphore;
-
-  void renderBasePass(Scene& scene);
-  void renderLightPass(Scene& scene);
 };
 
 }  // namespace Graphics

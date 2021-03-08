@@ -15,12 +15,10 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL vkDebugCallback(
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* callbackData, void* userData) {
   LOG(callbackData->pMessage);
-  if (std::string(callbackData->pMessage).find("VK_DYNAMIC_STATE_DEPTH_BIAS") ==
-      std::string::npos) {
-    RTIDPRR_ASSERT_MSG(
-        messageSeverity != VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-        callbackData->pMessage);
-  }
+  RTIDPRR_ASSERT_MSG(
+      messageSeverity != VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT &&
+          messageSeverity != VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT,
+      callbackData->pMessage);
   return VK_FALSE;
 }
 

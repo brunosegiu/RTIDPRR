@@ -4,6 +4,7 @@
 #include <tuple>
 #include <vulkan/vulkan.hpp>
 
+#include "../../../Misc/DebugUtils.h"
 #include "../Buffer.h"
 #include "../Context.h"
 

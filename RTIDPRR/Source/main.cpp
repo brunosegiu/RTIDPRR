@@ -10,7 +10,7 @@
 #include "Components/Transform/Transform.h"
 #include "Core/Scene.h"
 #include "Graphics/Core/Context.h"
-#include "Graphics/DeferredRendering/DeferredRenderer.h"
+#include "Graphics/DeferredRendering/MainRenderer.h"
 #include "Loaders/GLTFLoader.h"
 #include "Misc/Time/Timer.h"
 #include "Misc/Window.h"
@@ -23,7 +23,7 @@ int main() {
 
   RTIDPRR::Window& window = RTIDPRR::Window::init(1378, 768);
   Context::init(window);
-  DeferredRenderer renderer;
+  MainRenderer renderer;
   Scene scene;
 
   Object& light = scene.addObject();

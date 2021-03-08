@@ -84,13 +84,13 @@ CommandPool::~CommandPool() {
   device.getLogicalDeviceHandle().destroyCommandPool(mGraphicsCommandPool);
 
   for (Command* command : mComputeCommandCache.mUsedCommands) {
-    device.getLogicalDeviceHandle().freeCommandBuffers(mGraphicsCommandPool,
+    device.getLogicalDeviceHandle().freeCommandBuffers(mComputeCommandPool,
                                                        *command);
     delete command;
   }
 
   for (Command* command : mComputeCommandCache.mUnusedCommands) {
-    device.getLogicalDeviceHandle().freeCommandBuffers(mGraphicsCommandPool,
+    device.getLogicalDeviceHandle().freeCommandBuffers(mComputeCommandPool,
                                                        *command);
     delete command;
   }
