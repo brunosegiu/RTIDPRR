@@ -38,66 +38,72 @@ void BasePassRenderer::render(Scene& scene) {
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
   RTIDPRR_ASSERT_VK(mCommand->begin(beginInfo));
 
-  vk::RenderPassBeginInfo renderPassBeginInfo =
-      vk::RenderPassBeginInfo()
-          .setRenderPass(mBasePassResources.mBasePass.getHandle())
-          .setFramebuffer(mBasePassResources.mGBuffer.getHandle())
-          .setRenderArea({vk::Offset2D{0, 0}, DEFERRED_RESOLUTION})
-          .setClearValues(clearValues);
-  mCommand->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
-  mCommand->bindPipeline(mBasePassResources.mBasePassPipeline);
-
-  const vk::Viewport viewport{
-      0.0f,
-      0.0f,
-      static_cast<float>(mBasePassResources.mGBuffer.getWidth()),
-      static_cast<float>(mBasePassResources.mGBuffer.getHeight()),
-      0.0f,
-      1.0f};
-  mCommand->setViewport(0, viewport);
+  mCommand->beginMarker("Base Pass");
   {
-    using namespace RTIDPRR::Core;
-    using namespace RTIDPRR::Component;
-    System<Mesh>& meshSystem = scene.getSystem<System<Mesh>>();
+    vk::RenderPassBeginInfo renderPassBeginInfo =
+        vk::RenderPassBeginInfo()
+            .setRenderPass(mBasePassResources.mBasePass.getHandle())
+            .setFramebuffer(mBasePassResources.mGBuffer.getHandle())
+            .setRenderArea({vk::Offset2D{0, 0}, DEFERRED_RESOLUTION})
+            .setClearValues(clearValues);
+    mCommand->beginRenderPass(renderPassBeginInfo,
+                              vk::SubpassContents::eInline);
+    mCommand->bindPipeline(mBasePassResources.mBasePassPipeline);
 
-    glm::mat4 viewProjection = scene.getCamera().getViewProjection();
-    for (Mesh& mesh : meshSystem.getComponents()) {
-      if (Object* obj = mesh.getObject()) {
-        Transform* transform = obj->getComponent<Transform>();
-        if (transform) {
-          const glm::mat4 modelMatrix = transform->getAbsoluteTransform();
-          glm::mat4 modelViewProjection = viewProjection * modelMatrix;
+    const vk::Viewport viewport{
+        0.0f,
+        0.0f,
+        static_cast<float>(mBasePassResources.mGBuffer.getWidth()),
+        static_cast<float>(mBasePassResources.mGBuffer.getHeight()),
+        0.0f,
+        1.0f};
+    mCommand->setViewport(0, viewport);
+    {
+      using namespace RTIDPRR::Core;
+      using namespace RTIDPRR::Component;
+      System<Mesh>& meshSystem = scene.getSystem<System<Mesh>>();
 
-          std::vector<BasePassPushParams> matrices{
-              {modelMatrix, modelViewProjection, mesh.getStartingIndex()}};
+      glm::mat4 viewProjection = scene.getCamera().getViewProjection();
+      for (Mesh& mesh : meshSystem.getComponents()) {
+        if (Object* obj = mesh.getObject()) {
+          Transform* transform = obj->getComponent<Transform>();
+          if (transform) {
+            const glm::mat4 modelMatrix = transform->getAbsoluteTransform();
+            glm::mat4 modelViewProjection = viewProjection * modelMatrix;
 
-          const Frustum& cameraFrustum = scene.getCamera().getFrustum();
+            std::vector<BasePassPushParams> matrices{
+                {modelMatrix, modelViewProjection, mesh.getStartingIndex()}};
 
-          if (cameraFrustum.intersects(modelMatrix, mesh.getAABB())) {
-            mCommand->pushConstants<BasePassPushParams>(
-                mBasePassResources.mBasePassPipeline.getPipelineLayout(),
-                vk::ShaderStageFlagBits::eVertex, 0, matrices);
-            mCommand->bindMesh(mesh.getIndexedBuffer());
-            mCommand->drawMesh(mesh.getIndexedBuffer());
+            const Frustum& cameraFrustum = scene.getCamera().getFrustum();
+
+            if (cameraFrustum.intersects(modelMatrix, mesh.getAABB())) {
+              mCommand->pushConstants<BasePassPushParams>(
+                  mBasePassResources.mBasePassPipeline.getPipelineLayout(),
+                  vk::ShaderStageFlagBits::eVertex, 0, matrices);
+              mCommand->bindMesh(mesh.getIndexedBuffer());
+              mCommand->drawMesh(mesh.getIndexedBuffer());
+            }
           }
         }
       }
     }
+
+    mCommand->endRenderPass();
   }
+  mCommand->endMarker();
 
-  mCommand->endRenderPass();
-
-  mCommand->transitionTexture(
-      ResourceTransition::GraphicsToCompute,
-      vk::PipelineStageFlagBits::eColorAttachmentOutput,
-      vk::PipelineStageFlagBits::eBottomOfPipe, vk::ImageLayout::eUndefined,
-      vk::ImageLayout::eGeneral, {}, &mBasePassResources.mPatchIdTex);
+  /*mCommand->transitionTexture(ResourceTransition::GraphicsToCompute,
+                              vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                              vk::PipelineStageFlagBits::eBottomOfPipe,
+                              vk::ImageLayout::eShaderReadOnlyOptimal,
+                              vk::ImageLayout::eShaderReadOnlyOptimal, {},
+                              &mBasePassResources.mPatchIdTex);*/
 
   RTIDPRR_ASSERT_VK(mCommand->end());
-  vk::SubmitInfo submitInfo =
-      vk::SubmitInfo()
-          .setCommandBuffers(*static_cast<vk::CommandBuffer*>(mCommand))
-          .setSignalSemaphores(mCounterWaitSemaphore);
+  vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(
+      *static_cast<vk::CommandBuffer*>(mCommand));
+
+  //.setSignalSemaphores(mCounterWaitSemaphore);
   graphicsQueue.submit(submitInfo);
 }
 

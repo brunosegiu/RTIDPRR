@@ -123,6 +123,22 @@ class Command : public vk::CommandBuffer {
     transitionTextures(transitionType, srcStage, dstStage, prevLayout,
                        newLayout, newAccess, {texture});
   }
+
+  void beginMarker(const std::string tag) {
+    const Instance& instance = Context::get().getInstance();
+    if (instance.getAreMarkersSupported()) {
+      beginDebugUtilsLabelEXT(
+          vk::DebugUtilsLabelEXT{}.setPLabelName(tag.c_str()),
+          instance.getDynamicDispatcher());
+    }
+  }
+
+  void endMarker() {
+    const Instance& instance = Context::get().getInstance();
+    if (instance.getAreMarkersSupported()) {
+      endDebugUtilsLabelEXT(instance.getDynamicDispatcher());
+    }
+  }
 };
 }  // namespace Graphics
 }  // namespace RTIDPRR

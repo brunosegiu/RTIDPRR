@@ -7,7 +7,6 @@
 #include "../Core/Command.h"
 #include "../Core/ComputePipeline.h"
 #include "../Core/Shaders/ShaderParameterBuffer.h"
-#include "../Core/Shaders/ShaderParameterImage.h"
 #include "../Core/Shaders/ShaderParameterTexture.h"
 #include "../DeferredRendering/BasePassRenderer.h"
 #include "../Geometry/IndexedVertexBuffer.h"
@@ -26,7 +25,7 @@ class PatchCounter {
  private:
   struct CounterResources {
     Buffer mPatchCountBuffer;
-    std::vector<ShaderParameterGroup<ShaderParameterImage>> mPatchIdImages;
+    std::vector<ShaderParameterGroup<ShaderParameterTexture>> mPatchIdImages;
     ShaderParameterBuffer<uint32_t> mPatchCountBufferParam;
     std::unique_ptr<ComputePipeline> mClearPipeline;
     std::unique_ptr<ComputePipeline> mCountPipeline;
@@ -35,14 +34,14 @@ class PatchCounter {
                      const uint32_t patchCount)
         : mPatchCountBuffer(patchCount * sizeof(uint32_t),
                             vk::BufferUsageFlagBits::eStorageBuffer,
-                            vk::MemoryPropertyFlagBits::eHostVisible |
-                                vk::MemoryPropertyFlagBits::eHostCoherent),
+                            vk::MemoryPropertyFlagBits::eDeviceLocal),
           mPatchIdImages(),
           mPatchCountBufferParam(mPatchCountBuffer, patchCount) {
       mPatchIdImages.reserve(patchIdTexs.size());
       for (const Texture* texture : patchIdTexs) {
-        mPatchIdImages.emplace_back(vk::ShaderStageFlagBits::eCompute,
-                                    ShaderParameterImage(texture));
+        mPatchIdImages.emplace_back(
+            vk::ShaderStageFlagBits::eCompute,
+            ShaderParameterTexture(SamplerOptions{}.setTexture(texture)));
       }
 
       std::vector<vk::DescriptorSetLayout> layouts{

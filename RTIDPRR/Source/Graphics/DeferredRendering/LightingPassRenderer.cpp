@@ -25,6 +25,8 @@ void LightingPassRenderer::render(Scene& scene, ShadowRenderer& shadowRenderer,
                                   BasePassRenderer& basePassRenderer) {
   Swapchain& swapchain = Context::get().getSwapchain();
 
+  mCommand->beginMarker("Light Pass");
+
   vk::CommandBufferBeginInfo beginInfo = vk::CommandBufferBeginInfo();
   RTIDPRR_ASSERT_VK(mCommand->begin(beginInfo));
 
@@ -57,38 +59,43 @@ void LightingPassRenderer::render(Scene& scene, ShadowRenderer& shadowRenderer,
 
   const Framebuffer& currentFramebuffer = swapchain.getCurrentFramebuffer();
 
-  vk::RenderPassBeginInfo renderPassBeginInfo =
-      vk::RenderPassBeginInfo()
-          .setRenderPass(swapchain.getMainRenderPass().getHandle())
-          .setFramebuffer(currentFramebuffer.getHandle())
-          .setRenderArea({vk::Offset2D(0, 0),
-                          vk::Extent2D(currentFramebuffer.getWidth(),
-                                       currentFramebuffer.getHeight())})
-          .setClearValues(clearValues);
+  {
+    vk::RenderPassBeginInfo renderPassBeginInfo =
+        vk::RenderPassBeginInfo()
+            .setRenderPass(swapchain.getMainRenderPass().getHandle())
+            .setFramebuffer(currentFramebuffer.getHandle())
+            .setRenderArea({vk::Offset2D(0, 0),
+                            vk::Extent2D(currentFramebuffer.getWidth(),
+                                         currentFramebuffer.getHeight())})
+            .setClearValues(clearValues);
 
-  mCommand->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
+    mCommand->beginRenderPass(renderPassBeginInfo,
+                              vk::SubpassContents::eInline);
 
-  mCommand->bindPipeline(mLightPassResources.mLightPassPipeline);
+    mCommand->bindPipeline(mLightPassResources.mLightPassPipeline);
 
-  const vk::Viewport viewport(
-      0.0f, 0.0f, static_cast<float>(currentFramebuffer.getWidth()),
-      static_cast<float>(currentFramebuffer.getHeight()), 0.0f, 1.0f);
-  mCommand->setViewport(0, viewport);
+    const vk::Viewport viewport(
+        0.0f, 0.0f, static_cast<float>(currentFramebuffer.getWidth()),
+        static_cast<float>(currentFramebuffer.getHeight()), 0.0f, 1.0f);
+    mCommand->setViewport(0, viewport);
 
-  mCommand->bindShaderParameterGroup(
-      0, mLightPassResources.mLightPassPipeline,
-      mLightPassResources.mFragmentStageParameters);
+    mCommand->bindShaderParameterGroup(
+        0, mLightPassResources.mLightPassPipeline,
+        mLightPassResources.mFragmentStageParameters);
 
-  std::vector<LightPassPushParams> matrices{
-      {glm::inverse(scene.getCamera().getProjection()),
-       glm::inverse(scene.getCamera().getView())}};
+    std::vector<LightPassPushParams> matrices{
+        {glm::inverse(scene.getCamera().getProjection()),
+         glm::inverse(scene.getCamera().getView())}};
 
-  mCommand->pushConstants<LightPassPushParams>(
-      mLightPassResources.mLightPassPipeline.getPipelineLayout(),
-      vk::ShaderStageFlagBits::eFragment, 0, matrices);
+    mCommand->pushConstants<LightPassPushParams>(
+        mLightPassResources.mLightPassPipeline.getPipelineLayout(),
+        vk::ShaderStageFlagBits::eFragment, 0, matrices);
 
-  mCommand->draw(3, 1, 0, 0);
-  mCommand->endRenderPass();
+    mCommand->draw(3, 1, 0, 0);
+    mCommand->endRenderPass();
+  }
+  mCommand->endMarker();
+
   RTIDPRR_ASSERT_VK(mCommand->end());
 }
 

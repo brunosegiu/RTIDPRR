@@ -13,6 +13,10 @@ class Instance {
   const vk::SurfaceKHR initSurface(const Window& window) const;
 
   const vk::Instance& getHandle() const { return mInstanceHandle; };
+  const vk::DispatchLoaderDynamic& getDynamicDispatcher() const {
+    return mDynamicDispatcher;
+  }
+  bool getAreMarkersSupported() const { return mAreMarkersSupported; }
 
   virtual ~Instance();
 
@@ -21,6 +25,8 @@ class Instance {
   Instance& operator=(Instance const&) = delete;
 
   vk::Instance mInstanceHandle;
+  vk::DispatchLoaderDynamic mDynamicDispatcher;
+  bool mAreMarkersSupported;
 
 #if defined(_DEBUG)
   vk::DebugUtilsMessengerEXT mDebugMessenger;

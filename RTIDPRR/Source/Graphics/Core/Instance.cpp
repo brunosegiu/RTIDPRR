@@ -21,29 +21,6 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL vkDebugCallback(
       callbackData->pMessage);
   return VK_FALSE;
 }
-
-VkResult CreateDebugUtilsMessengerEXT(
-    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-    const VkAllocationCallbacks* pAllocator,
-    VkDebugUtilsMessengerEXT* pCallback) {
-  auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-      instance, "vkCreateDebugUtilsMessengerEXT");
-  if (func != nullptr) {
-    return func(instance, pCreateInfo, pAllocator, pCallback);
-  } else {
-    return VK_ERROR_EXTENSION_NOT_PRESENT;
-  }
-}
-
-void DestroyDebugUtilsMessengerEXT(VkInstance instance,
-                                   VkDebugUtilsMessengerEXT callback,
-                                   const VkAllocationCallbacks* pAllocator) {
-  auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-      instance, "vkDestroyDebugUtilsMessengerEXT");
-  if (func != nullptr) {
-    func(instance, callback, pAllocator);
-  }
-}
 #endif
 
 Instance::Instance(const Window& window) {
@@ -60,15 +37,36 @@ Instance::Instance(const Window& window) {
 #endif
   };
 
+  mAreMarkersSupported = false;
+
   std::vector<const char*> extensions = window.getRequiredVkExtensions();
 
-#if defined(_DEBUG)
-  const std::vector<const char*> debugExtensions{
-      VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+  {
+    const std::vector<const char*> debugExtensions{
+        VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
 
-  extensions.insert(extensions.end(), debugExtensions.begin(),
-                    debugExtensions.end());
-#endif
+    extensions.insert(extensions.end(), debugExtensions.begin(),
+                      debugExtensions.end());
+    mAreMarkersSupported = true;
+  }
+
+  std::vector<vk::ExtensionProperties> supportedExtensions =
+      RTIDPRR_ASSERT_VK(vk::enumerateInstanceExtensionProperties());
+
+  auto _layers = RTIDPRR_ASSERT_VK(vk::enumerateInstanceLayerProperties());
+  for (auto& layer : _layers) {
+      LOG(layer.layerName);
+  }
+
+  for (const char* extensionName : extensions) {
+    const bool isExtensionsSupported =
+        std::find_if(
+            supportedExtensions.begin(), supportedExtensions.end(),
+            [&extensionName](const vk::ExtensionProperties& presentExtension) {
+              return strcmp(extensionName, presentExtension.extensionName) == 0;
+            }) != supportedExtensions.end();
+    RTIDPRR_ASSERT(isExtensionsSupported);
+  }
 
   vk::InstanceCreateInfo instanceInfo =
       vk::InstanceCreateInfo()
@@ -81,11 +79,11 @@ Instance::Instance(const Window& window) {
 
   mInstanceHandle = RTIDPRR_ASSERT_VK(vk::createInstance(instanceInfo));
 
-#if defined(_DEBUG)
-  vk::DispatchLoaderDynamic dynamicDispatcher =
+  mDynamicDispatcher =
       vk::DispatchLoaderDynamic(mInstanceHandle, vkGetInstanceProcAddr);
+  mDynamicDispatcher.init(mInstanceHandle, vkGetInstanceProcAddr);
 
-  dynamicDispatcher.init(mInstanceHandle, vkGetInstanceProcAddr);
+#if defined(_DEBUG)
 
   vk::DebugUtilsMessengerCreateInfoEXT debugCallbackCreateInfo =
       vk::DebugUtilsMessengerCreateInfoEXT()
@@ -101,17 +99,14 @@ Instance::Instance(const Window& window) {
 
   mDebugMessenger =
       RTIDPRR_ASSERT_VK(mInstanceHandle.createDebugUtilsMessengerEXT(
-          debugCallbackCreateInfo, nullptr, dynamicDispatcher));
+          debugCallbackCreateInfo, nullptr, mDynamicDispatcher));
 #endif
 }
 
 Instance::~Instance() {
 #if defined(_DEBUG)
-  vk::DispatchLoaderDynamic dynamicDispatcher =
-      vk::DispatchLoaderDynamic(mInstanceHandle, vkGetInstanceProcAddr);
-  dynamicDispatcher.init(mInstanceHandle, vkGetInstanceProcAddr);
   mInstanceHandle.destroyDebugUtilsMessengerEXT(mDebugMessenger, nullptr,
-                                                dynamicDispatcher);
+                                                mDynamicDispatcher);
 #endif
   mInstanceHandle.destroy();
 }

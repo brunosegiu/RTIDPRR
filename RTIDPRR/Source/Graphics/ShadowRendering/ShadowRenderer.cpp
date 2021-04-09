@@ -64,8 +64,8 @@ ShadowDepthPassResources::ShadowDepthPassResources()
           PipelineCreateOptions()
               .setCullMode(vk::CullModeFlagBits::eFront)
               .setEnableDepthBias(true)
-              .setDepthBiasConstant(1.25f * 1.0f)
-              .setDepthBiasSlope(1.75f * 1.0f)) {}
+              .setDepthBiasConstant(1.25f * 5.0f)
+              .setDepthBiasSlope(1.75f * 5.0f)) {}
 
 std::vector<SamplerOptions> ShadowRenderer::getSamplerOptionsFromResources() {
   std::vector<SamplerOptions> options;
@@ -111,53 +111,56 @@ void ShadowRenderer::render(Scene& scene) {
     ShadowDepthPassResources& resources = mShadowDepthPassResources[lightIndex];
     const Light& light = lightComponents[lightIndex];
     const LightProxy& lightProxy = light.getProxy();
-
-    vk::RenderPassBeginInfo renderPassBeginInfo =
-        vk::RenderPassBeginInfo()
-            .setRenderPass(resources.mLightDepthRenderpass.getHandle())
-            .setFramebuffer(resources.mLightDepthFramebuffer.getHandle())
-            .setRenderArea(
-                {vk::Offset2D{0, 0},
-                 vk::Extent2D{resources.mLightDepthFramebuffer.getWidth(),
-                              resources.mLightDepthFramebuffer.getHeight()}})
-            .setClearValues(clearValues);
-    mShadowDepthPassCommand->beginRenderPass(renderPassBeginInfo,
-                                             vk::SubpassContents::eInline);
-    mShadowDepthPassCommand->bindPipeline(resources.mLightDepthPassPipeline);
-
-    const vk::Viewport viewport{
-        0.0f,
-        0.0f,
-        static_cast<float>(resources.mLightDepthFramebuffer.getWidth()),
-        static_cast<float>(resources.mLightDepthFramebuffer.getHeight()),
-        0.0f,
-        1.0f};
-    mShadowDepthPassCommand->setViewport(0, viewport);
+    mShadowDepthPassCommand->beginMarker("Shadow Depth Pass");
     {
-      for (Mesh& mesh : meshSystem.getComponents()) {
-        if (Object* obj = mesh.getObject()) {
-          Transform* transform = obj->getComponent<Transform>();
-          if (transform) {
-            const glm::mat4 modelMatrix = transform->getAbsoluteTransform();
-            glm::mat4 modelViewProjection =
-                lightProxy.viewProjection * modelMatrix;
+      vk::RenderPassBeginInfo renderPassBeginInfo =
+          vk::RenderPassBeginInfo()
+              .setRenderPass(resources.mLightDepthRenderpass.getHandle())
+              .setFramebuffer(resources.mLightDepthFramebuffer.getHandle())
+              .setRenderArea(
+                  {vk::Offset2D{0, 0},
+                   vk::Extent2D{resources.mLightDepthFramebuffer.getWidth(),
+                                resources.mLightDepthFramebuffer.getHeight()}})
+              .setClearValues(clearValues);
+      mShadowDepthPassCommand->beginRenderPass(renderPassBeginInfo,
+                                               vk::SubpassContents::eInline);
+      mShadowDepthPassCommand->bindPipeline(resources.mLightDepthPassPipeline);
 
-            std::vector<LightDepthPassCameraParams> matrices{
-                {modelMatrix, modelViewProjection, mesh.getStartingIndex()}};
+      const vk::Viewport viewport{
+          0.0f,
+          0.0f,
+          static_cast<float>(resources.mLightDepthFramebuffer.getWidth()),
+          static_cast<float>(resources.mLightDepthFramebuffer.getHeight()),
+          0.0f,
+          1.0f};
+      mShadowDepthPassCommand->setViewport(0, viewport);
+      {
+        for (Mesh& mesh : meshSystem.getComponents()) {
+          if (Object* obj = mesh.getObject()) {
+            Transform* transform = obj->getComponent<Transform>();
+            if (transform) {
+              const glm::mat4 modelMatrix = transform->getAbsoluteTransform();
+              glm::mat4 modelViewProjection =
+                  lightProxy.viewProjection * modelMatrix;
 
-            if (light.getFrustum().intersects(modelMatrix, mesh.getAABB())) {
-              mShadowDepthPassCommand
-                  ->pushConstants<LightDepthPassCameraParams>(
-                      resources.mLightDepthPassPipeline.getPipelineLayout(),
-                      vk::ShaderStageFlagBits::eVertex, 0, matrices);
-              mShadowDepthPassCommand->bindMesh(mesh.getIndexedBuffer());
-              mShadowDepthPassCommand->drawMesh(mesh.getIndexedBuffer());
+              std::vector<LightDepthPassCameraParams> matrices{
+                  {modelMatrix, modelViewProjection, mesh.getStartingIndex()}};
+
+              if (light.getFrustum().intersects(modelMatrix, mesh.getAABB())) {
+                mShadowDepthPassCommand
+                    ->pushConstants<LightDepthPassCameraParams>(
+                        resources.mLightDepthPassPipeline.getPipelineLayout(),
+                        vk::ShaderStageFlagBits::eVertex, 0, matrices);
+                mShadowDepthPassCommand->bindMesh(mesh.getIndexedBuffer());
+                mShadowDepthPassCommand->drawMesh(mesh.getIndexedBuffer());
+              }
             }
           }
         }
       }
+      mShadowDepthPassCommand->endRenderPass();
     }
-    mShadowDepthPassCommand->endRenderPass();
+    mShadowDepthPassCommand->endMarker();
   }
   RTIDPRR_ASSERT_VK(mShadowDepthPassCommand->end());
   vk::SubmitInfo submitInfo = vk::SubmitInfo().setCommandBuffers(

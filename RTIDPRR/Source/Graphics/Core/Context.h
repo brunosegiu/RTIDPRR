@@ -22,6 +22,7 @@ class Context {
 
   const Device& getDevice() const { return mDevice; }
   const Swapchain& getSwapchain() const { return mSwapchain; };
+  const Instance& getInstance() const { return mInstance; }
   Swapchain& getSwapchain() { return mSwapchain; };
   CommandPool& getCommandPool() { return mCommandPool; }
 
