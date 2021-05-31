@@ -351,3 +351,5 @@ MigrationBackup/
 
 # Shader build files
 **/RTIDPRR/Source/Shaders/Build/**
+/RTIDPRR/SDL2.dll
+/RTIDPRR/RTIDPRR.exe

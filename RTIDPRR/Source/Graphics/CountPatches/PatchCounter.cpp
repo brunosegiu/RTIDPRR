@@ -6,8 +6,8 @@
 
 using namespace RTIDPRR::Graphics;
 
-uint32_t PatchCounter::sDispatchSizeX = 8;
-uint32_t PatchCounter::sDispatchSizeY = 8;
+uint32_t PatchCounter::sWorkgroupSizeX = 8;
+uint32_t PatchCounter::sWorkgroupSizeY = 8;
 
 PatchCounter::PatchCounter() {
   CommandPool& commandPool = Context::get().getCommandPool();
@@ -23,12 +23,10 @@ void PatchCounter::initResources(const std::vector<const Texture*>& patchIdTexs,
   }
 }
 
-void PatchCounter::count(Scene& scene, BasePassRenderer& basePassRenderer) {
+void PatchCounter::count(Scene& scene,
+                         const std::vector<const Texture*>& patchIdTextures) {
   using namespace RTIDPRR::Component;
   uint32_t patchCount = Mesh::getTotalPatchCount();
-
-  std::vector<const Texture*> patchIdTextures{
-      &basePassRenderer.getResources().mPatchIdTex};
 
   initResources(patchIdTextures, patchCount);
 
@@ -71,8 +69,9 @@ void PatchCounter::count(Scene& scene, BasePassRenderer& basePassRenderer) {
 
         mCommand->bindShaderParameterGroup(1, *(mResources->mCountPipeline),
                                            mResources->mPatchIdImages[index]);
-        mCommand->dispatch(patchIdTextures[index]->getExtent().width / sDispatchSizeX,
-                           patchIdTextures[index]->getExtent().height / sDispatchSizeY, 1);
+        mCommand->dispatch(
+            patchIdTextures[index]->getExtent().width / sWorkgroupSizeX,
+            patchIdTextures[index]->getExtent().height / sWorkgroupSizeY, 1);
         mCommand->endMarker();
       }
     }
@@ -91,10 +90,47 @@ void PatchCounter::count(Scene& scene, BasePassRenderer& basePassRenderer) {
 
   Context::get().getDevice().getGraphicsQueue().submit(submitInfo);
   /*RTIDPRR_ASSERT_VK(
-      Context::get().getDevice().getLogicalDeviceHandle().waitIdle());*/
+          Context::get().getDevice().getLogicalDeviceHandle().waitIdle());*/
   // void* map = mResources->mPatchCountBuffer.map();
   // std::vector<uint32_t> buf(static_cast<uint32_t*>(map),
   //                        static_cast<uint32_t*>(map) + patchCount);
 }
 
 PatchCounter::~PatchCounter() {}
+
+PatchCounter::CounterResources::CounterResources(
+    const std::vector<const Texture*>& patchIdTexs, const uint32_t patchCount)
+    : mWorkgroupSizeConstant(vk::ShaderStageFlagBits::eCompute, sWorkgroupSizeX,
+                             sWorkgroupSizeY),
+      mPatchCountBuffer(patchCount * sizeof(uint32_t),
+                        vk::BufferUsageFlagBits::eStorageBuffer,
+                        vk::MemoryPropertyFlagBits::eDeviceLocal),
+      mPatchIdImages(),
+      mPatchCountBufferParam(mPatchCountBuffer, patchCount) {
+  mPatchIdImages.reserve(patchIdTexs.size());
+  for (const Texture* texture : patchIdTexs) {
+    mPatchIdImages.emplace_back(
+        vk::ShaderStageFlagBits::eCompute,
+        ShaderParameterTexture(SamplerOptions{}.setTexture(texture)));
+  }
+  std::vector<vk::DescriptorSetLayout> layouts{
+      mPatchCountBufferParam.getLayout()};
+  for (const auto& imageParam : mPatchIdImages) {
+    layouts.emplace_back(imageParam.getLayout());
+  }
+  mClearPipeline = std::make_unique<ComputePipeline>(
+      "Source/Shaders/Build/CleanBuffer.comp",
+      std::vector<vk::DescriptorSetLayout>{mPatchCountBufferParam.getLayout()},
+      std::vector<vk::PushConstantRange>{},
+      generateSpecializationMap(mWorkgroupSizeConstant));
+  mCountPipeline = std::make_unique<ComputePipeline>(
+      "Source/Shaders/Build/CountPatches.comp", layouts);
+}
+
+PatchCounter::CounterResources::CounterResources(
+    CounterResources&& other) noexcept
+    : mWorkgroupSizeConstant(std::move(other.mWorkgroupSizeConstant)),
+      mPatchCountBuffer(std::move(other.mPatchCountBuffer)),
+      mPatchIdImages(std::move(other.mPatchIdImages)),
+      mPatchCountBufferParam(std::move(other.mPatchCountBufferParam)),
+      mCountPipeline(std::move(other.mCountPipeline)) {}

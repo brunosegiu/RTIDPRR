@@ -58,6 +58,10 @@ class ShadowRenderer {
 
   void transitionShadowTexturesReadOnly(Command& command);
 
+  const std::vector<ShadowDepthPassResources>& getResources() {
+    return mShadowDepthPassResources;
+  }
+
   virtual ~ShadowRenderer();
 
  private:

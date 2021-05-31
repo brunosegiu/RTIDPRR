@@ -23,7 +23,16 @@ void MainRenderer::render(Scene& scene) {
 
   mBasePassRenderer.render(scene);
 
-  mPatchCounter.count(scene, mBasePassRenderer);
+  {
+    // Accumulate all visible patches textures (main camera, shadow textures)
+    std::vector<const Texture*> patchIdTextures{
+        &mBasePassRenderer.getResources().mPatchIdTex};
+    for (const ShadowDepthPassResources& resources :
+         mShadowRenderer.getResources()) {
+      patchIdTextures.push_back(&resources.mPatchIdTex);
+    }
+    mPatchCounter.count(scene, patchIdTextures);
+  }
 
   mLightingPassRenderer.render(scene, mShadowRenderer, mBasePassRenderer);
 

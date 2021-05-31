@@ -15,7 +15,9 @@ class Texture {
       : mImage(std::move(other.mImage)),
         mImageView(std::move(other.mImageView)),
         mFormat(std::move(other.mFormat)),
-        mMemory(std::move(other.mMemory)) {
+        mMemory(std::move(other.mMemory)),
+        mExtent(std::move(other.mExtent)),
+        mUsage(std::move(other.mUsage)) {
     other.mImage = nullptr;
     other.mImageView = nullptr;
     other.mMemory = nullptr;

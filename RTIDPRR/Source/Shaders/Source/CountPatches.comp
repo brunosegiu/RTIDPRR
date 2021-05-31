@@ -12,7 +12,10 @@ uint getFaceId(ivec2 coord) {
 	return texelFetch(patchIdTex, ivec2(coord), 0).r;
 }
 
-layout(local_size_x=8, local_size_y=8) in;
+const uint WORKGROUP_SIZE_X = 8;
+const uint WORKGROUP_SIZE_Y = 8;
+
+layout(local_size_x=WORKGROUP_SIZE_X, local_size_y=WORKGROUP_SIZE_Y) in;
 void main() {
 	ivec2 imageCoords = ivec2(gl_WorkGroupID.xy);
 	uint patchId = getFaceId(imageCoords);

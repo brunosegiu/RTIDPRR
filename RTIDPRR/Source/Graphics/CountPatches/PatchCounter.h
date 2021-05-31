@@ -18,14 +18,16 @@ class PatchCounter {
  public:
   PatchCounter();
 
-  static uint32_t sDispatchSizeX, sDispatchSizeY;
+  // These two are hardcoded in the shader as a workaround
+  static uint32_t sWorkgroupSizeX, sWorkgroupSizeY;
 
-  void count(Scene& scene, BasePassRenderer& basePassRenderer);
+  void count(Scene& scene, const std::vector<const Texture*>& patchIdTextures);
 
   virtual ~PatchCounter();
 
  private:
   struct CounterResources {
+    ShaderParameterConstantGroup<uint32_t, uint32_t> mWorkgroupSizeConstant;
     Buffer mPatchCountBuffer;
     std::vector<ShaderParameterGroup<ShaderParameterTexture>> mPatchIdImages;
     ShaderParameterBuffer<uint32_t> mPatchCountBufferParam;
@@ -33,37 +35,9 @@ class PatchCounter {
     std::unique_ptr<ComputePipeline> mCountPipeline;
 
     CounterResources(const std::vector<const Texture*>& patchIdTexs,
-                     const uint32_t patchCount)
-        : mPatchCountBuffer(patchCount * sizeof(uint32_t),
-                            vk::BufferUsageFlagBits::eStorageBuffer,
-                            vk::MemoryPropertyFlagBits::eDeviceLocal),
-          mPatchIdImages(),
-          mPatchCountBufferParam(mPatchCountBuffer, patchCount) {
-      mPatchIdImages.reserve(patchIdTexs.size());
-      for (const Texture* texture : patchIdTexs) {
-        mPatchIdImages.emplace_back(
-            vk::ShaderStageFlagBits::eCompute,
-            ShaderParameterTexture(SamplerOptions{}.setTexture(texture)));
-      }
+                     const uint32_t patchCount);
 
-      std::vector<vk::DescriptorSetLayout> layouts{
-          mPatchCountBufferParam.getLayout()};
-      for (const auto& imageParam : mPatchIdImages) {
-        layouts.emplace_back(imageParam.getLayout());
-      }
-      mClearPipeline = std::make_unique<ComputePipeline>(
-          "Source/Shaders/Build/CleanBuffer.comp",
-          std::vector<vk::DescriptorSetLayout>{
-              mPatchCountBufferParam.getLayout()});
-      mCountPipeline = std::make_unique<ComputePipeline>(
-          "Source/Shaders/Build/CountPatches.comp", layouts);
-    }
-
-    CounterResources(CounterResources&& other) noexcept
-        : mPatchCountBuffer(std::move(other.mPatchCountBuffer)),
-          mPatchIdImages(std::move(other.mPatchIdImages)),
-          mPatchCountBufferParam(std::move(other.mPatchCountBufferParam)),
-          mCountPipeline(std::move(other.mCountPipeline)) {}
+    CounterResources(CounterResources&& other) noexcept;
   };
 
   Command* mCommand;

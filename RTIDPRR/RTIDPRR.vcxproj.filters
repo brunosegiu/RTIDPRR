@@ -302,10 +302,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="Source\Shaders\Source\CleanBuffer.comp" />
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="Source\Shaders\Source\BasePass.frag" />
     <CustomBuild Include="Source\Shaders\Source\BasePass.vert" />
     <CustomBuild Include="Source\Shaders\Source\LightPass.frag" />
@@ -315,5 +311,6 @@
     <CustomBuild Include="Source\Shaders\Source\Line.frag" />
     <CustomBuild Include="Source\Shaders\Source\Line.vert" />
     <CustomBuild Include="Source\Shaders\Source\CountPatches.comp" />
+    <CustomBuild Include="Source\Shaders\Source\CleanBuffer.comp" />
   </ItemGroup>
 </Project>
