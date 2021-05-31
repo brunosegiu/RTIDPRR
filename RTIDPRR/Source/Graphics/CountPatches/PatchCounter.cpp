@@ -6,6 +6,9 @@
 
 using namespace RTIDPRR::Graphics;
 
+uint32_t PatchCounter::sDispatchSizeX = 8;
+uint32_t PatchCounter::sDispatchSizeY = 8;
+
 PatchCounter::PatchCounter() {
   CommandPool& commandPool = Context::get().getCommandPool();
   mCommand = commandPool.allocateGraphicsCommand();
@@ -68,8 +71,8 @@ void PatchCounter::count(Scene& scene, BasePassRenderer& basePassRenderer) {
 
         mCommand->bindShaderParameterGroup(1, *(mResources->mCountPipeline),
                                            mResources->mPatchIdImages[index]);
-        mCommand->dispatch(patchIdTextures[index]->getExtent().width / 8,
-                           patchIdTextures[index]->getExtent().height / 8, 1);
+        mCommand->dispatch(patchIdTextures[index]->getExtent().width / sDispatchSizeX,
+                           patchIdTextures[index]->getExtent().height / sDispatchSizeY, 1);
         mCommand->endMarker();
       }
     }

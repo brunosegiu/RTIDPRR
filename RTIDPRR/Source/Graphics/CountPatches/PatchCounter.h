@@ -18,6 +18,8 @@ class PatchCounter {
  public:
   PatchCounter();
 
+  static uint32_t sDispatchSizeX, sDispatchSizeY;
+
   void count(Scene& scene, BasePassRenderer& basePassRenderer);
 
   virtual ~PatchCounter();
