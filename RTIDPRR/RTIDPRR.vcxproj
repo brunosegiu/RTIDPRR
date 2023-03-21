@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -127,7 +127,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>vulkan-1.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;SDL2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(VULKAN_SDK)\Third-Party\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
@@ -335,6 +335,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
     </CustomBuild>
     <CustomBuild Include="Source\Shaders\Source\BasePass.vert">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -342,6 +344,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
     </CustomBuild>
     <CustomBuild Include="Source\Shaders\Source\LightPass.frag">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -349,6 +353,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
     </CustomBuild>
     <CustomBuild Include="Source\Shaders\Source\LightPass.vert">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -356,6 +362,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
     </CustomBuild>
     <CustomBuild Include="Source\Shaders\Source\LightDepthPass.frag">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -363,6 +371,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
     </CustomBuild>
     <CustomBuild Include="Source\Shaders\Source\LightDepthPass.vert">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -370,24 +380,34 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
     </CustomBuild>
     <CustomBuild Include="Source\Shaders\Source\Line.frag">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
     </CustomBuild>
     <CustomBuild Include="Source\Shaders\Source\Line.vert">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
     </CustomBuild>
     <CustomBuild Include="Source\Shaders\Source\CountPatches.comp">
       <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
     </CustomBuild>
     <CustomBuild Include="Source\Shaders\Source\CleanBuffer.comp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%VULKAN_SDK%\Bin\glslangValidator.exe -V $(ProjectDir)%(Identity) -o  $(ProjectDir)Source\Shaders\Build\%(Filename)%(Extension)</Command>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

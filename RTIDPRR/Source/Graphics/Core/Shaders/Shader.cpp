@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <unordered_map>
 
 #include "../../../Misc/DebugUtils.h"
 #include "../Context.h"

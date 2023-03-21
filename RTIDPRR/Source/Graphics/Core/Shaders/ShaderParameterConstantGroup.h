@@ -3,6 +3,7 @@
 #include <tuple>
 #include <vector>
 #include <vulkan/vulkan.hpp>
+#include <unordered_map>
 
 #include "../Context.h"
 #include "ShaderParameter.h"

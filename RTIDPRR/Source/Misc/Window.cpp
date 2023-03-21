@@ -58,11 +58,11 @@ RTIDPRR::Input::InputController& Window::getInputController() {
 }
 
 void Window::warpCursorToCenter() {
-  SDL_WarpMouseInWindow(mWindow, mWidth / 2, mHeight / 2);
+  //SDL_WarpMouseInWindow(mWindow, mWidth / 2, mHeight / 2);
 }
 
 void Window::toggleCursor(bool show) {
-  SDL_ShowCursor(show ? SDL_ENABLE : SDL_DISABLE);
+  //SDL_ShowCursor(show ? SDL_ENABLE : SDL_DISABLE);
 }
 
 void Window::setSize(uint32_t width, uint32_t height) {
