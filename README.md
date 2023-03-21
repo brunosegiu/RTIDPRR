@@ -1,8 +1,8 @@
 # RTIDPRR
 A realtime implementation of Importance-Driven Progressive Refinement Radiosity on Vulkan.
 
-[<p align="center">
-  <img width="500vw" height="auto" src="Doc/shadows.png">
+<p align="center">
+  <img width="1000vw" height="auto" src="Doc/shadows.png">
 </p>
 
 ## Dependencies
